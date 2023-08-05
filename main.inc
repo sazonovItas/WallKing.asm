@@ -1,7 +1,7 @@
 format  PE GUI 5.0
 entry   WinMain
 
-        include         "include/win32a.inc"
+        include         "include/win32ax.inc"
 
         include         "include/api/kernel32.inc"
         include         "include/api/user32.inc"
@@ -11,6 +11,7 @@ entry   WinMain
         include         "INCFiles/mesh.inc"
         include         "INCFiles/vector.inc"
         include         "INCFiles/matrix.inc"
+        include         "INCFiles/color.inc"
 
 macro JumpIf value, label
 {
@@ -18,7 +19,7 @@ macro JumpIf value, label
         je      label
 }
 
-        include         "INCFiles/cube.inc"
+        include         "INCFiles/objects.inc"
 
         true            =       1
         false           =       0
@@ -40,6 +41,7 @@ data import
         library kernel32,       "KERNEL32.DLL",\
                 user32,         "USER32.DLL",\
                 gdi32,          "GDI32.DLL",\
-                opengl32,       "OPENGL32.DLL"
+                opengl32,       "OPENGL32.DLL",\
+                glu32,          "GLU32.DLL"
 
 end data

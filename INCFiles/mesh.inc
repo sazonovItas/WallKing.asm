@@ -1,18 +1,19 @@
 struct Vertex
-        x       dd      ?
-        y       dd      ?
-        z       dd      ?
+        x       GLfloat         ?
+        y       GLfloat         ?
+        z       GLfloat         ?
 ends
 
-struct Color
-        r       dd      ?
-        g       dd      ?
-        b       dd      ?
+struct PackedMesh
+        vertices        dd      ?
+        colors          dd      ?
+        indices         dd      ?
+        trianglesCount  dd      ?
 ends
 
 struct Mesh
         vertices        dd      ?
         colors          dd      ?
-        indices         dd      ?
-        trianglesCount  dd      ?
+        normals         dd      ?
+        verticesCount   dd      ?
 ends

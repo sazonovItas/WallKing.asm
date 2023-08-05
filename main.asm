@@ -10,21 +10,34 @@
         step            dd      3.14
         radian          dd      57.32
 
-        cubeMesh        Mesh    cubeVertices, cubeColors, cubeIndices, CUBE_TRIANGLES_COUNT
-        mesh            Mesh    ?, ?, ?, ?
+        cubeMesh        PackedMesh      cubeVertices, cubeColors, cubeIndices, CUBE_TRIANGLES_COUNT
+        drawCubeMesh    Mesh            NULL, NULL, NULL, NULL
+        planeMesh       PackedMesh      planeVertices, planeColors, planeIndices, PLANE_TRIANGLES_COUNT
+        drawPlaneMesh   Mesh            NULL, NULL, NULL, NULL
 
         fovY            dd      60.0
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3 3.0, 3.0, 3.0
+        cameraPosition  Vector3 5.0, 5.0, 5.0
         targetPosition  Vector3 0.0, 0.0, 0.0
         upVector        Vector3 0.0, 1.0, 0.0
+
+        light0Diffuse   ColorRGBA       0.0, 0.0, 1.0, 1.0
+        light0Ambient   ColorRGBA       1.0, 0.0, 0.0, 1.0
+        light0Position  Vector4         10.0, 10.0, 0.0, 1.0
+
+        light1Diffuse   ColorRGBA       0.0, 1.0, 0.0, 1.0
+        light1Position  Vector4         2.0, 4.0, 3.0, 1.0
 
         include         "ASMFiles/init.asm"
         include         "ASMFiles/mesh.asm"
         include         "ASMFiles/vector.asm"
         include         "ASMFiles/matrix.asm"
+        include         "ASMFiles/draw.asm"
+
+        fileTexture     file    "texture.bmp"
+        texture         dd      ?
 
 proc WinMain
 
@@ -72,59 +85,5 @@ proc WindowProc uses ebx,\
         xor     eax, eax
 
 .Return:
-        ret
-endp
-
-proc Draw
-
-        locals
-                currentTime     dd      ?
-                verticesCount   dd      ?
-                coord           dd      3.0
-        endl
-
-        invoke  GetTickCount
-        mov     [currentTime], eax
-
-        sub     eax, [time]
-        cmp     eax, 10
-        jle     .Skip
-
-        mov     eax, [currentTime]
-        mov     [time], eax
-
-        fld     [angle]                 ; angle
-        fsub    [step]                  ; angle + step
-        fstp    [angle]                 ;
-
-.Skip:
-        xor     edx, edx
-        mov     eax, [mesh.trianglesCount]
-        mov     ecx, 3
-        mul     ecx
-        mov     [verticesCount], eax
-
-        invoke  glClearColor, 0.1, 0.1, 0.6, 1.0
-        invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
-
-        invoke  glMatrixMode, GL_MODELVIEW
-        invoke  glLoadIdentity
-
-        stdcall Matrix.LookAt, cameraPosition, targetPosition, upVector
-
-        invoke  glRotatef, [angle], ebx, 1.0, ebx
-
-        invoke  glEnableClientState, GL_VERTEX_ARRAY
-        invoke  glEnableClientState, GL_COLOR_ARRAY
-
-        invoke  glVertexPointer, 3, GL_FLOAT, ebx, [mesh.vertices]
-        invoke  glColorPointer, 3, GL_FLOAT, ebx, [mesh.colors]
-        invoke  glDrawArrays, GL_TRIANGLES, ebx, [verticesCount]
-
-        invoke  glDisableClientState, GL_VERTEX_ARRAY
-        invoke  glDisableClientState, GL_COLOR_ARRAY
-
-        invoke  SwapBuffers, [hdc]
-
         ret
 endp

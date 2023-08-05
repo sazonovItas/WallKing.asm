@@ -3,3 +3,6 @@ compile:
 
 run:
 	.\main.exe
+
+clean:
+	rm main.exe

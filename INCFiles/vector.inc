@@ -1,12 +1,12 @@
 struct Vector3
-        x       dd      ?
-        y       dd      ?
-        z       dd      ?
+        x       GLfloat      ?
+        y       GLfloat      ?
+        z       GLfloat      ?
 ends
 
 struct Vector4
-        x       dd      ?
-        y       dd      ?
-        z       dd      ?
-        w       dd      ?
+        x       GLfloat      ?
+        y       GLfloat      ?
+        z       GLfloat      ?
+        w       GLfloat      ?
 ends
