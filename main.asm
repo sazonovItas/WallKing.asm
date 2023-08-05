@@ -11,32 +11,33 @@
         radian          dd      57.32
 
         cubeMesh        PackedMesh      cubeVertices, cubeColors, cubeIndices, CUBE_TRIANGLES_COUNT
-        drawCubeMesh    Mesh            NULL, NULL, NULL, NULL
+        drawCubeMesh    Mesh            NULL, NULL, NULL, NULL, NULL, cubeTextures
         planeMesh       PackedMesh      planeVertices, planeColors, planeIndices, PLANE_TRIANGLES_COUNT
-        drawPlaneMesh   Mesh            NULL, NULL, NULL, NULL
+        drawPlaneMesh   Mesh            NULL, NULL, NULL, NULL, NULL, planeTextures
 
         fovY            dd      60.0
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3 5.0, 5.0, 5.0
-        targetPosition  Vector3 0.0, 0.0, 0.0
-        upVector        Vector3 0.0, 1.0, 0.0
+        cameraPosition  Vector3         10.0, 10.0, 0.0
+        targetPosition  Vector3         0.0, 0.0, 0.0
+        upVector        Vector3         0.0, 1.0, 0.0
 
         light0Diffuse   ColorRGBA       0.0, 0.0, 1.0, 1.0
         light0Ambient   ColorRGBA       1.0, 0.0, 0.0, 1.0
-        light0Position  Vector4         10.0, 10.0, 0.0, 1.0
+        light0Position  Vector4         4.0, 4.0, 4.0, 1.0
 
         light1Diffuse   ColorRGBA       0.0, 1.0, 0.0, 1.0
-        light1Position  Vector4         2.0, 4.0, 3.0, 1.0
+        light1Position  Vector4         0.0, 0.0, 5.0, 1.0
 
         include         "ASMFiles/init.asm"
         include         "ASMFiles/mesh.asm"
         include         "ASMFiles/vector.asm"
         include         "ASMFiles/matrix.asm"
         include         "ASMFiles/draw.asm"
+        include         "ASMFiles/file.asm"
 
-        fileTexture     file    "texture.bmp"
+        fileName        db      "Textures/m_a_concrete02.bmp", 0
         texture         dd      ?
 
 proc WinMain

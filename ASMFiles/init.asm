@@ -40,6 +40,8 @@ proc Init uses esi
     stdcall Matrix.Projection, [aspect], [fovY], [zNear], [zFar]
 
     invoke  glEnable, GL_DEPTH_TEST
+    invoke  glEnable, GL_LIGHTING
+    invoke  glEnable, GL_TEXTURE_2D
     invoke  glShadeModel, GL_SMOOTH
     invoke  glHint, GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST
 
@@ -51,9 +53,10 @@ proc Init uses esi
     invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR
     invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR
 
+    stdcall File.LoadContent, fileName
     invoke  glTexImage2D, GL_TEXTURE_2D, ebx,\ 
                     GL_RGB8, 256, 256, ebx, GL_BGR,\
-                    GL_UNSIGNED_BYTE, fileTexture
+                    GL_UNSIGNED_BYTE, eax
     
     stdcall Mesh.Generate, cubeMesh, drawCubeMesh, true
     stdcall Mesh.Generate, planeMesh, drawPlaneMesh, true
@@ -61,7 +64,6 @@ proc Init uses esi
     stdcall Mesh.CalculateNormals, drawCubeMesh
     stdcall Mesh.CalculateNormals, drawPlaneMesh
 
-    invoke  glEnable, GL_LIGHTING
     invoke  glEnable, GL_LIGHT0
     invoke  glEnable, GL_LIGHT1
     invoke  glLightfv, GL_LIGHT0, GL_DIFFUSE, light0Diffuse

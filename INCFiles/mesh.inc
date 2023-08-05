@@ -16,4 +16,6 @@ struct Mesh
         colors          dd      ?
         normals         dd      ?
         verticesCount   dd      ?
+        numTexture      dd      ?
+        textures        dd      ?
 ends
