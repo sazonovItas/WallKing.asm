@@ -1,4 +1,4 @@
-proc Draw
+proc Draw uses edi
 
         locals
                 currentTime     dd      ?
@@ -48,17 +48,37 @@ proc Draw
                 stdcall DrawMesh, drawCubeMesh
         invoke  glPopMatrix
 
-        invoke  glRotatef, [angle], 0.0, 1.0, 0.0
-        stdcall DrawMesh, drawCubeMesh
-        stdcall DrawMesh, drawPlaneMesh
+        stdcall DrawMap, myMap, [mapLen]
 
         invoke  SwapBuffers, [hdc]
 
         ret
 endp
 
+proc DrawMap uses esi ecx,\
+        drawMap, drawLen 
+
+        mov     ecx, 9
+        mov     esi, [drawMap]
+
+        .drawLoop:
+
+                push    ecx
+                invoke  glPushMatrix
+                        invoke  glTranslatef, dword [esi], dword [esi + 4], dword[esi + 8] 
+                        stdcall DrawMesh, drawCubeMesh
+                invoke  glPopMatrix
+                pop     ecx
+                add     esi, 12
+
+        loop    .drawLoop
+
+        ret
+endp
+        
+
 proc DrawMesh uses esi,\
-    mesh
+        mesh
 
         mov     esi, [mesh]
 
