@@ -1,8 +1,12 @@
 compile:
-	fasm main.asm
+	fasm ./src/main.asm main.exe
 
 run:
-	.\main.exe
+	./main.exe
+
+exec:
+	fasm ./src/main.asm main.exe
+	./main.exe
 
 clean:
 	rm main.exe
