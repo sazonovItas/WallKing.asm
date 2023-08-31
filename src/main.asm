@@ -33,7 +33,7 @@
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3         0.0, 0.0, 5.0
+        cameraPosition  Vector3         0.0, 1.0, 2.0
         targetPosition  Vector3         0.0, 0.0, 0.0
         upVector        Vector3         0.0, 1.0, 0.0
 
@@ -45,10 +45,10 @@
         light1Position  Vector4         2.0, 1.0, 1.0, 0.5
 
 
-        stringOut               db      "Hello, World!", 0
+        stringOut               db              "Hello, World!", 0
 
-        fileBoxTexture          db      "resources/textures/m_a_brickwall02.bmp", 0
-        fileLightTexture        db      "resources/textures/m_c_pattern09.bmp", 0
+        fileBoxTexture          db              "resources/textures/m_a_brickwall02.bmp", 0
+        fileLightTexture        db              "resources/textures/m_c_pattern09.bmp", 0
         blockTexture            Texture         ?
         lightTexture            Texture         ?        
         m_shadowMap             dd              ?
@@ -73,6 +73,7 @@
         exampleShader           Shader          ?
         ProjectionMatrix        Matrix4x4       ?
         ViewMatrix              Matrix4x4       ?
+        ModelMatrix             Matrix4x4       ?
 
         uniScale.ID             GLuint          ?
         uniScaleName            db              "scale", 0
@@ -80,6 +81,15 @@
 
         uniTex0.ID              GLuint          ?
         uniTex0Name             db              "tex0", 0
+
+        uniModel                GLuint          ?
+        uniModelName            db              "model", 0
+
+        uniView                 GLuint          ?
+        uniViewName             db              "view", 0
+
+        uniProj                 GLuint          ?
+        uniProjName             db              "proj", 0
 
 
 proc WinMain
@@ -115,36 +125,8 @@ proc WindowProc uses ebx,\
         jmp     .Return
 
 .Paint:
-        ; invoke  glViewport, 0, 0, 1024, 1024
-        ; invoke  glBindFramebuffer, GL_FRAMEBUFFER, [m_fbo]
-        ;         invoke glClear, GL_DEPTH_BUFFER_BIT
-        ;         stdcall Draw
-        ; invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
 
-        ; invoke  glViewport, 0, 0, [clientRect.right], [clientRect.bottom]
-        ; invoke  glClearColor, 0.22, 0.22, 0.22, 1.0
-        ; invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
-        ; invoke  glBindTexture, GL_TEXTURE_2D, [m_shadowMap]
-        ; stdcall Draw
-
-        invoke  glViewport, 0, 0, [clientRect.right], [clientRect.bottom] 
-        invoke  glClearColor, 0.22, 0.22, 0.22, 1.0
-        invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
-        invoke  glMatrixMode, GL_MODELVIEW
-        invoke  glLoadIdentity
-
-        invoke  gluLookAt, double 10.0, double 10.0, double 0.0,\
-                      double 0.0, double 0.0, double 0.0,\
-                      double 0.0, double 1.0, double 0.0
-        stdcall Matrix.LookAt, cameraPosition, targetPosition, upVector, ViewMatrix
-        stdcall Shader.Activate, [exampleShader.ID]
-        invoke  glUniform1f, [uniScale.ID], [scale]
-
-        stdcall Texture.Bind, GL_TEXTURE_2D, [lightTexture.ID]
-        stdcall Texture.texUnit, [exampleShader.ID], uniTex0Name, 0
-
-        stdcall VAO.Bind, [VAO1.ID]       
-        invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
+        stdcall Draw.Scene
 
         invoke  SwapBuffers, [hdc]
         
@@ -153,7 +135,7 @@ proc WindowProc uses ebx,\
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
-        cmp     [wParam], VK_UP
+        cmp     [wParam], VK_DOWN 
         jne     @F     
 
         fld     [cameraPosition.z]
@@ -163,10 +145,11 @@ proc WindowProc uses ebx,\
         fld     [targetPosition.z]
         fsub    [cameraStep]
         fstp    [targetPosition.z]
+        jmp     .MegJump
 
         @@:
 
-        cmp     [wParam], VK_DOWN
+        cmp     [wParam], VK_UP 
         jne     @F
 
         fld     [cameraPosition.z]
@@ -176,6 +159,7 @@ proc WindowProc uses ebx,\
         fld     [targetPosition.z]
         fadd    [cameraStep]
         fstp    [targetPosition.z]
+        jmp     .MegJump
 
         @@:
 
@@ -189,6 +173,7 @@ proc WindowProc uses ebx,\
         fld     [targetPosition.x]
         fsub    [cameraStep]
         fstp    [targetPosition.x]
+        jmp     .MegJump
 
         @@:
 
@@ -202,6 +187,7 @@ proc WindowProc uses ebx,\
         fld     [targetPosition.x]
         fadd    [cameraStep]
         fstp    [targetPosition.x]
+        jmp     .MegJump
 
         @@:
 
@@ -215,6 +201,7 @@ proc WindowProc uses ebx,\
         fld     [targetPosition.y]
         fsub    [cameraStep]
         fstp    [targetPosition.y]
+        jmp     .MegJump
 
         @@:
 
@@ -228,11 +215,12 @@ proc WindowProc uses ebx,\
         fld     [targetPosition.y]
         fadd    [cameraStep]
         fstp    [targetPosition.y]
+        jmp     .MegJump
 
         @@:
 
-
-        jmp     .ReturnZero
+        .MegJump:
+                jmp     .ReturnZero
 
 .Destroy:
         invoke  ExitProcess, ebx

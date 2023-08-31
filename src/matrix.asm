@@ -63,6 +63,7 @@ proc Matrix.Projection uses edi,\
         fstp    [edi + Matrix4x4.m43]
 
         invoke  glMultMatrixf, edi
+        invoke  glGetFloatv, GL_PROJECTION_MATRIX, [matrix]
 
         ret
 endp
@@ -127,6 +128,7 @@ proc Matrix.LookAt uses esi edi ebx,\
         fld     [esi + Vector3.z]
         fstp    [edi + Matrix4x4.m13]
 
+        lea     ebx, [cameraUp]
         fld     [ebx + Vector3.x]
         fstp    [edi + Matrix4x4.m21]
         fld     [ebx + Vector3.y]

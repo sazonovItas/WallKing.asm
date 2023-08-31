@@ -20,6 +20,7 @@ extensionAddresses:
         glUniform1f             dd      ?
         glUniform2f             dd      ?
         glUniform1i             dd      ?
+        glUniformMatrix4fv      dd      ?
 
         glGenBuffers            dd      ?
         glBindBuffer            dd      ?  
@@ -52,6 +53,7 @@ extensionNames:
                         db      "glUniform1f", 0
                         db      "glUniform2f", 0
                         db      "glUniform1i", 0
+                        db      "glUniformMatrix4fv", 0
 
                         db      "glGenBuffers", 0
                         db      "glBindBuffer",      0

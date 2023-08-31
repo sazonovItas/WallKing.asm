@@ -111,6 +111,5 @@ proc Init uses esi
     invoke  glGetUniformLocation, [exampleShader.ID], uniScaleName
     mov     [uniScale.ID], eax
 
-
     ret
 endp

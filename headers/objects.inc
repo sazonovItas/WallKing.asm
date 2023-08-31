@@ -94,11 +94,11 @@ myMap             dd    -2.0, 0.0, -2.0,\
 
         ; Description of vertices: size of vertice and amount of vertices
         sizeVertice     =       4 * 8 
-        countVertices   =       4
+        countVertices   =       5
 
         ; Description of indices: size of index  and amount of indices
         sizeIndex       =       4
-        countIndices    =       6
+        countIndices    =       3 * 6  
 
         ; Offset of each attribute
         offsetVertice   =       0
@@ -106,10 +106,15 @@ myMap             dd    -2.0, 0.0, -2.0,\
         offsetTexture   =       6 * 4
 
 ;                               VerticeCoordinate               Color                   Textcoordinates         Normal coordinates
-vertices        GLfloat         -0.5, -0.5, 0.0,	        1.0, 0.0, 0.0,		0.0, 0.0,\		;0.0, 1.0, 0.0,\
-	                        -0.5,  0.5, 0.0,		0.0, 1.0, 0.0,		0.0, 1.0,\		;0.0, 1.0, 0.0,\
-	                         0.5,  0.5, 0.0,                0.0, 0.0, 1.0,		1.0, 1.0,\		;0.0, 1.0, 0.0,\
-	                         0.5, -0.5, 0.0,		1.0, 1.0, 1.0,		1.0, 0.0		;0.0, 1.0, 0.0 
+vertices        GLfloat         -0.5,  0.0,  0.5,               1.0, 0.0, 0.0,		0.0, 0.0,\		;0.0, 1.0, 0.0,\
+	                        -0.5,  0.0, -0.5,  		0.0, 1.0, 0.0,		5.0, 0.0,\		;0.0, 1.0, 0.0,\
+	                         0.5,  0.0, -0.5,               0.0, 0.0, 1.0,		5.0, 5.0,\		;0.0, 1.0, 0.0,\
+	                         0.5,  0.0,  0.5, 		1.0, 1.0, 1.0,		5.0, 0.0,\	        ;0.0, 1.0, 0.0 
+	                         0.0,  0.8,  0.0, 		1.0, 1.0, 1.0,		2.5, 5.0		;0.0, 1.0, 0.0 
         
 indices         GLuint          0, 2, 1,\
-	                        0, 3, 2
+	                        0, 3, 2,\
+                                0, 1, 4,\
+                                1, 2, 4,\
+                                2, 3, 4,\
+                                3, 0, 4
