@@ -19,6 +19,7 @@ extensionAddresses:
         glGetUniformLocation    dd      ?
         glUniform1f             dd      ?
         glUniform2f             dd      ?
+        glUniform1i             dd      ?
 
         glGenBuffers            dd      ?
         glBindBuffer            dd      ?  
@@ -27,6 +28,7 @@ extensionAddresses:
         glBindVertexArray       dd      ?
         glVertexAttribPointer   dd      ?
         glEnableVertexAttribArray dd    ?
+        glActiveTexture       dd      ?
 
 extensionNames:
                         db      "glGenerateMipmap", 0
@@ -49,6 +51,7 @@ extensionNames:
                         db      "glGetUniformLocation", 0
                         db      "glUniform1f", 0
                         db      "glUniform2f", 0
+                        db      "glUniform1i", 0
 
                         db      "glGenBuffers", 0
                         db      "glBindBuffer",      0
@@ -57,6 +60,7 @@ extensionNames:
                         db      "glBindVertexArray", 0
                         db      "glVertexAttribPointer", 0
                         db      "glEnableVertexAttribArray", 0
+                        db      "glActiveTexture", 0
 
                         db      0 
 
@@ -77,3 +81,38 @@ extensionNames:
                         GL_DYNAMIC_DRAW                 = 0x88E8
                         GL_DYNAMIC_READ                 = 0x88E9
                         GL_DYNAMIC_COPY                 = 0x88EA
+
+                        
+ GL_TEXTURE0                     =  0x84C0
+ GL_TEXTURE0                     =  0x84C0
+ GL_TEXTURE1                     =  0x84C1
+ GL_TEXTURE2                     =  0x84C2
+ GL_TEXTURE3                     =  0x84C3
+ GL_TEXTURE4                     =  0x84C4
+ GL_TEXTURE5                     =  0x84C5
+ GL_TEXTURE6                     =  0x84C6
+ GL_TEXTURE7                     =  0x84C7
+ GL_TEXTURE8                     =  0x84C8
+ GL_TEXTURE9                     =  0x84C9
+ GL_TEXTURE10                    =  0x84CA
+ GL_TEXTURE11                    =  0x84CB
+ GL_TEXTURE12                    =  0x84CC
+ GL_TEXTURE13                    =  0x84CD
+ GL_TEXTURE14                    =  0x84CE
+ GL_TEXTURE15                    =  0x84CF
+ GL_TEXTURE16                    =  0x84D0
+ GL_TEXTURE17                    =  0x84D1
+ GL_TEXTURE18                    =  0x84D2
+ GL_TEXTURE19                    =  0x84D3
+ GL_TEXTURE20                    =  0x84D4
+ GL_TEXTURE21                    =  0x84D5
+ GL_TEXTURE22                    =  0x84D6
+ GL_TEXTURE23                    =  0x84D7
+ GL_TEXTURE24                    =  0x84D8
+ GL_TEXTURE25                    =  0x84D9
+ GL_TEXTURE26                    =  0x84DA
+ GL_TEXTURE27                    =  0x84DB
+ GL_TEXTURE28                    =  0x84DC
+ GL_TEXTURE29                    =  0x84DD
+ GL_TEXTURE30                    =  0x84DE
+ GL_TEXTURE31                    =  0x84DF

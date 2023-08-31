@@ -6,12 +6,12 @@ proc VAO.Constructor,\
     ret
 endp
 
-proc VAO.LinkVBO uses esi,\
-    VBOid, layout
+proc VAO.LinkAttribVBO uses esi,\
+    VBOid, layout, count, type, norm, sizeElem, offsetElem
 
     stdcall VBO.Bind, [VBOid]
+    invoke  glVertexAttribPointer, [layout], [count], [type], [norm], [sizeElem], [offsetElem]
     invoke  glEnableVertexAttribArray, [layout]
-    invoke  glVertexAttribPointer, [layout], 3, GL_FLOAT, GL_FALSE, 3 * 4, 0
     stdcall VBO.Unbind
 
     ret

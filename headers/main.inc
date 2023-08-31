@@ -18,6 +18,7 @@ entry   WinMain
         include         "VAO.inc"
         include         "VBO.inc"
         include         "EBO.inc"
+        include         "texture.inc"
 
 macro JumpIf value, label
 {
