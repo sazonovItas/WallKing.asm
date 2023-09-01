@@ -33,11 +33,11 @@ proc Init uses esi
     fidiv   [clientRect.bottom]     ; width / height
     fstp    [aspect]                ;
 
-    invoke  glMatrixMode, GL_PROJECTION
-    invoke  glLoadIdentity
+    ; invoke  glMatrixMode, GL_PROJECTION
+    ; invoke  glLoadIdentity
 
-    ;invoke  gluPerspective, double FOV, double 2.0, double Z_NEAR, double Z_FAR
-    stdcall Matrix.Projection, [aspect], [fovY], [zNear], [zFar], ProjectionMatrix
+    ; ; invoke  gluPerspective, double FOV, double 2.0, double Z_NEAR, double Z_FAR
+    ; stdcall Matrix.Projection, [fovY], [aspect], [zNear], [zFar], ProjectionMatrix
 
     invoke  glEnable, GL_DEPTH_TEST
     invoke  glEnable, GL_LIGHTING
@@ -110,6 +110,8 @@ proc Init uses esi
 
     invoke  glGetUniformLocation, [exampleShader.ID], uniScaleName
     mov     [uniScale.ID], eax
+
+    stdcall Camera.Constructor, freeCamera, [clientRect.right], [clientRect.bottom], cameraPosition
 
     ret
 endp

@@ -1,5 +1,6 @@
-    vertexShaderStr             dd          ?
-    fragmentShaderStr           dd          ?
+        vertexShaderStr         dd          ?
+        fragmentShaderStr       dd          ?
+
 proc Shader.Constructor uses esi,\
     ptrShaderID, vertFile, fragFile
 

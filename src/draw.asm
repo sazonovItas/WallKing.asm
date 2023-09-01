@@ -143,6 +143,9 @@ proc Draw.Scene uses esi edi
                 ;       double 0.0, double 0.0, double 0.0,\
                 ;       double 0.0, double 1.0, double 0.0
         stdcall Matrix.LookAt, cameraPosition, targetPosition, upVector, ViewMatrix
+
+        stdcall Camera.Matrix, freeCamera, [fovY], [zNear], [zFar], [exampleShader.ID], uniProjName, uniViewName
+
         stdcall Shader.Activate, [exampleShader.ID]
         invoke  glUniform1f, [uniScale.ID], [scale]
 
@@ -162,9 +165,9 @@ proc Draw.Scene uses esi edi
         ; mov     [uniView], eax
         invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ViewMatrix
 
-        invoke  glGetUniformLocation, [exampleShader.ID], uniProjName
+        ; invoke  glGetUniformLocation, [exampleShader.ID], uniProjName
         ; mov     [uniProj]
-        invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ProjectionMatrix
+        ; invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ProjectionMatrix
 
         stdcall VAO.Bind, [VAO1.ID]       
         invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0

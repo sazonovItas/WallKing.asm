@@ -12,6 +12,7 @@
         include         "VBO.asm"
         include         "EBO.asm"
         include         "texture.asm"
+        include         "camera.asm"
         
         className       db      "OpenGLDemo", 0
         clientRect      RECT
@@ -90,6 +91,7 @@
         uniProj                 GLuint          ?
         uniProjName             db              "proj", 0
 
+        freeCamera              Camera 
 
 proc WinMain
 

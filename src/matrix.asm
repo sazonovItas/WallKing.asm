@@ -1,5 +1,5 @@
 proc Matrix.Projection uses edi,\
-     aspect, fov, zNear, zFar, matrix
+        fov, aspect, zNear, zFar, matrix
 
         locals
                 sine            dd              ?
