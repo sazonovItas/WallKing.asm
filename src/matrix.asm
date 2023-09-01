@@ -67,20 +67,15 @@ proc Matrix.Projection uses edi,\
 
         ret
 endp
+
 proc Matrix.LookAt uses esi edi ebx,\
      camera, target, up, matrix
 
         locals
-                temp                    dd              ?
-                cnstX                   dd              5.0
-                cnstY                   dd              5.0
-                cnstZ                   dd              5.0
-                cameraDirection         Vector3
-                cameraRight             Vector3
-                cameraUp                Vector3
-                x                       dd              ?
-                y                       dd              ?
-                z                       dd              ?
+                temp    dd              ?
+                zAxis   Vector3
+                xAxis   Vector3
+                yAxis   Vector3
         endl
 
         mov     edi, [matrix]
@@ -92,77 +87,78 @@ proc Matrix.LookAt uses esi edi ebx,\
         mov     edi, [target]
         mov     ebx, [up]
 
-        fld     [esi + Vector3.x]
-        fsub    [edi + Vector3.x]
-        fstp    [cameraDirection.x]
+        fld     [edi + Vector3.x]
+        fsub    [esi + Vector3.x]
+        fstp    [zAxis.x]
 
-        fld     [esi + Vector3.y]
-        fsub    [edi + Vector3.y]
-        fstp    [cameraDirection.y]
+        fld     [edi + Vector3.y]
+        fsub    [esi + Vector3.y]
+        fstp    [zAxis.y]
 
-        fld     [esi + Vector3.z]
-        fsub    [edi + Vector3.z]
-        fstp    [cameraDirection.z]
+        fld     [edi + Vector3.z]
+        fsub    [esi + Vector3.z]
+        fstp    [zAxis.z]
 
-        lea     eax, [cameraDirection]
+        lea     eax, [zAxis]
         stdcall Vector3.Normalize, eax
 
-        lea     eax, [cameraDirection]
-        lea     ecx, [cameraRight]
-        stdcall Vector3.Cross, ebx, eax, ecx
+        lea     eax, [zAxis]
+        lea     ecx, [xAxis]
+        stdcall Vector3.Cross, eax, ebx, ecx
 
-        lea     eax, [cameraRight]
+        lea     eax, [xAxis]
         stdcall Vector3.Normalize, eax
 
-        lea     eax, [cameraDirection]
-        lea     ecx, [cameraRight]
-        lea     ebx, [cameraUp]
+        lea     eax, [xAxis]
+        lea     ecx, [zAxis]
+        lea     ebx, [yAxis]
         stdcall Vector3.Cross, eax, ecx, ebx
 
-        lea     esi, [cameraRight]
+        lea     esi, [xAxis]
         mov     edi, [matrix]
         fld     [esi + Vector3.x]
         fstp    [edi + Matrix4x4.m11]
         fld     [esi + Vector3.y]
-        fstp    [edi + Matrix4x4.m12]
-        fld     [esi + Vector3.z]
-        fstp    [edi + Matrix4x4.m13]
-
-        lea     ebx, [cameraUp]
-        fld     [ebx + Vector3.x]
         fstp    [edi + Matrix4x4.m21]
+        fld     [esi + Vector3.z]
+        fstp    [edi + Matrix4x4.m31]
+
+        fld     [ebx + Vector3.x]
+        fstp    [edi + Matrix4x4.m12]
         fld     [ebx + Vector3.y]
         fstp    [edi + Matrix4x4.m22]
         fld     [ebx + Vector3.z]
-        fstp    [edi + Matrix4x4.m23]
-
-        lea     esi, [cameraDirection]
-        fld     [esi + Vector3.x]
-        fstp    [edi + Matrix4x4.m31]
-        fld     [esi + Vector3.y]
         fstp    [edi + Matrix4x4.m32]
+
+        lea     esi, [zAxis]
+        fld     [esi + Vector3.x]
+        fchs
+        fstp    [edi + Matrix4x4.m13]
+        fld     [esi + Vector3.y]
+        fchs
+        fstp    [edi + Matrix4x4.m23]
         fld     [esi + Vector3.z]
+        fchs
         fstp    [edi + Matrix4x4.m33]
 
         fld1
         fstp    [edi + Matrix4x4.m44]
 
-        invoke  glMultMatrixf, edi 
+        invoke  glMultMatrixf, edi
 
         mov     esi, [camera]
         fld     [esi + Vector3.z]
         fchs
-        fstp    [z]
-        push    [z]
+        fstp    [temp]
+        push    [temp]
         fld     [esi + Vector3.y]
         fchs
-        fstp    [y]
-        push    [y]
+        fstp    [temp]
+        push    [temp]
         fld     [esi + Vector3.x]
         fchs
-        fstp    [x]
-        push    [x]
-
+        fstp    [temp]
+        push    [temp]
         invoke  glTranslatef
         invoke  glGetFloatv, GL_MODELVIEW_MATRIX, [matrix]
 

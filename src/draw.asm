@@ -111,7 +111,7 @@ proc Draw.Scene uses esi edi
         mov     [currentTime], eax
 
         sub     eax, [time]
-        cmp     eax, 18
+        cmp     eax, 18 
         jle     .Skip
 
         mov     eax, [currentTime]
@@ -130,13 +130,11 @@ proc Draw.Scene uses esi edi
         ; invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
 
         ; invoke  glViewport, 0, 0, [clientRect.right], [clientRect.bottom]
-        ; invoke  glClearColor, 0.22, 0.22, 0.22, 1.0
         ; invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
         ; invoke  glBindTexture, GL_TEXTURE_2D, [m_shadowMap]
         ; stdcall Draw
 
-        invoke  glViewport, 0, 0, [clientRect.right], [clientRect.bottom] 
-        invoke  glClearColor, 0.22, 0.22, 0.22, 1.0
+        
         invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
         invoke  glMatrixMode, GL_MODELVIEW
         invoke  glLoadIdentity
@@ -148,7 +146,7 @@ proc Draw.Scene uses esi edi
         stdcall Shader.Activate, [exampleShader.ID]
         invoke  glUniform1f, [uniScale.ID], [scale]
 
-        stdcall Texture.Bind, GL_TEXTURE_2D, [lightTexture.ID]
+        stdcall Texture.Bind, GL_TEXTURE_2D, [blockTexture.ID]
         stdcall Texture.texUnit, [exampleShader.ID], uniTex0Name, GL_TEXTURE0
 
         invoke  glPushMatrix

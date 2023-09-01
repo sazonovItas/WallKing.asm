@@ -20,7 +20,7 @@
         time            dd      ?
         hdc             dd      ?
         angle           dd      0.0
-        step            dd      3.14
+        step            dd      1.0
         cameraStep      dd      0.2
         radian          dd      57.32
 
@@ -33,7 +33,7 @@
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3         0.0, 1.0, 2.0
+        cameraPosition  Vector3         0.0, 0.0, 5.0
         targetPosition  Vector3         0.0, 0.0, 0.0
         upVector        Vector3         0.0, 1.0, 0.0
 
@@ -54,13 +54,12 @@
         m_shadowMap             dd              ?
         m_fbo                   dd              ?
 
-        fragmentShader  GLuint          0
-        program         GLint           0
+        fragmentShader          GLuint          0
+        program                 GLint           0
 
-        timeLocation    GLint           0
-        sizeLocation    GLint           0
+        timeLocation            GLint           0
+        sizeLocation            GLint           0
 
-        shaderFile              db              "resources/shaders/default.frag", 0
         fragmentShaderFile      db              "resources/shaders/default.frag", 0
         vertexShaderFile        db              "resources/shaders/default.vert", 0
         timeName                db              "time", 0
@@ -142,9 +141,9 @@ proc WindowProc uses ebx,\
         fsub    [cameraStep]
         fstp    [cameraPosition.z]
 
-        fld     [targetPosition.z]
-        fsub    [cameraStep]
-        fstp    [targetPosition.z]
+        ; fld     [targetPosition.z]
+        ; fsub    [cameraStep]
+        ; fstp    [targetPosition.z]
         jmp     .MegJump
 
         @@:
@@ -156,9 +155,9 @@ proc WindowProc uses ebx,\
         fadd    [cameraStep]
         fstp    [cameraPosition.z]
 
-        fld     [targetPosition.z]
-        fadd    [cameraStep]
-        fstp    [targetPosition.z]
+        ; fld     [targetPosition.z]
+        ; fadd    [cameraStep]
+        ; fstp    [targetPosition.z]
         jmp     .MegJump
 
         @@:
@@ -170,9 +169,9 @@ proc WindowProc uses ebx,\
         fsub    [cameraStep]
         fstp    [cameraPosition.x]
 
-        fld     [targetPosition.x]
-        fsub    [cameraStep]
-        fstp    [targetPosition.x]
+        ; fld     [targetPosition.x]
+        ; fsub    [cameraStep]
+        ; fstp    [targetPosition.x]
         jmp     .MegJump
 
         @@:
@@ -184,9 +183,9 @@ proc WindowProc uses ebx,\
         fadd    [cameraStep]
         fstp    [cameraPosition.x]
 
-        fld     [targetPosition.x]
-        fadd    [cameraStep]
-        fstp    [targetPosition.x]
+        ; fld     [targetPosition.x]
+        ; fadd    [cameraStep]
+        ; fstp    [targetPosition.x]
         jmp     .MegJump
 
         @@:
@@ -198,9 +197,9 @@ proc WindowProc uses ebx,\
         fsub    [cameraStep]
         fstp    [cameraPosition.y]
 
-        fld     [targetPosition.y]
-        fsub    [cameraStep]
-        fstp    [targetPosition.y]
+        ; fld     [targetPosition.y]
+        ; fsub    [cameraStep]
+        ; fstp    [targetPosition.y]
         jmp     .MegJump
 
         @@:
@@ -212,9 +211,9 @@ proc WindowProc uses ebx,\
         fadd    [cameraStep]
         fstp    [cameraPosition.y]
 
-        fld     [targetPosition.y]
-        fadd    [cameraStep]
-        fstp    [targetPosition.y]
+        ; fld     [targetPosition.y]
+        ; fadd    [cameraStep]
+        ; fstp    [targetPosition.y]
         jmp     .MegJump
 
         @@:
