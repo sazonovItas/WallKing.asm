@@ -104,22 +104,29 @@ endp
 proc Draw.Scene uses esi edi
 
         locals 
-                currentTime             dd      ?
+                currentFrame            dd     ?
         endl
 
         invoke  GetTickCount
-        mov     [currentTime], eax
+        mov     [currentFrame], eax
 
         sub     eax, [time]
         cmp     eax, 18 
         jle     .Skip
 
-        mov     eax, [currentTime]
+        mov     eax, [currentFrame]
         mov     [time], eax
 
         fld     [angle]                 ; angle
         fsub    [step]                  ; angle + step
         fstp    [angle]                 ;
+
+        mov     eax, [currentFrame]
+        sub     eax, [lastFrame]
+        mov     [deltaTime], eax
+        mov     eax, [currentFrame]
+        mov     [lastFrame], eax
+        xor     ebx, ebx
 
 .Skip: 
 
@@ -135,18 +142,26 @@ proc Draw.Scene uses esi edi
         ; stdcall Draw
 
         
+        invoke  glViewport, 0, 0, [freeCamera.width], [freeCamera.height]
         invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
-        invoke  glMatrixMode, GL_MODELVIEW
-        invoke  glLoadIdentity
+
+        stdcall Shader.Activate, [exampleShader.ID]
+
+        ; invoke  glMatrixMode, GL_PROJECTION
+        ; invoke  glLoadIdentity
+
+        ; invoke  gluPerspective, double FOV, double 2.0, double Z_NEAR, double Z_FAR
+        ; stdcall Matrix.Projection, [fovY], 2.0, [zNear], [zFar], ProjectionMatrix
+        stdcall Camera.Matrix, freeCamera, [fovY], [zNear], [zFar], [exampleShader.ID], uniProjName, uniViewName
+
+        ; invoke  glMatrixMode, GL_MODELVIEW
+        ; invoke  glLoadIdentity
 
         ; invoke  gluLookAt, double 10.0, double 10.0, double 0.0,\
                 ;       double 0.0, double 0.0, double 0.0,\
                 ;       double 0.0, double 1.0, double 0.0
-        stdcall Matrix.LookAt, cameraPosition, targetPosition, upVector, ViewMatrix
+        ; stdcall Matrix.LookAt, cameraPosition, targetPosition, upVector, ViewMatrix
 
-        stdcall Camera.Matrix, freeCamera, [fovY], [zNear], [zFar], [exampleShader.ID], uniProjName, uniViewName
-
-        stdcall Shader.Activate, [exampleShader.ID]
         invoke  glUniform1f, [uniScale.ID], [scale]
 
         stdcall Texture.Bind, GL_TEXTURE_2D, [blockTexture.ID]
@@ -161,9 +176,9 @@ proc Draw.Scene uses esi edi
         ; mov     [uniModel], eax
         invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
 
-        invoke  glGetUniformLocation, [exampleShader.ID], uniViewName
+        ; invoke  glGetUniformLocation, [exampleShader.ID], uniViewName
         ; mov     [uniView], eax
-        invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ViewMatrix
+        ; invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ViewMatrix
 
         ; invoke  glGetUniformLocation, [exampleShader.ID], uniProjName
         ; mov     [uniProj]

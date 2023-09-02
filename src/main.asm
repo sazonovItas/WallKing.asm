@@ -24,6 +24,7 @@
         step            dd      1.0
         cameraStep      dd      0.2
         radian          dd      57.32
+        pi4             dd      90.0
 
         cubeMesh        PackedMesh      cubeVertices, cubeColors, cubeIndices, CUBE_TRIANGLES_COUNT
         drawCubeMesh    Mesh            NULL, NULL, NULL, NULL, NULL, cubeTextures
@@ -92,6 +93,8 @@
         uniProjName             db              "proj", 0
 
         freeCamera              Camera 
+        lastFrame               dd              ?
+        deltaTime               dd              ?
 
 proc WinMain
 
@@ -115,12 +118,17 @@ endp
 proc WindowProc uses ebx,\
      hWnd, uMsg, wParam, lParam
 
-        xor     ebx, ebx
+        locals 
+                currentFrame            dd      ?
+                deltaTime               dd      ?
+        endl
+
 
         mov     eax, [uMsg]
         JumpIf  WM_PAINT,       .Paint
         JumpIf  WM_DESTROY,     .Destroy
-        JumpIf  WM_KEYDOWN,     .KeyDown
+        JumpIf  WM_KEYDOWN,     .KeysManipulate
+        JumpIf  WM_MOUSEMOVE,   .KeysManipulate
 
         invoke  DefWindowProc, [hWnd], [uMsg], [wParam], [lParam]
         jmp     .Return
@@ -132,95 +140,14 @@ proc WindowProc uses ebx,\
         invoke  SwapBuffers, [hdc]
         
         jmp     .ReturnZero
-.KeyDown:
+
+.KeysManipulate:
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
-        cmp     [wParam], VK_DOWN 
-        jne     @F     
+        stdcall Camera.Inputs, freeCamera, [uMsg], [wParam], [lParam]
 
-        fld     [cameraPosition.z]
-        fsub    [cameraStep]
-        fstp    [cameraPosition.z]
-
-        ; fld     [targetPosition.z]
-        ; fsub    [cameraStep]
-        ; fstp    [targetPosition.z]
-        jmp     .MegJump
-
-        @@:
-
-        cmp     [wParam], VK_UP 
-        jne     @F
-
-        fld     [cameraPosition.z]
-        fadd    [cameraStep]
-        fstp    [cameraPosition.z]
-
-        ; fld     [targetPosition.z]
-        ; fadd    [cameraStep]
-        ; fstp    [targetPosition.z]
-        jmp     .MegJump
-
-        @@:
-
-        cmp     [wParam], VK_LEFT
-        jne     @F     
-
-        fld     [cameraPosition.x]
-        fsub    [cameraStep]
-        fstp    [cameraPosition.x]
-
-        ; fld     [targetPosition.x]
-        ; fsub    [cameraStep]
-        ; fstp    [targetPosition.x]
-        jmp     .MegJump
-
-        @@:
-
-        cmp     [wParam], VK_RIGHT
-        jne     @F
-
-        fld     [cameraPosition.x]
-        fadd    [cameraStep]
-        fstp    [cameraPosition.x]
-
-        ; fld     [targetPosition.x]
-        ; fadd    [cameraStep]
-        ; fstp    [targetPosition.x]
-        jmp     .MegJump
-
-        @@:
-
-        cmp     [wParam], 'S'
-        jne     @F     
-
-        fld     [cameraPosition.y]
-        fsub    [cameraStep]
-        fstp    [cameraPosition.y]
-
-        ; fld     [targetPosition.y]
-        ; fsub    [cameraStep]
-        ; fstp    [targetPosition.y]
-        jmp     .MegJump
-
-        @@:
-
-        cmp     [wParam], 'W'
-        jne     @F
-
-        fld     [cameraPosition.y]
-        fadd    [cameraStep]
-        fstp    [cameraPosition.y]
-
-        ; fld     [targetPosition.y]
-        ; fadd    [cameraStep]
-        ; fstp    [targetPosition.y]
-        jmp     .MegJump
-
-        @@:
-
-        .MegJump:
+        .Skip:
                 jmp     .ReturnZero
 
 .Destroy:

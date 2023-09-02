@@ -175,3 +175,23 @@ proc Vector3.Add uses esi edi,\
 
         ret
 endp
+
+proc Vector3.MultOnNumber uses edi,\
+        dest, number
+
+        mov     edi, [dest]
+
+        fld     [edi + Vector3.x]   
+        fmul    [number]
+        fstp    [edi + Vector3.x]
+
+        fld     [edi + Vector3.y]   
+        fmul    [number]
+        fstp    [edi + Vector3.y]
+        
+        fld     [edi + Vector3.z]   
+        fmul    [number]
+        fstp    [edi + Vector3.z]
+        
+        ret
+endp

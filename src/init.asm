@@ -2,7 +2,6 @@ proc Init uses esi
 
     locals
             hMainWindow     dd      ?
-            aspect          dd      ? 
     endl 
 
     invoke  GetProcessHeap
@@ -17,6 +16,7 @@ proc Init uses esi
     invoke  ShowCursor, ebx 
     invoke  GetTickCount
     mov     [time], eax 
+    mov     [lastFrame], eax
 
     invoke  GetDC, [hMainWindow]
     mov     [hdc], eax 
@@ -26,18 +26,6 @@ proc Init uses esi
 
     invoke  wglCreateContext, [hdc]
     invoke  wglMakeCurrent, [hdc], eax 
-
-    ;invoke  glViewport, ebx, ebx, [clientRect.right], [clientRect.bottom]
-
-    fild    [clientRect.right]      ; width
-    fidiv   [clientRect.bottom]     ; width / height
-    fstp    [aspect]                ;
-
-    ; invoke  glMatrixMode, GL_PROJECTION
-    ; invoke  glLoadIdentity
-
-    ; ; invoke  gluPerspective, double FOV, double 2.0, double Z_NEAR, double Z_FAR
-    ; stdcall Matrix.Projection, [fovY], [aspect], [zNear], [zFar], ProjectionMatrix
 
     invoke  glEnable, GL_DEPTH_TEST
     invoke  glEnable, GL_LIGHTING
