@@ -35,11 +35,11 @@ proc Init uses esi
 
     stdcall Glext.LoadFunctions
 
-    stdcall Texture.Constructor, blockTexture.ID, blockTexture.type, fileBoxTexture, 256, 256,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGR, GL_UNSIGNED_BYTE
+    stdcall Texture.Constructor, blockTexture.ID, blockTexture.type, fileBoxTexture,\
+                            GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE
 
-    stdcall Texture.Constructor, lightTexture.ID, lightTexture.type, fileLightTexture, 256, 256,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGR, GL_UNSIGNED_BYTE
+    stdcall Texture.Constructor, lightTexture.ID, lightTexture.type, fileLightTexture,\
+                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
 
     ; Shadow texture settings
     ; Create the FBO
@@ -76,7 +76,7 @@ proc Init uses esi
     invoke  glLightfv, GL_LIGHT0, GL_AMBIENT, light0Ambient
     ;invoke  glLightfv, GL_LIGHT1, GL_DIFFUSE, light1Diffuse
 
-    ; TEST Shaders
+    ; TEST Shaders block
     stdcall Shader.Constructor, exampleShader.ID, vertexShaderFile, fragmentShaderFile
 
     ;TEST EBO, VBO, VAO
@@ -90,16 +90,38 @@ proc Init uses esi
     stdcall VAO.LinkAttribVBO, [VBO1.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
     stdcall VAO.LinkAttribVBO, [VBO1.ID], 1, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetColor
     stdcall VAO.LinkAttribVBO, [VBO1.ID], 2, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
+    stdcall VAO.LinkAttribVBO, [VBO1.ID], 3, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetNormal
+
+    ; Unbind VAO, VBO and EBO so that accidentlly to change it
+    stdcall VBO.Unbind
+    stdcall VAO.Unbind
+    stdcall EBO.Unbind
+    
+    ; Light shader
+    stdcall Shader.Constructor, lightShader.ID, lightVertexFile, lightFragmentFile
+
+    ; Generate light VAO, VBO and EBO 
+    stdcall VAO.Constructor, lightVAO.ID
+    stdcall VAO.Bind, [lightVAO.ID]
+    stdcall VBO.Constructor, lightVBO.ID, sizeLightVertice * countLightVertices, lightVertices 
+    stdcall EBO.Constructor, lightEBO.ID, sizeLightIndex * countLightIndices, lightIndices
+
+    ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
+    stdcall VAO.LinkAttribVBO, [lightVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeLightVertice, offsetVertice
 
     ; Unbind VAO, VBO and EBO so that accidentlly to change it
     stdcall VBO.Unbind
     stdcall VAO.Unbind
     stdcall EBO.Unbind
 
-    invoke  glGetUniformLocation, [exampleShader.ID], uniScaleName
-    mov     [uniScale.ID], eax
-
     stdcall Camera.Constructor, freeCamera, [clientRect.right], [clientRect.bottom], cameraPosition
 
     ret
 endp
+
+
+        lightFragmentFile       db              "resources/shaders/light.frag", 0
+        lightVertexFile         db              "resources/shaders/light.vert", 0
+        lightVAO                VAO             
+        lightVBO                VBO 
+        lightEBO                EBO

@@ -44,13 +44,20 @@
         light0Position  Vector4         2.0, 3.0, 1.0, 1.0
 
         light1Diffuse   ColorRGBA       1.0, 0.8, 0.2, 1.0
-        light1Position  Vector4         2.0, 1.0, 1.0, 0.5
+        light1Position  Vector4         1.0, 1.0, 1.0, 0.0
+
+        lightColor      ColorRGBA       1.0, 1.0, 1.0, 1.0
+        lightPos        Vector3         1.0, 1.0, 1.0
+
+        uniLightColorName       db      "lightColor", 0
+        uniLightPosName         db      "lightPos", 0
+        uniCamPosName           db      "camPos", 0
 
 
         stringOut               db              "Hello, World!", 0
 
         fileBoxTexture          db              "resources/textures/m_a_brickwall02.bmp", 0
-        fileLightTexture        db              "resources/textures/m_c_pattern09.bmp", 0
+        fileLightTexture        db              "resources/textures/test.bmp", 0
         blockTexture            Texture         ?
         lightTexture            Texture         ?        
         m_shadowMap             dd              ?
@@ -72,6 +79,7 @@
         EBO1                    EBO             
 
         exampleShader           Shader          ?
+        lightShader             Shader          ?
         ProjectionMatrix        Matrix4x4       ?
         ViewMatrix              Matrix4x4       ?
         ModelMatrix             Matrix4x4       ?

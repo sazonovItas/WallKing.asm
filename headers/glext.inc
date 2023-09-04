@@ -19,6 +19,8 @@ extensionAddresses:
         glGetUniformLocation    dd      ?
         glUniform1f             dd      ?
         glUniform2f             dd      ?
+        glUniform3f             dd      ?
+        glUniform4f             dd      ?
         glUniform1i             dd      ?
         glUniformMatrix4fv      dd      ?
 
@@ -52,6 +54,8 @@ extensionNames:
                         db      "glGetUniformLocation", 0
                         db      "glUniform1f", 0
                         db      "glUniform2f", 0
+                        db      "glUniform3f", 0
+                        db      "glUniform4f", 0
                         db      "glUniform1i", 0
                         db      "glUniformMatrix4fv", 0
 

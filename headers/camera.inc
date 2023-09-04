@@ -13,4 +13,7 @@ struct Camera
     pitch           GLfloat         ?
     yaw             GLfloat         ?
 
+    view            Matrix4x4       ?
+    proj            Matrix4x4       ?
+
 ends

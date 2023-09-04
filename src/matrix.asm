@@ -8,6 +8,9 @@ proc Matrix.Projection uses edi,\
                 radians         dd              ?
         endl
 
+        invoke  glMatrixMode, GL_PROJECTION
+        invoke  glLoadIdentity
+
         mov     edi, [matrix]
         mov     ecx, 4 * 4
         xor     eax, eax
@@ -78,6 +81,9 @@ proc Matrix.LookAt uses esi edi ebx,\
                 yAxis   Vector3
         endl
 
+        invoke  glMatrixMode, GL_MODELVIEW
+        invoke  glLoadIdentity
+        
         mov     edi, [matrix]
         mov     ecx, 4 * 4
         xor     eax, eax

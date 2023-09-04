@@ -2,8 +2,6 @@
     crossVec        Vector3     ?
     upVec           Vector3     ?
 
-    proj            Matrix4x4   ?
-    view            Matrix4x4   ?
     target          Vector3     ?
 
     lastCursorPos   Point       ?
@@ -35,7 +33,7 @@ proc Camera.Constructor uses edi,\
     mov     [edi + Camera.speed], 0.002
     mov     [edi + Camera.sensitivity], 0.0005
 
-    invoke SetCursorPos, 960, 540
+    invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
     
     ret
@@ -70,8 +68,8 @@ proc Camera.Direction uses edi,\
     ret
 endp
 
-proc Camera.Matrix uses edi esi,\
-    pCamera, FOVdeg, nearPlane, farPlane, ShaderID, pStrUniProj, pStrUniView
+proc Camera.Matrix uses edi esi ebx,\
+    pCamera, FOVdeg, nearPlane, farPlane 
 
     locals 
         aspect      dd         ?
@@ -82,9 +80,10 @@ proc Camera.Matrix uses edi esi,\
     fidiv   dword [edi + Camera.height]   ; width / height
     fstp    [aspect]                ;
 
-    invoke  glMatrixMode, GL_PROJECTION
-    invoke  glLoadIdentity
-    stdcall Matrix.Projection, [FOVdeg], [aspect], [nearPlane], [farPlane], proj
+    push    edi 
+    add     edi, Camera.proj
+    stdcall Matrix.Projection, [FOVdeg], [aspect], [nearPlane], [farPlane], edi
+    pop     edi
 
     push    edi
     add     edi, Camera.Position
@@ -100,18 +99,29 @@ proc Camera.Matrix uses edi esi,\
     mov     esi, edi
     add     edi, Camera.Position
     add     esi, Camera.Up
+    mov     ebx, [pCamera] 
+    add     ebx, Camera.view
 
-    invoke  glMatrixMode, GL_MODELVIEW
-    invoke  glLoadIdentity
-    stdcall Matrix.LookAt, edi, target, esi, view
+    stdcall Matrix.LookAt, edi, target, esi, ebx
 
+    ret
+endp
+
+proc Camera.UniformBind uses edi,\
+    pCamera, ShaderID, pStrUniProj, pStrUniView
+
+    mov     edi, [pCamera]
+
+    push    edi
+    add     edi, Camera.view
+    invoke  glGetUniformLocation, [ShaderID], [pStrUniView]
+    invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, edi 
     pop     edi
 
-    invoke  glGetUniformLocation, [ShaderID], [pStrUniView]
-    invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, view 
-
+    add     edi, Camera.proj
     invoke  glGetUniformLocation, [ShaderID], [pStrUniProj]
-    invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, proj
+    invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, edi
+
 
     ret
 endp
@@ -327,7 +337,10 @@ proc Camera.NormalizeCursor uses edi ebx,\
     ret
 endp
 
-    maxCursorY      =       900
-    minCursorY      =       1080
-    maxCursorX      =       1800
-    minCursorX      =       120
+    maxCursorY      =       700
+    minCursorY      =       500
+    maxCursorX      =       1200
+    minCursorX      =       800
+
+    cursorPosX      =       960
+    cursorPosY      =       540

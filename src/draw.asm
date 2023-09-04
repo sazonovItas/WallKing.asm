@@ -105,6 +105,7 @@ proc Draw.Scene uses esi edi
 
         locals 
                 currentFrame            dd     ?
+                testAngle               dd     180.0
         endl
 
         invoke  GetTickCount
@@ -144,48 +145,60 @@ proc Draw.Scene uses esi edi
         
         invoke  glViewport, 0, 0, [freeCamera.width], [freeCamera.height]
         invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
+        invoke  glClearColor, 0.22, 0.22, 0.22
+        stdcall Camera.Matrix, freeCamera, [fovY], [zNear], [zFar]
 
+        ; Pyramid drawing
         stdcall Shader.Activate, [exampleShader.ID]
 
-        ; invoke  glMatrixMode, GL_PROJECTION
-        ; invoke  glLoadIdentity
+        stdcall Camera.UniformBind, freeCamera, [exampleShader.ID], uniProjName, uniViewName
 
-        ; invoke  gluPerspective, double FOV, double 2.0, double Z_NEAR, double Z_FAR
-        ; stdcall Matrix.Projection, [fovY], 2.0, [zNear], [zFar], ProjectionMatrix
-        stdcall Camera.Matrix, freeCamera, [fovY], [zNear], [zFar], [exampleShader.ID], uniProjName, uniViewName
-
-        ; invoke  glMatrixMode, GL_MODELVIEW
-        ; invoke  glLoadIdentity
-
-        ; invoke  gluLookAt, double 10.0, double 10.0, double 0.0,\
-                ;       double 0.0, double 0.0, double 0.0,\
-                ;       double 0.0, double 1.0, double 0.0
-        ; stdcall Matrix.LookAt, cameraPosition, targetPosition, upVector, ViewMatrix
-
-        invoke  glUniform1f, [uniScale.ID], [scale]
-
-        stdcall Texture.Bind, GL_TEXTURE_2D, [blockTexture.ID]
+        stdcall Texture.Bind, GL_TEXTURE_2D, [lightTexture.ID], GL_TEXTURE0
         stdcall Texture.texUnit, [exampleShader.ID], uniTex0Name, GL_TEXTURE0
 
         invoke  glPushMatrix
                 invoke  glLoadIdentity
-                invoke  glRotatef, [angle], 0.0, 1.0, 0.0
+                invoke  glRotatef, [testAngle], 1.0, 0.0, 0.0
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
         invoke  glGetUniformLocation, [exampleShader.ID], uniModelName
         ; mov     [uniModel], eax
         invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
 
-        ; invoke  glGetUniformLocation, [exampleShader.ID], uniViewName
-        ; mov     [uniView], eax
-        ; invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ViewMatrix
+        invoke  glGetUniformLocation, [exampleShader.ID], uniLightColorName
+        invoke  glUniform4f, eax, [lightColor.r], [lightColor.g], [lightColor.b], [lightColor.a]
 
-        ; invoke  glGetUniformLocation, [exampleShader.ID], uniProjName
-        ; mov     [uniProj]
-        ; invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ProjectionMatrix
+        invoke  glGetUniformLocation, [exampleShader.ID], uniLightPosName
+        invoke  glUniform3f, eax, [lightPos.x], [lightPos.y], [lightPos.z]
+
+        mov     edi, freeCamera
+        invoke  glGetUniformLocation, [exampleShader.ID], uniCamPosName
+        invoke  glUniform3f, eax, [edi + Camera.Position + Vector3.x], [edi + Camera.Position + Vector3.y], [edi + Camera.Position + Vector3.z]
 
         stdcall VAO.Bind, [VAO1.ID]       
         invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
+        stdcall VAO.Unbind
+
+        ; light draw
+        stdcall Shader.Activate, [lightShader.ID]
+
+        stdcall Camera.UniformBind, freeCamera, [lightShader.ID], uniProjName, uniViewName
+
+        invoke  glPushMatrix
+                invoke  glLoadIdentity
+                invoke  glTranslatef, 1.0, 1.0, 1.0
+                invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
+        invoke  glPopMatrix
+        invoke  glGetUniformLocation, [lightShader.ID], uniModelName
+        ; mov     [uniModel], eax
+        invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
+
+        invoke  glGetUniformLocation, [lightShader.ID], uniLightColorName
+        invoke  glUniform4f, eax, [lightColor.r], [lightColor.g], [lightColor.b], [lightColor.a]
+
+        stdcall VAO.Bind, [lightVAO.ID]
+        invoke  glDrawElements, GL_TRIANGLES, countLightIndices, GL_UNSIGNED_INT, 0
+        stdcall VAO.Unbind
 
         ret
 endp

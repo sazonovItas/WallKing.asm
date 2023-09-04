@@ -1,5 +1,5 @@
-proc Texture.Constructor uses esi,\
-    pID, pType, pFileImage, height, width, texType, texSlot, format, pixelType
+proc Texture.Constructor uses edi esi,\
+    pID, pType, pFileImage, texType, texSlot, format, pixelType
 
     mov     esi, [pType]
     mov     eax, [texType]
@@ -18,10 +18,12 @@ proc Texture.Constructor uses esi,\
     invoke  glTexParameteri, [texType], GL_TEXTURE_MIN_FILTER, GL_NEAREST
     invoke  glTexParameteri, [texType], GL_TEXTURE_MAG_FILTER, GL_NEAREST
 
-    stdcall File.LoadContent, [pFileImage]
+    stdcall File.LoadBmp, [pFileImage]
+    mov     edi, eax 
+    add     edi, dword [eax + 10]
     invoke  glTexImage2D, [texType], ebx,\ 
-                    GL_RGB8, [height], [width], ebx, [format],\
-                    [pixelType], eax
+                    GL_RGB8, dword [eax + 18], dword [eax + 22], ebx,\ 
+                    [format], [pixelType], edi
     invoke  HeapFree, [hHeap], ebx, eax
     invoke  glGenerateMipmap, [texType]
     
@@ -47,8 +49,9 @@ proc Texture.texUnit uses esi edi,\
 endp
 
 proc Texture.Bind uses esi,\
-    TexType, TexID
+    TexType, TexID, texSlot
 
+    invoke glActiveTexture, [texSlot]
     invoke glBindTexture, [TexType], [TexID]
 
     ret

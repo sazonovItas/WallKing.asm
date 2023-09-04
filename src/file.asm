@@ -27,7 +27,7 @@ proc File.LoadContent uses edi,\
         ret
 endp
 
-proc File.LoadShader uses edi,\
+proc File.LoadBmp uses edi,\
      fileName
 
         locals
@@ -41,7 +41,7 @@ proc File.LoadShader uses edi,\
         mov     [hFile], eax
 
         invoke  GetFileSize, [hFile], ebx
-        add     eax, 2
+        inc     eax
         mov     [length], eax
         invoke  HeapAlloc, [hHeap], 8, [length]
         mov     [pBuffer], eax
@@ -52,10 +52,6 @@ proc File.LoadShader uses edi,\
         invoke  CloseHandle, [hFile]
 
         mov     eax, [pBuffer]
-
-        mov     edi, [pBuffer]
-        add     edi, [length]
-        mov     byte [edi], 0
 
         ret
 endp
