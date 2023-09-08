@@ -1,3 +1,8 @@
+struct Point 
+        x       dd              ?
+        y       dd              ?
+ends
+
 struct Vertex
         x       GLfloat         ?
         y       GLfloat         ?

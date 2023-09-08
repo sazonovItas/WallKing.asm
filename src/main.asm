@@ -1,5 +1,20 @@
         include "../headers/main.inc"
 
+        include         "init.asm"
+        include         "mesh.asm"
+        include         "vector.asm"
+        include         "matrix.asm"
+        include         "draw.asm"
+        include         "file.asm"
+        include         "glext.asm"
+        include         "shader.asm"
+        include         "VAO.asm"
+        include         "VBO.asm"
+        include         "EBO.asm"
+        include         "texture.asm"
+        include         "camera.asm"
+        include         "collision.asm"
+        
         className       db      "OpenGLDemo", 0
         clientRect      RECT
         hHeap           dd      ?
@@ -7,14 +22,10 @@
         time            dd      ?
         hdc             dd      ?
         angle           dd      0.0
-        step            dd      3.14
+        step            dd      1.0
         cameraStep      dd      0.2
         radian          dd      57.32
-
-        cubeMesh        PackedMesh      cubeVertices, cubeColors, cubeIndices, CUBE_TRIANGLES_COUNT
-        drawCubeMesh    Mesh            NULL, NULL, NULL, NULL, NULL, cubeTextures
-        planeMesh       PackedMesh      planeVertices, planeColors, planeIndices, PLANE_TRIANGLES_COUNT
-        drawPlaneMesh   Mesh            NULL, NULL, NULL, NULL, NULL, planeTextures
+        pi4             dd      90.0
 
         fovY            dd      60.0
         zNear           dd      0.001
@@ -29,48 +40,65 @@
         light0Position  Vector4         2.0, 3.0, 1.0, 1.0
 
         light1Diffuse   ColorRGBA       1.0, 0.8, 0.2, 1.0
-        light1Position  Vector4         2.0, 1.0, 1.0, 0.5
+        light1Position  Vector4         1.0, 1.0, 1.0, 0.0
 
-        include         "init.asm"
-        include         "mesh.asm"
-        include         "vector.asm"
-        include         "matrix.asm"
-        include         "draw.asm"
-        include         "file.asm"
-        include         "glext.asm"
-        include         "shader.asm"
-        include         "VAO.asm"
-        include         "VBO.asm"
-        include         "EBO.asm"
+        lightColor      ColorRGBA       1.0, 1.0, 1.0, 1.0
+        lightPos        Vector3         1.0, 1.0, 1.0
 
-        stringOut               db      "Hello, World!", 0
+        uniLightColorName       db      "lightColor", 0
+        uniLightPosName         db      "lightPos", 0
+        uniCamPosName           db      "camPos", 0
 
-        fileBoxTexture          db      "resources/textures/m_a_brickwall02.bmp", 0
-        fileLightTexture        db      "resources/textures/m_c_pattern09.bmp", 0
-        blockTexture            dd      ?
-        lightTexture            dd      ?        
-        m_shadowMap             dd      ?
-        m_fbo                   dd      ?
 
-        fragmentShader  GLuint          0
-        program         GLint           0
+        stringOut               db              "Hello, World!", 0
 
-        timeLocation    GLint           0
-        sizeLocation    GLint           0
+        fileBoxTexture          db              "resources/textures/container2.bmp", 0
+        fileLightTexture        db              "resources/textures/test.bmp", 0
+        blockTexture            Texture         ?
+        lightTexture            Texture         ?        
+        m_shadowMap             dd              ?
+        m_fbo                   dd              ?
 
-        shaderFile              db              "resources/shaders/default.frag", 0
+        fragmentShader          GLuint          0
+        program                 GLint           0
+
+        timeLocation            GLint           0
+        sizeLocation            GLint           0
+
         fragmentShaderFile      db              "resources/shaders/default.frag", 0
         vertexShaderFile        db              "resources/shaders/default.vert", 0
         timeName                db              "time", 0
         sizeName                db              "size", 0
 
-        VAO1                    VAO             0
-        VBO1                    VBO             0
-        EBO1                    EBO             0
+        VAO1                    VAO             
+        VBO1                    VBO             
+        EBO1                    EBO             
 
         exampleShader           Shader          ?
+        lightShader             Shader          ?
         ProjectionMatrix        Matrix4x4       ?
         ViewMatrix              Matrix4x4       ?
+        ModelMatrix             Matrix4x4       ?
+
+        uniScale.ID             GLuint          ?
+        uniScaleName            db              "scale", 0
+        scale                   GLfloat         1.0 
+
+        uniTex0.ID              GLuint          ?
+        uniTex0Name             db              "tex0", 0
+
+        uniModel                GLuint          ?
+        uniModelName            db              "model", 0
+
+        uniView                 GLuint          ?
+        uniViewName             db              "view", 0
+
+        uniProj                 GLuint          ?
+        uniProjName             db              "proj", 0
+
+        freeCamera              Camera 
+        lastFrame               dd              ?
+        deltaTime               dd              ?
 
 proc WinMain
 
@@ -94,130 +122,37 @@ endp
 proc WindowProc uses ebx,\
      hWnd, uMsg, wParam, lParam
 
-        xor     ebx, ebx
+        locals 
+                currentFrame            dd      ?
+                deltaTime               dd      ?
+        endl
+
 
         mov     eax, [uMsg]
         JumpIf  WM_PAINT,       .Paint
         JumpIf  WM_DESTROY,     .Destroy
-        JumpIf  WM_KEYDOWN,     .KeyDown
+        JumpIf  WM_KEYDOWN,     .KeysManipulate
+        JumpIf  WM_MOUSEMOVE,   .KeysManipulate
 
         invoke  DefWindowProc, [hWnd], [uMsg], [wParam], [lParam]
         jmp     .Return
 
 .Paint:
-        ; invoke  glViewport, 0, 0, 1024, 1024
-        ; invoke  glBindFramebuffer, GL_FRAMEBUFFER, [m_fbo]
-        ;         invoke glClear, GL_DEPTH_BUFFER_BIT
-        ;         stdcall Draw
-        ; invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
 
-        ; invoke  glViewport, 0, 0, [clientRect.right], [clientRect.bottom]
-        ; invoke  glClearColor, 0.22, 0.22, 0.22, 1.0
-        ; invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
-        ; invoke  glBindTexture, GL_TEXTURE_2D, [m_shadowMap]
-        ; stdcall Draw
-
-        ; invoke  glViewport, 0, 0, [clientRect.right], [clientRect.bottom]
-        invoke  glClearColor, 0.22, 0.22, 0.22, 1.0
-        invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
-        invoke  glMatrixMode, GL_MODELVIEW
-        invoke  glLoadIdentity
-
-        ;invoke  gluLookAt, double 10.0, double 10.0, double 0.0,\
-        ;               double 0.0, double 0.0, double 0.0,\
-        ;               double 0.0, double 1.0, double 0.0
-        stdcall Matrix.LookAt, cameraPosition, targetPosition, upVector, ViewMatrix
-        invoke  glUseProgram, [exampleShader.ID]
-        stdcall VAO.Bind, [VAO1.ID]       
-        invoke  glDrawElements, GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0
+        stdcall Draw.Scene
 
         invoke  SwapBuffers, [hdc]
         
         jmp     .ReturnZero
-.KeyDown:
+
+.KeysManipulate:
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
-        cmp     [wParam], VK_UP
-        jne     @F     
+        stdcall Camera.Inputs, freeCamera, [uMsg], [wParam], [lParam]
 
-        fld     [cameraPosition.z]
-        fsub    [cameraStep]
-        fstp    [cameraPosition.z]
-
-        fld     [targetPosition.z]
-        fsub    [cameraStep]
-        fstp    [targetPosition.z]
-
-        @@:
-
-        cmp     [wParam], VK_DOWN
-        jne     @F
-
-        fld     [cameraPosition.z]
-        fadd    [cameraStep]
-        fstp    [cameraPosition.z]
-
-        fld     [targetPosition.z]
-        fadd    [cameraStep]
-        fstp    [targetPosition.z]
-
-        @@:
-
-        cmp     [wParam], VK_LEFT
-        jne     @F     
-
-        fld     [cameraPosition.x]
-        fsub    [cameraStep]
-        fstp    [cameraPosition.x]
-
-        fld     [targetPosition.x]
-        fsub    [cameraStep]
-        fstp    [targetPosition.x]
-
-        @@:
-
-        cmp     [wParam], VK_RIGHT
-        jne     @F
-
-        fld     [cameraPosition.x]
-        fadd    [cameraStep]
-        fstp    [cameraPosition.x]
-
-        fld     [targetPosition.x]
-        fadd    [cameraStep]
-        fstp    [targetPosition.x]
-
-        @@:
-
-        cmp     [wParam], 'S'
-        jne     @F     
-
-        fld     [cameraPosition.y]
-        fsub    [cameraStep]
-        fstp    [cameraPosition.y]
-
-        fld     [targetPosition.y]
-        fsub    [cameraStep]
-        fstp    [targetPosition.y]
-
-        @@:
-
-        cmp     [wParam], 'W'
-        jne     @F
-
-        fld     [cameraPosition.y]
-        fadd    [cameraStep]
-        fstp    [cameraPosition.y]
-
-        fld     [targetPosition.y]
-        fadd    [cameraStep]
-        fstp    [targetPosition.y]
-
-        @@:
-
-
-        jmp     .ReturnZero
+        .Skip:
+                jmp     .ReturnZero
 
 .Destroy:
         invoke  ExitProcess, ebx

@@ -1,8 +1,7 @@
-proc Init uses esi
+proc Init uses esi edi
 
     locals
             hMainWindow     dd      ?
-            aspect          dd      ? 
     endl 
 
     invoke  GetProcessHeap
@@ -17,6 +16,7 @@ proc Init uses esi
     invoke  ShowCursor, ebx 
     invoke  GetTickCount
     mov     [time], eax 
+    mov     [lastFrame], eax
 
     invoke  GetDC, [hMainWindow]
     mov     [hdc], eax 
@@ -27,18 +27,6 @@ proc Init uses esi
     invoke  wglCreateContext, [hdc]
     invoke  wglMakeCurrent, [hdc], eax 
 
-    ;invoke  glViewport, ebx, ebx, [clientRect.right], [clientRect.bottom]
-
-    fild    [clientRect.right]      ; width
-    fidiv   [clientRect.bottom]     ; width / height
-    fstp    [aspect]                ;
-
-    invoke  glMatrixMode, GL_PROJECTION
-    invoke  glLoadIdentity
-
-    ;invoke  gluPerspective, double FOV, double 2.0, double Z_NEAR, double Z_FAR
-    stdcall Matrix.Projection, [aspect], [fovY], [zNear], [zFar], ProjectionMatrix
-
     invoke  glEnable, GL_DEPTH_TEST
     invoke  glEnable, GL_LIGHTING
     invoke  glEnable, GL_TEXTURE_2D
@@ -47,40 +35,17 @@ proc Init uses esi
 
     stdcall Glext.LoadFunctions
 
-    ; Block textures
-    invoke  glGenTextures, 1, blockTexture
-    invoke  glBindTexture, GL_TEXTURE_2D, [blockTexture]
-    stdcall File.LoadContent, fileBoxTexture
-    invoke  glTexImage2D, GL_TEXTURE_2D, ebx,\ 
-                    GL_RGB8, 256, 256, ebx, GL_BGR,\
-                    GL_UNSIGNED_BYTE, eax
-    invoke  glGenerateMipmap, GL_TEXTURE_2D
-    ;invoke  gluBuild2DMipmaps, GL_TEXTURE_2D, GL_RGB8, 256, 256, GL_BGR, GL_UNSIGNED_BYTE, eax
+    lea     edi, [arrTextures]
+    lea     esi, [arrTextures + 4]
+    stdcall Texture.Constructor, edi, esi, fileBoxTexture,\
+                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
 
-     
-    ; Box texture settings
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
-    
-    invoke  glGenTextures, 1, lightTexture
-    invoke  glBindTexture, GL_TEXTURE_2D, [lightTexture]
-    stdcall File.LoadContent, fileLightTexture
-    invoke  glTexImage2D, GL_TEXTURE_2D, ebx,\ 
-                    GL_RGB8, 256, 256, ebx, GL_BGR,\
-                    GL_UNSIGNED_BYTE, eax
-    invoke  glGenerateMipmap, GL_TEXTURE_2D 
-    ;invoke  gluBuild2DMipmaps, GL_TEXTURE_2D, GL_RGB8, 256, 256, GL_BGR, GL_UNSIGNED_BYTE, eax
-
-    ; Box texture settings
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
+    lea     edi, [arrTextures + 8]
+    lea     esi, [arrTextures + 12]
+    stdcall Texture.Constructor, edi, esi, fileLightTexture,\
+                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
 
     ; Shadow texture settings
-
     ; Create the FBO
     invoke  glGenFramebuffers, 1, m_fbo
 
@@ -103,35 +68,57 @@ proc Init uses esi
 
     invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
 
-    ; Mesh generating
-    stdcall Mesh.Generate, cubeMesh, drawCubeMesh, true
-    stdcall Mesh.Generate, planeMesh, drawPlaneMesh, true
-    
-    stdcall Mesh.CalculateNormals, drawCubeMesh
-    stdcall Mesh.CalculateNormals, drawPlaneMesh
-
     invoke  glEnable, GL_LIGHT0
     ;invoke  glEnable, GL_LIGHT1
     invoke  glLightfv, GL_LIGHT0, GL_AMBIENT, light0Ambient
     ;invoke  glLightfv, GL_LIGHT1, GL_DIFFUSE, light1Diffuse
 
-    ; TEST Shaders
+    ; TEST Shaders block
     stdcall Shader.Constructor, exampleShader.ID, vertexShaderFile, fragmentShaderFile
 
     ;TEST EBO, VBO, VAO
     ;Generate the VAO, EBO and VBO with only 1 object each
     stdcall VAO.Constructor, VAO1.ID
     stdcall VAO.Bind, [VAO1.ID]
-    stdcall VBO.Constructor, VBO1.ID, 3 * 3 * 4, vertices 
-    stdcall EBO.Constructor, EBO1.ID, 3 * 4, indices
+    stdcall VBO.Constructor, VBO1.ID, sizeVertice * countVertices, vertices 
+    stdcall EBO.Constructor, EBO1.ID, sizeIndex * countIndices, indices
 
     ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
-    stdcall VAO.LinkVBO, [VBO1.ID], 0
+    stdcall VAO.LinkAttribVBO, [VBO1.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
+    stdcall VAO.LinkAttribVBO, [VBO1.ID], 1, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetColor
+    stdcall VAO.LinkAttribVBO, [VBO1.ID], 2, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
+    stdcall VAO.LinkAttribVBO, [VBO1.ID], 3, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetNormal
+
+    ; Unbind VAO, VBO and EBO so that accidentlly to change it
+    stdcall VBO.Unbind
+    stdcall VAO.Unbind
+    stdcall EBO.Unbind
+    
+    ; Light shader
+    stdcall Shader.Constructor, lightShader.ID, lightVertexFile, lightFragmentFile
+
+    ; Generate light VAO, VBO and EBO 
+    stdcall VAO.Constructor, lightVAO.ID
+    stdcall VAO.Bind, [lightVAO.ID]
+    stdcall VBO.Constructor, lightVBO.ID, sizeLightVertice * countLightVertices, lightVertices 
+    stdcall EBO.Constructor, lightEBO.ID, sizeLightIndex * countLightIndices, lightIndices
+
+    ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
+    stdcall VAO.LinkAttribVBO, [lightVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeLightVertice, offsetVertice
 
     ; Unbind VAO, VBO and EBO so that accidentlly to change it
     stdcall VBO.Unbind
     stdcall VAO.Unbind
     stdcall EBO.Unbind
 
+    stdcall Camera.Constructor, freeCamera, [clientRect.right], [clientRect.bottom], cameraPosition
+
     ret
 endp
+
+
+        lightFragmentFile       db              "resources/shaders/light.frag", 0
+        lightVertexFile         db              "resources/shaders/light.vert", 0
+        lightVAO                VAO             
+        lightVBO                VBO 
+        lightEBO                EBO

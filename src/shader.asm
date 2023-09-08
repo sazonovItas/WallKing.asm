@@ -1,9 +1,9 @@
-    vertexShaderStr             dd          ?
-    fragmentShaderStr           dd          ?
 proc Shader.Constructor uses esi,\
     ptrShaderID, vertFile, fragFile
 
     locals 
+        vertexShaderStr         dd          ?
+        fragmentShaderStr       dd          ?
         vertexShader            GLuint      ?
         fragmentShader          GLuint      ?  
     endl
@@ -16,7 +16,8 @@ proc Shader.Constructor uses esi,\
     mov     [vertexShader], eax
     ; Attach Vertex Shader source to the Vertex Shader Object and 
     ; compile it into machine code
-    invoke  glShaderSource, [vertexShader], 1, vertexShaderStr, 0
+    lea     eax, [vertexShaderStr]
+    invoke  glShaderSource, [vertexShader], 1, eax, 0
     invoke  glCompileShader, [vertexShader]
 
     invoke  HeapFree, [hHeap], ebx, [vertexShaderStr]
@@ -28,7 +29,8 @@ proc Shader.Constructor uses esi,\
     mov     [fragmentShader], eax
     ; Attach Fragment Shader source to the Vertex Shader Object and 
     ; compile it into machine code
-    invoke  glShaderSource, [fragmentShader], 1, fragmentShaderStr, 0
+    lea     eax, [fragmentShaderStr]
+    invoke  glShaderSource, [fragmentShader], 1, eax, 0
     invoke  glCompileShader, [fragmentShader]
 
     invoke  HeapFree, [hHeap], ebx, [fragmentShaderStr]
