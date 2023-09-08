@@ -25,7 +25,7 @@ proc Collision.MapDetection uses edi esi ebx,\
     .Skip:
         pop     ecx
         add     edi, sizeBlock 
-
+        loop    .CheckLoop
     
     ret
 
@@ -52,7 +52,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
 
     mov     esi, [pPlayerPosition]
     mov     edi, [pBlockPosition]
-
+    nop
     invoke  glMatrixMode, GL_MODELVIEW
 
     lea     ebx, [modelBlockMat]
@@ -93,7 +93,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     lea     ebx, [maxResultPlayer]
 
     fld     [esi + Vector4.x]
-    fcomp   [minResultBlock.x]
+    fcomp   [maxResultBlock.x]
     fstsw   ax
     sahf
     ja      .Ret
@@ -105,7 +105,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     jb      .Ret
 
     fld     [esi + Vector4.y]
-    fcomp   [minResultBlock.y]
+    fcomp   [maxResultBlock.y]
     fstsw   ax
     sahf
     ja      .Ret
@@ -117,7 +117,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     jb      .Ret
 
     fld     [esi + Vector4.z]
-    fcomp   [minResultBlock.z]
+    fcomp   [maxResultBlock.z]
     fstsw   ax
     sahf
     ja      .Ret

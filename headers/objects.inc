@@ -92,10 +92,11 @@ sizeBlocksMapTry        dd      5
 sizeBlock               =       48
 ;                               // Scale                // Rotate               // Translate            // Texture offset       // Material offset      //Colision detect
 blocksMapTry:
-                GLfloat         1.0, 1.0, 1.0,          0.0, 0.0, 0.0,          0.0, 0.0, 0.0,          0,                      0,                      0
-                GLfloat         1.0, 1.0, 1.0,          25.0, 35.0, 18.0,       3.0, 2.0, 1.0,          0,                      0,                      0
+                GLfloat         1.0, 1.0, 1.0,          0.0, 0.0, 0.0,          0.0, 2.0, 0.0,          0,                      0,                      0
+                GLfloat         1.0, 1.0, 1.0,          0.0, 0.0, 0.0,          3.0, 2.0, 1.0,          0,                      0,                      0
                 GLfloat         1.0, 1.0, 1.0,          25.0, 67.0, 45.0,       1.0, -2.0, -1.0,        0,                      0,                      0
                 GLfloat         1.0, 1.0, 1.0,          25.0, 35.0, 18.0,       1.0, 1.0, 3.0,          0,                      0,                      0
                 GLfloat         2.0, 1.5, 1.0,          30.0, 23.0, 5.0,        -2.0, -0.5, -5.0,       0,                      0,                      0
+
 
 arrTextures     dd              20 dup(?)

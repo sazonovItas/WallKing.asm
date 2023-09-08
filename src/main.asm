@@ -31,7 +31,7 @@
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3         0.0, 0.0, 5.0
+        cameraPosition  Vector3         0.0, 0.0, 0.0
         targetPosition  Vector3         0.0, 0.0, 0.0
         upVector        Vector3         0.0, 1.0, 0.0
 
@@ -106,8 +106,8 @@ proc WinMain
                 msg     MSG
         endl
 
+        finit
         xor     ebx, ebx
-
         stdcall Init
 
         lea     esi, [msg]
