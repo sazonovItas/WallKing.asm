@@ -1,5 +1,14 @@
 #version 330 core
 
+struct Material {
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+    float shininess;
+};
+
+#define materialCount 4
+
 out vec4 FragColor;
 
 in vec3 color;
@@ -13,6 +22,9 @@ uniform sampler2D tex0;
 uniform vec4 lightColor;
 uniform vec3 lightPos;
 uniform vec3 camPos;
+
+
+uniform Material material;
 
 void main() 
 {

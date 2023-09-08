@@ -13,6 +13,7 @@
         include         "EBO.asm"
         include         "texture.asm"
         include         "camera.asm"
+        include         "collision.asm"
         
         className       db      "OpenGLDemo", 0
         clientRect      RECT
@@ -25,11 +26,6 @@
         cameraStep      dd      0.2
         radian          dd      57.32
         pi4             dd      90.0
-
-        cubeMesh        PackedMesh      cubeVertices, cubeColors, cubeIndices, CUBE_TRIANGLES_COUNT
-        drawCubeMesh    Mesh            NULL, NULL, NULL, NULL, NULL, cubeTextures
-        planeMesh       PackedMesh      planeVertices, planeColors, planeIndices, PLANE_TRIANGLES_COUNT
-        drawPlaneMesh   Mesh            NULL, NULL, NULL, NULL, NULL, planeTextures
 
         fovY            dd      60.0
         zNear           dd      0.001
@@ -56,7 +52,7 @@
 
         stringOut               db              "Hello, World!", 0
 
-        fileBoxTexture          db              "resources/textures/m_a_brickwall02.bmp", 0
+        fileBoxTexture          db              "resources/textures/container2.bmp", 0
         fileLightTexture        db              "resources/textures/test.bmp", 0
         blockTexture            Texture         ?
         lightTexture            Texture         ?        

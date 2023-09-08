@@ -170,3 +170,47 @@ proc Matrix.LookAt uses esi edi ebx,\
 
         ret
 endp
+
+proc Matrix.MultVec4OnMat4x4 uses esi edi ebx,\
+        pVec4, pMat, pResult
+
+        mov     edi, [pVec4]
+        mov     esi, [pMat]
+        mov     ebx, [pResult]
+
+        fld     [edi + Vector4.x]
+        fmul    [esi + Matrix4x4.m11]
+        fld     [edi + Vector4.y]
+        fmul    [esi + Matrix4x4.m21]
+        faddp
+        fld     [edi + Vector4.z]
+        fmul    [esi + Matrix4x4.m31]
+        faddp
+        fadd    [esi + Matrix4x4.m41]
+        fstp    [ebx + Vector4.x]
+        
+        fld     [edi + Vector4.x]
+        fmul    [esi + Matrix4x4.m12]
+        fld     [edi + Vector4.y]
+        fmul    [esi + Matrix4x4.m22]
+        faddp
+        fld     [edi + Vector4.z]
+        fmul    [esi + Matrix4x4.m32]
+        faddp
+        fadd    [esi + Matrix4x4.m42]
+        fstp    [ebx + Vector4.y]
+
+        fld     [edi + Vector4.x]
+        fmul    [esi + Matrix4x4.m13]
+        fld     [edi + Vector4.y]
+        fmul    [esi + Matrix4x4.m23]
+        faddp
+        fld     [edi + Vector4.z]
+        fmul    [esi + Matrix4x4.m33]
+        faddp
+        fadd    [esi + Matrix4x4.m43]
+        fstp    [ebx + Vector4.z]
+
+        mov     [ebx + Vector4.w], 1.0
+        ret
+endp

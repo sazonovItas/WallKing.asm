@@ -1,4 +1,4 @@
-proc Init uses esi
+proc Init uses esi edi
 
     locals
             hMainWindow     dd      ?
@@ -35,10 +35,14 @@ proc Init uses esi
 
     stdcall Glext.LoadFunctions
 
-    stdcall Texture.Constructor, blockTexture.ID, blockTexture.type, fileBoxTexture,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE
+    lea     edi, [arrTextures]
+    lea     esi, [arrTextures + 4]
+    stdcall Texture.Constructor, edi, esi, fileBoxTexture,\
+                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    stdcall Texture.Constructor, lightTexture.ID, lightTexture.type, fileLightTexture,\
+    lea     edi, [arrTextures + 8]
+    lea     esi, [arrTextures + 12]
+    stdcall Texture.Constructor, edi, esi, fileLightTexture,\
                             GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
 
     ; Shadow texture settings
@@ -63,13 +67,6 @@ proc Init uses esi
     invoke  glReadBuffer, GL_NONE
 
     invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
-
-    ; Mesh generating
-    stdcall Mesh.Generate, cubeMesh, drawCubeMesh, true
-    stdcall Mesh.Generate, planeMesh, drawPlaneMesh, true
-    
-    stdcall Mesh.CalculateNormals, drawCubeMesh
-    stdcall Mesh.CalculateNormals, drawPlaneMesh
 
     invoke  glEnable, GL_LIGHT0
     ;invoke  glEnable, GL_LIGHT1
