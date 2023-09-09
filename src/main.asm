@@ -14,6 +14,7 @@
         include         "texture.asm"
         include         "camera.asm"
         include         "collision.asm"
+        include         "player.asm"
         
         className       db      "OpenGLDemo", 0
         clientRect      RECT
@@ -31,8 +32,8 @@
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3         0.0, 0.0, 0.0
-        targetPosition  Vector3         0.0, 0.0, 0.0
+        cameraPosition  Vector3         0.0, 2.0, 0.0
+        targetPosition  Vector3         0.0, 0.0, 2.0
         upVector        Vector3         0.0, 1.0, 0.0
 
         light0Diffuse   ColorRGBA       1.0, 1.0, 1.0, 1.0
@@ -52,7 +53,7 @@
 
         stringOut               db              "Hello, World!", 0
 
-        fileBoxTexture          db              "resources/textures/container2.bmp", 0
+        fileBoxTexture          db              "resources/textures/test.bmp", 0
         fileLightTexture        db              "resources/textures/test.bmp", 0
         blockTexture            Texture         ?
         lightTexture            Texture         ?        
@@ -97,6 +98,7 @@
         uniProjName             db              "proj", 0
 
         freeCamera              Camera 
+        mainPlayer              Player 
         lastFrame               dd              ?
         deltaTime               dd              ?
 
@@ -149,7 +151,7 @@ proc WindowProc uses ebx,\
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
-        stdcall Camera.Inputs, freeCamera, [uMsg], [wParam], [lParam]
+        stdcall Camera.Inputs, mainPlayer, [uMsg], [wParam], [lParam]
 
         .Skip:
                 jmp     .ReturnZero

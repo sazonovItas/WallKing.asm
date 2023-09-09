@@ -20,6 +20,8 @@ entry   WinMain
         include         "EBO.inc"
         include         "texture.inc"
         include         "camera.inc"
+        include         "physics.inc"
+        include         "player.inc"
 
 macro JumpIf value, label
 {
@@ -51,8 +53,6 @@ data import
                 gdi32,          "GDI32.DLL",\
                 opengl32,       "OPENGL32.DLL",\
                 glu32,          "GLU32.DLL",\
-                glext32,        "GLEXT32.DLL",\
-                glut32,         "include/DLL/GLUT32.DLL",\
-                glm32,          "GLM32.DLL"
+                glext32,        "GLEXT32.DLL"
 
 end data
