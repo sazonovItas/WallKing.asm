@@ -19,10 +19,10 @@ struct Player
     ; Physics
     prevPosition        Vector3         ?
     Acceleration        Vector3         ?
+    Velocity            Vector3         ?
     Condition           dd              ? 
 
-    Accelr              GLfloat         ?
-    jumpAccelr          GLfloat         ?
+    jumpVeloc           GLfloat         ?
 
 ends
 

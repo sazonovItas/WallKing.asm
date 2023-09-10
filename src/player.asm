@@ -22,6 +22,10 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Acceleration + Vector3.y], -0.000001
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
+    mov     [edi + Player.Velocity + Vector3.x], 0.0
+    mov     [edi + Player.Velocity + Vector3.y], 0.0
+    mov     [edi + Player.Velocity + Vector3.z], 0.0
+
     mov     [edi + Player.pitch], 0.0
     mov     [edi + Player.yaw], -1.57
 
@@ -31,9 +35,8 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.y], 1.0
     mov     [edi + Player.Up + Vector3.z], 0.0
 
-    mov     [edi + Player.Accelr], 0.002
     mov     [edi + Player.speed], 0.002
-    mov     [edi + Player.jumpAccelr], 0.01 
+    mov     [edi + Player.jumpVeloc], 0.01 
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], AIR_CONDITION
 
@@ -85,6 +88,39 @@ proc Player.Move uses edi esi ebx,\
     add     edi, Player.prevPosition
     add     esi, Player.Position
     stdcall Vector3.Copy, edi, esi
+    pop     edi
+
+    ; Y
+    mov     [colDet], 0
+    
+    push    edi
+
+    lea     ebx, [delta]
+
+    fld     [edi + Player.Position + Vector3.y]
+    fadd    [ebx + Vector3.y]
+    fld     [edi + Player.Acceleration + Vector3.y]
+    fimul   [dt]
+    fimul   [dt]
+    fdiv    [div_2]
+    faddp
+    fstp    [edi + Player.Position + Vector3.y]
+
+    lea     eax, [colDet]
+    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
+
+    cmp     [colDet], true
+    jne     @F
+    
+    mov     eax, [edi + Player.prevPosition + Vector3.y]
+    mov     [edi + Player.Position + Vector3.y], eax
+
+    mov     [edi + Player.Condition], WALK_CONDITION
+
+    @@:
+
+    mov     [edi + Player.Condition], AIR_CONDITION
+
     pop     edi
 
     ; X    
@@ -143,39 +179,173 @@ proc Player.Move uses edi esi ebx,\
 
     pop     edi
 
-    nop 
-    ; Y
-    mov     [colDet], 0
-    
+    ret
+endp
+
+proc Player.Inputs uses edi esi ebx,\
+    pPlayer, uMsg, wParam, lParam
+
+    locals 
+        speed           dd          ?
+        reverseSpeed    dd          ?
+        sensetivity     dd          ?
+        xoffset         dd          ?
+        yoffset         dd          ?
+    endl
+
+
+    mov     edi, [pPlayer]
+
+    fld     [edi + Player.speed] 
+    fimul   [deltaTime]
+    fst     [speed]
+    fchs 
+    fstp    [reverseSpeed]
+
     push    edi
-
-    lea     ebx, [delta]
-
-    fld     [edi + Player.Position + Vector3.y]
-    fadd    [ebx + Vector3.y]
-    fld     [edi + Player.Acceleration + Vector3.y]
-    fimul   [dt]
-    fimul   [dt]
-    fdiv    [div_2]
-    faddp
-    fstp    [edi + Player.Position + Vector3.y]
-
-    lea     eax, [colDet]
-    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
-
-    cmp     [colDet], true
-    jne     @F
-    
-    mov     eax, [edi + Player.prevPosition + Vector3.y]
-    mov     [edi + Player.Position + Vector3.y], eax
-
-    mov     [edi + Player.Condition], WALK_CONDITION
-
-    @@:
-
-    mov     [edi + Player.Condition], AIR_CONDITION
-
+    add     edi, Player.Orientation
+    stdcall Vector3.Copy, orinVec, edi
     pop     edi
+
+    push    edi
+    add     edi, Player.Up
+    stdcall Vector3.Copy, upVec, edi
+    pop     edi
+
+    mov     eax, [uMsg] 
+    JumpIf  WM_KEYDOWN,     .KeyDown 
+    JumpIf  WM_MOUSEMOVE,   .MouseMove
+
+    jmp     .Return
+
+    .KeyDown:
+
+        cmp     [wParam], 'W'
+        jne     @F
+
+        stdcall Vector3.MultOnNumber, orinVec, [speed]
+        
+        push    edi
+        add     edi, Player.Position
+        stdcall Vector3.Add, edi, orinVec
+        pop     edi
+
+        jmp     .Return
+
+        @@:
+
+        cmp     [wParam], 'S'
+        jne     @F
+
+        stdcall Vector3.MultOnNumber, orinVec, [reverseSpeed] 
+        
+        push    edi
+        add     edi, Player.Position
+        stdcall Vector3.Add, edi, orinVec
+        pop     edi
+
+        jmp     .Return
+
+        @@:
+
+        cmp     [wParam], 'D'
+        jne     @F
+
+        stdcall Vector3.Cross, orinVec, upVec, crossVec
+        stdcall Vector3.MultOnNumber, crossVec, [speed] 
+        
+        push    edi
+        add     edi, Player.Position
+        stdcall Vector3.Add, edi, crossVec
+        pop     edi
+
+        jmp     .Return
+
+        @@:
+        
+        cmp     [wParam], 'A'
+        jne     @F
+
+        stdcall Vector3.Cross, orinVec, upVec, crossVec
+        stdcall Vector3.MultOnNumber, crossVec, [reverseSpeed] 
+        
+        push    edi
+        add     edi, Player.Position
+        stdcall Vector3.Add, edi, crossVec
+        pop     edi
+
+        jmp     .Return
+
+        @@:
+        
+        cmp     [wParam], VK_SPACE
+        jne     @F
+
+        stdcall Vector3.MultOnNumber, upVec, [speed] 
+        
+        push    edi
+        add     edi, Player.Position
+        stdcall Vector3.Add, edi, upVec
+        pop     edi
+
+        jmp     .Return
+
+        @@:
+
+        cmp     [wParam], VK_TAB
+        jne     @F
+
+        stdcall Vector3.MultOnNumber, upVec, [reverseSpeed] 
+        
+        push    edi
+        add     edi, Player.Position
+        stdcall Vector3.Add, edi, upVec
+        pop     edi
+
+        jmp     .Return
+
+        @@:
+
+        jmp     .Return
+
+    .MouseMove:
+
+        mov     eax, [lastCursorPos.x]
+        mov     ebx, [lastCursorPos.y]
+
+        push    eax
+        invoke  GetCursorPos, lastCursorPos
+        pop     eax
+        
+        sub     eax, [lastCursorPos.x]
+        neg     eax
+        sub     ebx, [lastCursorPos.y]
+
+        mov     [xoffset], eax
+        mov     [yoffset], ebx
+
+        fild    [xoffset]
+        fmul    [edi + Player.sensitivity]
+        fstp    [xoffset]
+
+        fild    [yoffset]
+        fmul    [edi + Player.sensitivity]
+        fstp    [yoffset]
+
+        fld     [edi + Player.yaw]
+        fadd    [xoffset]
+        fstp    [edi + Player.yaw]
+
+        fld     [edi + Player.pitch]
+        fadd    [yoffset]
+        fstp    [edi + Player.pitch]
+
+        stdcall Camera.Direction, edi
+        stdcall Camera.NormalizeCursor, lastCursorPos
+
+        jmp     .Return
+
+    .Return:
 
     ret
 endp

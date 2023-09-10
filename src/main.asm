@@ -32,7 +32,7 @@
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3         0.0, 2.0, 0.0
+        cameraPosition  Vector3         2.0, 2.5, 0.0
         targetPosition  Vector3         0.0, 0.0, 2.0
         upVector        Vector3         0.0, 1.0, 0.0
 
@@ -151,7 +151,7 @@ proc WindowProc uses ebx,\
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
-        stdcall Camera.Inputs, mainPlayer, [uMsg], [wParam], [lParam]
+        stdcall Player.Inputs, mainPlayer, [uMsg], [wParam], [lParam]
 
         .Skip:
                 jmp     .ReturnZero
