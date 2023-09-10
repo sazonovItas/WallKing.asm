@@ -255,17 +255,13 @@ proc Player.Move uses edi esi ebx,\
     ret
 endp
 
-proc Player.Inputs uses edi esi ebx,\
-    pPlayer, uMsg, wParam, lParam
+proc Player.InputsKeys uses edi esi ebx,\
+    pPlayer
 
     locals 
         speed           dd          ?
         reverseSpeed    dd          ?
-        sensetivity     dd          ?
-        xoffset         dd          ?
-        yoffset         dd          ?
     endl
-
 
     mov     edi, [pPlayer]
 
@@ -285,15 +281,9 @@ proc Player.Inputs uses edi esi ebx,\
     stdcall Vector3.Copy, upVec, edi
     pop     edi
 
-    mov     eax, [uMsg] 
-    JumpIf  WM_KEYDOWN,     .KeyDown 
-    JumpIf  WM_MOUSEMOVE,   .MouseMove
-
-    jmp     .Return
-
     .KeyDown:
 
-        cmp     [wParam], 'W'
+        cmp     [pl_forward], true
         jne     @F
 
         stdcall Vector3.MultOnNumber, orinVec, [speed]
@@ -303,11 +293,9 @@ proc Player.Inputs uses edi esi ebx,\
         stdcall Vector3.Add, edi, orinVec
         pop     edi
 
-        jmp     .Return
-
         @@:
 
-        cmp     [wParam], 'S'
+        cmp     [pl_backward], true
         jne     @F
 
         stdcall Vector3.MultOnNumber, orinVec, [reverseSpeed] 
@@ -317,11 +305,9 @@ proc Player.Inputs uses edi esi ebx,\
         stdcall Vector3.Add, edi, orinVec
         pop     edi
 
-        jmp     .Return
-
         @@:
 
-        cmp     [wParam], 'D'
+        cmp     [pl_right], true
         jne     @F
 
         stdcall Vector3.Cross, orinVec, upVec, crossVec
@@ -332,11 +318,9 @@ proc Player.Inputs uses edi esi ebx,\
         stdcall Vector3.Add, edi, crossVec
         pop     edi
 
-        jmp     .Return
-
         @@:
         
-        cmp     [wParam], 'A'
+        cmp     [pl_left], true
         jne     @F
 
         stdcall Vector3.Cross, orinVec, upVec, crossVec
@@ -347,11 +331,9 @@ proc Player.Inputs uses edi esi ebx,\
         stdcall Vector3.Add, edi, crossVec
         pop     edi
 
-        jmp     .Return
-
         @@:
         
-        cmp     [wParam], VK_SPACE
+        cmp     [pl_jump], true
         jne     @F
 
         stdcall Vector3.MultOnNumber, upVec, [edi + Player.jumpVeloc] 
@@ -366,25 +348,21 @@ proc Player.Inputs uses edi esi ebx,\
 
         .JumpSkip:
 
-        jmp     .Return
-
         @@:
 
-        cmp     [wParam], VK_TAB
-        jne     @F
+    ret
+endp
 
-        stdcall Vector3.MultOnNumber, upVec, [reverseSpeed] 
-        
-        push    edi
-        add     edi, Player.Position
-        stdcall Vector3.Add, edi, upVec
-        pop     edi
+proc Player.InputsMouse uses edi esi ebx,\
+    pPlayer, wParam, lParam
 
-        jmp     .Return
+    locals 
+        sensetivity     dd          ?
+        xoffset         dd          ?
+        yoffset         dd          ?
+    endl
 
-        @@:
-
-        jmp     .Return
+    mov     edi, [pPlayer]
 
     .MouseMove:
 
@@ -421,10 +399,6 @@ proc Player.Inputs uses edi esi ebx,\
         stdcall Camera.Direction, edi
         stdcall Player.OrinDirection, edi
         stdcall Camera.NormalizeCursor, lastCursorPos
-
-        jmp     .Return
-
-    .Return:
 
     ret
 endp

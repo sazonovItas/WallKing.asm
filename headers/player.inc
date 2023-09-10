@@ -29,3 +29,16 @@ ends
 
     AIR_CONDITION      =        1
     WALK_CONDITION     =        2
+
+    ;   Keys define for handlers
+    PL_JUMP         =       VK_SPACE
+    PL_FORWARD      =       'W'
+    PL_BACKWARD     =       'S'
+    PL_LEFT         =       'A'
+    PL_RIGHT        =       'D'
+
+    pl_jump         db      false
+    pl_forward      db      false
+    pl_backward     db      false
+    pl_left         db      false
+    pl_right        db      false

@@ -27,6 +27,7 @@ proc Draw.Scene uses esi edi
         mov     [lastFrame], eax
         xor     ebx, ebx
 
+        stdcall Player.InputsKeys, mainPlayer
         stdcall Player.Move, mainPlayer, 1
 
 .Skip: 

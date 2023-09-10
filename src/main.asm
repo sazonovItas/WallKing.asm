@@ -152,17 +152,98 @@ proc WindowProc uses ebx,\
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
-        stdcall Player.Inputs, mainPlayer, [uMsg], [wParam], [lParam]
+
+        cmp     [wParam], PL_JUMP
+        jne     @F
+
+        mov     [pl_jump], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_FORWARD
+        jne     @F
+
+        mov     [pl_forward], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_BACKWARD
+        jne     @F
+
+        mov     [pl_backward], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_LEFT
+        jne     @F
+
+        mov     [pl_left], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_RIGHT
+        jne     @F
+
+        mov     [pl_right], true
+        jmp     .SkipDown
+
+        @@:
 
         .SkipDown:
                 jmp     .ReturnZero
 
 .KeysManipulateUp:
 
+        cmp     [wParam], PL_JUMP
+        jne     @F
+
+        mov     [pl_jump], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_FORWARD
+        jne     @F
+
+        mov     [pl_forward], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_BACKWARD
+        jne     @F
+
+        mov     [pl_backward], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_LEFT
+        jne     @F
+
+        mov     [pl_left], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_RIGHT
+        jne     @F
+
+        mov     [pl_right], false
+        jmp     .SkipDown
+
+        @@:
+
         .SkipUp:
                 jmp     .ReturnZero
 
 .MouseManipulate:
+
+        stdcall Player.InputsMouse, mainPlayer, [wParam], [lParam]
 
         .SkipMouse:
                 jmp     .ReturnZero
