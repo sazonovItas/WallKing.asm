@@ -112,6 +112,7 @@ proc Init uses esi edi
     stdcall EBO.Unbind
 
     stdcall Camera.Constructor, freeCamera, [clientRect.right], [clientRect.bottom], cameraPosition
+    stdcall Player.Constructor, mainPlayer, [clientRect.right], [clientRect.bottom], cameraPosition
 
     ret
 endp

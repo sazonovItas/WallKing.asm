@@ -3,13 +3,14 @@ proc Draw.Scene uses esi edi
         locals 
                 currentFrame            dd     ?
                 testAngle               dd     180.0
+                colDetected             dd     ?
         endl
 
         invoke  GetTickCount
         mov     [currentFrame], eax
 
         sub     eax, [time]
-        cmp     eax, 18 
+        cmp     eax, 16
         jle     .Skip
 
         mov     eax, [currentFrame]
@@ -26,13 +27,19 @@ proc Draw.Scene uses esi edi
         mov     [lastFrame], eax
         xor     ebx, ebx
 
+        stdcall Player.InputsKeys, mainPlayer
+        stdcall Player.Move, mainPlayer, 1
+
 .Skip: 
 
-        stdcall Camera.Matrix, freeCamera, [fovY], [zNear], [zFar]
+        ; lea     eax, [colDetected]
+        ; stdcall Collision.MapDetection, freeCamera, [sizeBlocksMapTry], blocksMapTry, eax
 
-        stdcall Collision.MapDetection, freeCamera, [sizeBlocksMapTry], blocksMapTry, 
+        ; stdcall Player.Move, mainPlayer, [deltaTime]
 
-        invoke  glViewport, 0, 0, [freeCamera.width], [freeCamera.height]
+        stdcall Camera.Matrix, mainPlayer, [fovY], [zNear], [zFar]
+
+        invoke  glViewport, 0, 0, [mainPlayer.width], [mainPlayer.height]
         invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
         invoke  glClearColor, 0.22, 0.22, 0.22
 
@@ -41,7 +48,7 @@ proc Draw.Scene uses esi edi
         ; light draw
         stdcall Shader.Activate, [lightShader.ID]
 
-        stdcall Camera.UniformBind, freeCamera, [lightShader.ID], uniProjName, uniViewName
+        stdcall Camera.UniformBind, mainPlayer, [lightShader.ID], uniProjName, uniViewName
 
         invoke  glPushMatrix
                 invoke  glLoadIdentity
@@ -93,7 +100,7 @@ proc Draw.Block uses edi esi,\
         ; block drawing
         stdcall Shader.Activate, [exampleShader.ID]
 
-        stdcall Camera.UniformBind, freeCamera, [exampleShader.ID], uniProjName, uniViewName
+        stdcall Camera.UniformBind, mainPlayer, [exampleShader.ID], uniProjName, uniViewName
 
         lea     esi, [arrTextures]
         add     esi, [edi + 36]

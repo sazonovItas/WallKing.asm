@@ -1,9 +1,10 @@
 ;       offsets         scale = 12, rotate = 12, traslate = 12, texture = 4, material = 4, collision = 4
 proc Collision.MapDetection uses edi esi ebx,\
-    pPlayer, sizeBlocksMap, blocksMap
+    pPlayer, sizeBlocksMap, blocksMap, result
 
     locals 
         detected        dd      ?
+        allDetected     dd      0
     endl
 
     mov     edi, [blocksMap]
@@ -20,13 +21,16 @@ proc Collision.MapDetection uses edi esi ebx,\
         stdcall Collision.BlockDetection, eax, edi, ebx
 
         mov     eax, [detected]
-        mov     dword [edi + 44], eax
+        or      [allDetected], eax
 
     .Skip:
         pop     ecx
         add     edi, sizeBlock 
-
+        loop    .CheckLoop
     
+    mov     edi, [result]
+    mov     eax, [allDetected]
+    mov     [edi], eax
     ret
 
 endp
@@ -38,8 +42,8 @@ proc Collision.BlockDetection uses edi esi ebx,\
     pPlayerPosition, pBlockPosition, pResult
 
     locals 
-        minXYZplayer            Vector4     -0.05, -0.05, -0.05, 1.0
-        maxXYZplayer            Vector4     0.05, 0.05, 0.05, 1.0
+        minXYZplayer            Vector4     -0.5, -1.0, -0.5, 1.0
+        maxXYZplayer            Vector4     0.5, 0.5, 0.5, 1.0
         minXYZblock             Vector4     -0.5, -0.5, -0.5, 1.0
         maxXYZblock             Vector4     0.5, 0.5, 0.5, 1.0
         modelBlockMat           Matrix4x4   ?             
@@ -52,7 +56,6 @@ proc Collision.BlockDetection uses edi esi ebx,\
 
     mov     esi, [pPlayerPosition]
     mov     edi, [pBlockPosition]
-
     invoke  glMatrixMode, GL_MODELVIEW
 
     lea     ebx, [modelBlockMat]
@@ -93,7 +96,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     lea     ebx, [maxResultPlayer]
 
     fld     [esi + Vector4.x]
-    fcomp   [minResultBlock.x]
+    fcomp   [maxResultBlock.x]
     fstsw   ax
     sahf
     ja      .Ret
@@ -105,7 +108,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     jb      .Ret
 
     fld     [esi + Vector4.y]
-    fcomp   [minResultBlock.y]
+    fcomp   [maxResultBlock.y]
     fstsw   ax
     sahf
     ja      .Ret
@@ -117,7 +120,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     jb      .Ret
 
     fld     [esi + Vector4.z]
-    fcomp   [minResultBlock.z]
+    fcomp   [maxResultBlock.z]
     fstsw   ax
     sahf
     ja      .Ret

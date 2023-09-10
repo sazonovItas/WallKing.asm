@@ -14,6 +14,7 @@
         include         "texture.asm"
         include         "camera.asm"
         include         "collision.asm"
+        include         "player.asm"
         
         className       db      "OpenGLDemo", 0
         clientRect      RECT
@@ -27,12 +28,12 @@
         radian          dd      57.32
         pi4             dd      90.0
 
-        fovY            dd      60.0
+        fovY            dd      90.0 
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3         0.0, 0.0, 5.0
-        targetPosition  Vector3         0.0, 0.0, 0.0
+        cameraPosition  Vector3         2.0, 3.0, 0.0
+        targetPosition  Vector3         0.0, 0.0, 2.0
         upVector        Vector3         0.0, 1.0, 0.0
 
         light0Diffuse   ColorRGBA       1.0, 1.0, 1.0, 1.0
@@ -52,7 +53,7 @@
 
         stringOut               db              "Hello, World!", 0
 
-        fileBoxTexture          db              "resources/textures/container2.bmp", 0
+        fileBoxTexture          db              "resources/textures/test.bmp", 0
         fileLightTexture        db              "resources/textures/test.bmp", 0
         blockTexture            Texture         ?
         lightTexture            Texture         ?        
@@ -97,6 +98,7 @@
         uniProjName             db              "proj", 0
 
         freeCamera              Camera 
+        mainPlayer              Player 
         lastFrame               dd              ?
         deltaTime               dd              ?
 
@@ -106,8 +108,8 @@ proc WinMain
                 msg     MSG
         endl
 
+        finit
         xor     ebx, ebx
-
         stdcall Init
 
         lea     esi, [msg]
@@ -131,8 +133,9 @@ proc WindowProc uses ebx,\
         mov     eax, [uMsg]
         JumpIf  WM_PAINT,       .Paint
         JumpIf  WM_DESTROY,     .Destroy
-        JumpIf  WM_KEYDOWN,     .KeysManipulate
-        JumpIf  WM_MOUSEMOVE,   .KeysManipulate
+        JumpIf  WM_KEYDOWN,     .KeysManipulateDown
+        JumpIf  WM_KEYUP,       .KeysManipulateUp
+        JumpIf  WM_MOUSEMOVE,   .MouseManipulate
 
         invoke  DefWindowProc, [hWnd], [uMsg], [wParam], [lParam]
         jmp     .Return
@@ -145,13 +148,104 @@ proc WindowProc uses ebx,\
         
         jmp     .ReturnZero
 
-.KeysManipulate:
+.KeysManipulateDown:
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
-        stdcall Camera.Inputs, freeCamera, [uMsg], [wParam], [lParam]
 
-        .Skip:
+        cmp     [wParam], PL_JUMP
+        jne     @F
+
+        mov     [pl_jump], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_FORWARD
+        jne     @F
+
+        mov     [pl_forward], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_BACKWARD
+        jne     @F
+
+        mov     [pl_backward], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_LEFT
+        jne     @F
+
+        mov     [pl_left], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_RIGHT
+        jne     @F
+
+        mov     [pl_right], true
+        jmp     .SkipDown
+
+        @@:
+
+        .SkipDown:
+                jmp     .ReturnZero
+
+.KeysManipulateUp:
+
+        cmp     [wParam], PL_JUMP
+        jne     @F
+
+        mov     [pl_jump], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_FORWARD
+        jne     @F
+
+        mov     [pl_forward], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_BACKWARD
+        jne     @F
+
+        mov     [pl_backward], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_LEFT
+        jne     @F
+
+        mov     [pl_left], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_RIGHT
+        jne     @F
+
+        mov     [pl_right], false
+        jmp     .SkipDown
+
+        @@:
+
+        .SkipUp:
+                jmp     .ReturnZero
+
+.MouseManipulate:
+
+        stdcall Player.InputsMouse, mainPlayer, [wParam], [lParam]
+
+        .SkipMouse:
                 jmp     .ReturnZero
 
 .Destroy:
