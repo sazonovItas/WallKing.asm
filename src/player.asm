@@ -37,7 +37,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.z], 0.0
 
     mov     [edi + Player.speed], 0.02
-    mov     [edi + Player.jumpVeloc], 0.25
+    mov     [edi + Player.jumpVeloc], 0.20
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], AIR_CONDITION
 
