@@ -32,7 +32,7 @@
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3         2.0, 2.5, 0.0
+        cameraPosition  Vector3         2.0, 3.0, 0.0
         targetPosition  Vector3         0.0, 0.0, 2.0
         upVector        Vector3         0.0, 1.0, 0.0
 
@@ -133,8 +133,9 @@ proc WindowProc uses ebx,\
         mov     eax, [uMsg]
         JumpIf  WM_PAINT,       .Paint
         JumpIf  WM_DESTROY,     .Destroy
-        JumpIf  WM_KEYDOWN,     .KeysManipulate
-        JumpIf  WM_MOUSEMOVE,   .KeysManipulate
+        JumpIf  WM_KEYDOWN,     .KeysManipulateDown
+        JumpIf  WM_KEYUP,       .KeysManipulateUp
+        JumpIf  WM_MOUSEMOVE,   .MouseManipulate
 
         invoke  DefWindowProc, [hWnd], [uMsg], [wParam], [lParam]
         jmp     .Return
@@ -147,13 +148,23 @@ proc WindowProc uses ebx,\
         
         jmp     .ReturnZero
 
-.KeysManipulate:
+.KeysManipulateDown:
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
         stdcall Player.Inputs, mainPlayer, [uMsg], [wParam], [lParam]
 
-        .Skip:
+        .SkipDown:
+                jmp     .ReturnZero
+
+.KeysManipulateUp:
+
+        .SkipUp:
+                jmp     .ReturnZero
+
+.MouseManipulate:
+
+        .SkipMouse:
                 jmp     .ReturnZero
 
 .Destroy:

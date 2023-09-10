@@ -10,7 +10,7 @@ proc Draw.Scene uses esi edi
         mov     [currentFrame], eax
 
         sub     eax, [time]
-        cmp     eax, 18 
+        cmp     eax, 11
         jle     .Skip
 
         mov     eax, [currentFrame]
@@ -27,12 +27,14 @@ proc Draw.Scene uses esi edi
         mov     [lastFrame], eax
         xor     ebx, ebx
 
+        stdcall Player.Move, mainPlayer, 1
+
 .Skip: 
 
         ; lea     eax, [colDetected]
         ; stdcall Collision.MapDetection, freeCamera, [sizeBlocksMapTry], blocksMapTry, eax
 
-        stdcall Player.Move, mainPlayer, [deltaTime]
+        ; stdcall Player.Move, mainPlayer, [deltaTime]
 
         stdcall Camera.Matrix, mainPlayer, [fovY], [zNear], [zFar]
 

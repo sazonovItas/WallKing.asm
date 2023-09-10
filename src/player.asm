@@ -19,7 +19,7 @@ proc Player.Constructor uses edi,\
     pop     edi
 
     mov     [edi + Player.Acceleration + Vector3.x], 0.0
-    mov     [edi + Player.Acceleration + Vector3.y], -0.000001
+    mov     [edi + Player.Acceleration + Vector3.y], -0.01
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
     mov     [edi + Player.Velocity + Vector3.x], 0.0
@@ -30,19 +30,53 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.yaw], -1.57
 
     stdcall Camera.Direction, edi
+    stdcall Player.OrinDirection, edi
 
     mov     [edi + Player.Up + Vector3.x], 0.0
     mov     [edi + Player.Up + Vector3.y], 1.0
     mov     [edi + Player.Up + Vector3.z], 0.0
 
-    mov     [edi + Player.speed], 0.002
-    mov     [edi + Player.jumpVeloc], 0.01 
+    mov     [edi + Player.speed], 0.02
+    mov     [edi + Player.jumpVeloc], 0.25
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], AIR_CONDITION
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
     
+    ret
+endp
+
+proc Player.OrinDirection uses edi,\
+    pPlayer 
+
+    locals 
+        null        dd      0.0
+    endl
+
+    mov     edi, [pPlayer]
+
+    ; Ox camera direction
+    fld     [null]
+    fcos    
+    fld     [edi + Player.yaw]
+    fcos 
+    fmulp
+    fstp    [edi + Player.Direction + Vector3.x]
+
+    ; Oy camera direction
+    fld     [null]
+    fsin    
+    fstp    [edi + Player.Direction + Vector3.y]
+
+    ; Oz camera direction
+    fld     [null]
+    fcos    
+    fld     [edi + Player.yaw]
+    fsin 
+    fmulp
+    fstp    [edi + Player.Direction + Vector3.z]
+
     ret
 endp
 
@@ -68,7 +102,7 @@ proc Player.Move uses edi esi ebx,\
         colDet          dd          ?    
         curPlayerPos    Vector3     
         div_2           dd          2.0
-        example         dd          -0.5
+        example         dd          0.2
     endl
 
     mov     edi, [pPlayer]
@@ -90,21 +124,40 @@ proc Player.Move uses edi esi ebx,\
     stdcall Vector3.Copy, edi, esi
     pop     edi
 
+    fld     [edi + Player.Velocity + Vector3.x]
+    fchs
+    ; ; fdiv    [edi + Player.Velocity + Vector3.x]
+    fmul    [example]
+    fstp    [edi + Player.Acceleration + Vector3.x]
+
+    fld     [edi + Player.Velocity + Vector3.z]
+    fchs
+    ; ; fdiv    [edi + Player.Velocity + Vector3.y]
+    fmul    [example]
+    fstp    [edi + Player.Acceleration + Vector3.z]
+
     ; Y
     mov     [colDet], 0
+    mov     [edi + Player.Condition], AIR_CONDITION
     
     push    edi
 
-    lea     ebx, [delta]
-
     fld     [edi + Player.Position + Vector3.y]
-    fadd    [ebx + Vector3.y]
+    fld     [edi + Player.Velocity + Vector3.y]
+    fimul   [dt]
+    faddp
     fld     [edi + Player.Acceleration + Vector3.y]
     fimul   [dt]
     fimul   [dt]
     fdiv    [div_2]
     faddp
     fstp    [edi + Player.Position + Vector3.y]
+
+    fld     [edi + Player.Velocity + Vector3.y]
+    fld     [edi + Player.Acceleration + Vector3.y]
+    fimul   [dt]
+    faddp   
+    fstp    [edi + Player.Velocity + Vector3.y]
 
     lea     eax, [colDet]
     stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
@@ -114,12 +167,12 @@ proc Player.Move uses edi esi ebx,\
     
     mov     eax, [edi + Player.prevPosition + Vector3.y]
     mov     [edi + Player.Position + Vector3.y], eax
+    
+    mov     [edi + Player.Velocity + Vector3.y], 0.0
 
     mov     [edi + Player.Condition], WALK_CONDITION
 
     @@:
-
-    mov     [edi + Player.Condition], AIR_CONDITION
 
     pop     edi
 
@@ -128,15 +181,22 @@ proc Player.Move uses edi esi ebx,\
     
     push    edi
 
-    lea     ebx, [delta]
-
     fld     [edi + Player.Position + Vector3.x]
-    fadd    [ebx + Vector3.x]
+    fld     [edi + Player.Velocity + Vector3.x]
+    fimul   [dt]
+    faddp
     fld     [edi + Player.Acceleration + Vector3.x]
     fimul   [dt]
     fimul   [dt]
+    fdiv    [div_2]
     faddp
     fstp    [edi + Player.Position + Vector3.x]
+
+    fld     [edi + Player.Velocity + Vector3.x]
+    fld     [edi + Player.Acceleration + Vector3.x]
+    fimul   [dt]
+    faddp   
+    fstp    [edi + Player.Velocity + Vector3.x]
 
     lea     eax, [colDet]
     stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
@@ -147,6 +207,9 @@ proc Player.Move uses edi esi ebx,\
     mov     eax, [edi + Player.prevPosition + Vector3.x]
     mov     [edi + Player.Position + Vector3.x], eax
 
+    mov     [edi + Player.Velocity + Vector3.x], 0.0
+    mov     [edi + Player.Acceleration + Vector3.x], 0.0
+
     @@:
 
     pop     edi
@@ -156,15 +219,22 @@ proc Player.Move uses edi esi ebx,\
     
     push    edi
 
-    lea     ebx, [delta]
-
     fld     [edi + Player.Position + Vector3.z]
-    fadd    [ebx + Vector3.z]
+    fld     [edi + Player.Velocity + Vector3.z]
+    fimul   [dt]
+    faddp
     fld     [edi + Player.Acceleration + Vector3.z]
     fimul   [dt]
     fimul   [dt]
+    fdiv    [div_2]
     faddp
     fstp    [edi + Player.Position + Vector3.z]
+
+    fld     [edi + Player.Velocity + Vector3.z]
+    fld     [edi + Player.Acceleration + Vector3.z]
+    fimul   [dt]
+    faddp   
+    fstp    [edi + Player.Velocity + Vector3.z]
 
     lea     eax, [colDet]
     stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
@@ -174,6 +244,9 @@ proc Player.Move uses edi esi ebx,\
     
     mov     eax, [edi + Player.prevPosition + Vector3.z]
     mov     [edi + Player.Position + Vector3.z], eax
+
+    mov     [edi + Player.Velocity + Vector3.z], 0.0
+    mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
     @@:
 
@@ -197,13 +270,13 @@ proc Player.Inputs uses edi esi ebx,\
     mov     edi, [pPlayer]
 
     fld     [edi + Player.speed] 
-    fimul   [deltaTime]
+    ; fimul   [deltaTime]
     fst     [speed]
     fchs 
     fstp    [reverseSpeed]
 
     push    edi
-    add     edi, Player.Orientation
+    add     edi, Player.Direction
     stdcall Vector3.Copy, orinVec, edi
     pop     edi
 
@@ -226,7 +299,7 @@ proc Player.Inputs uses edi esi ebx,\
         stdcall Vector3.MultOnNumber, orinVec, [speed]
         
         push    edi
-        add     edi, Player.Position
+        add     edi, Player.Velocity
         stdcall Vector3.Add, edi, orinVec
         pop     edi
 
@@ -240,7 +313,7 @@ proc Player.Inputs uses edi esi ebx,\
         stdcall Vector3.MultOnNumber, orinVec, [reverseSpeed] 
         
         push    edi
-        add     edi, Player.Position
+        add     edi, Player.Velocity
         stdcall Vector3.Add, edi, orinVec
         pop     edi
 
@@ -255,7 +328,7 @@ proc Player.Inputs uses edi esi ebx,\
         stdcall Vector3.MultOnNumber, crossVec, [speed] 
         
         push    edi
-        add     edi, Player.Position
+        add     edi, Player.Velocity
         stdcall Vector3.Add, edi, crossVec
         pop     edi
 
@@ -270,7 +343,7 @@ proc Player.Inputs uses edi esi ebx,\
         stdcall Vector3.MultOnNumber, crossVec, [reverseSpeed] 
         
         push    edi
-        add     edi, Player.Position
+        add     edi, Player.Velocity
         stdcall Vector3.Add, edi, crossVec
         pop     edi
 
@@ -281,12 +354,17 @@ proc Player.Inputs uses edi esi ebx,\
         cmp     [wParam], VK_SPACE
         jne     @F
 
-        stdcall Vector3.MultOnNumber, upVec, [speed] 
+        stdcall Vector3.MultOnNumber, upVec, [edi + Player.jumpVeloc] 
         
+        cmp     [edi + Player.Condition], AIR_CONDITION
+        je      .JumpSkip
+
         push    edi
-        add     edi, Player.Position
+        add     edi, Player.Velocity
         stdcall Vector3.Add, edi, upVec
         pop     edi
+
+        .JumpSkip:
 
         jmp     .Return
 
@@ -341,6 +419,7 @@ proc Player.Inputs uses edi esi ebx,\
         fstp    [edi + Player.pitch]
 
         stdcall Camera.Direction, edi
+        stdcall Player.OrinDirection, edi
         stdcall Camera.NormalizeCursor, lastCursorPos
 
         jmp     .Return

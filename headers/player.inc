@@ -20,6 +20,7 @@ struct Player
     prevPosition        Vector3         ?
     Acceleration        Vector3         ?
     Velocity            Vector3         ?
+    Direction           Vector3         ?
     Condition           dd              ? 
 
     jumpVeloc           GLfloat         ?
