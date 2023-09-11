@@ -27,8 +27,9 @@ struct Player
 
 ends
 
-    AIR_CONDITION      =        1
-    WALK_CONDITION     =        2
+    JUMP_CONDITION      =           1
+    WALK_CONDITION      =           2
+    SLIDE_CONDITION     =           3
 
     ;   Keys define for handlers
     PL_JUMP         =       VK_SPACE
@@ -42,3 +43,6 @@ ends
     pl_backward     db      false
     pl_left         db      false
     pl_right        db      false
+
+    maxClimbSpeed   dd      0.1
+    maxPlayerPitch  dd      1.50

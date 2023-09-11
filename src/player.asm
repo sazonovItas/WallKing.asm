@@ -36,10 +36,10 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.y], 1.0
     mov     [edi + Player.Up + Vector3.z], 0.0
 
-    mov     [edi + Player.speed], 0.05
+    mov     [edi + Player.speed], 0.035
     mov     [edi + Player.jumpVeloc], 0.20
     mov     [edi + Player.sensitivity], 0.0005
-    mov     [edi + Player.Condition], AIR_CONDITION
+    mov     [edi + Player.Condition], JUMP_CONDITION
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
@@ -136,45 +136,6 @@ proc Player.Move uses edi esi ebx,\
     fmul    [example]
     fstp    [edi + Player.Acceleration + Vector3.z]
 
-    ; Y
-    mov     [colDet], 0
-    mov     [edi + Player.Condition], AIR_CONDITION
-    
-    push    edi
-
-    fld     [edi + Player.Position + Vector3.y]
-    fld     [edi + Player.Velocity + Vector3.y]
-    fimul   [dt]
-    faddp
-    fld     [edi + Player.Acceleration + Vector3.y]
-    fimul   [dt]
-    fimul   [dt]
-    fdiv    [div_2]
-    faddp
-    fstp    [edi + Player.Position + Vector3.y]
-
-    fld     [edi + Player.Velocity + Vector3.y]
-    fld     [edi + Player.Acceleration + Vector3.y]
-    fimul   [dt]
-    faddp   
-    fstp    [edi + Player.Velocity + Vector3.y]
-
-    lea     eax, [colDet]
-    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
-
-    cmp     [colDet], true
-    jne     @F
-    
-    mov     eax, [edi + Player.prevPosition + Vector3.y]
-    mov     [edi + Player.Position + Vector3.y], eax
-    
-    mov     [edi + Player.Velocity + Vector3.y], 0.0
-
-    mov     [edi + Player.Condition], WALK_CONDITION
-
-    @@:
-
-    pop     edi
 
     ; X    
     mov     [colDet], 0
@@ -209,6 +170,8 @@ proc Player.Move uses edi esi ebx,\
 
     mov     [edi + Player.Velocity + Vector3.x], 0.0
     mov     [edi + Player.Acceleration + Vector3.x], 0.0
+
+    mov     [edi + Player.Condition], SLIDE_CONDITION
 
     @@:
 
@@ -248,7 +211,73 @@ proc Player.Move uses edi esi ebx,\
     mov     [edi + Player.Velocity + Vector3.z], 0.0
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
+    mov     [edi + Player.Condition], SLIDE_CONDITION
+
     @@:
+
+    pop     edi
+
+    ; Y
+    mov     [colDet], 0
+    
+    push    edi
+
+    ; Position
+    fld     [edi + Player.Position + Vector3.y]
+    fld     [edi + Player.Velocity + Vector3.y]
+    fimul   [dt]
+    faddp
+    fld     [edi + Player.Acceleration + Vector3.y]
+    fimul   [dt]
+    fimul   [dt]
+    fdiv    [div_2]
+
+    cmp     [edi + Player.Condition], SLIDE_CONDITION
+    jne     .SkipPositionSlide    
+
+    fdiv    [div_2]
+    fdiv    [div_2]
+    fdiv    [div_2]
+
+    .SkipPositionSlide:
+
+    faddp
+    fstp    [edi + Player.Position + Vector3.y]
+
+    ; Valocity
+    fld     [edi + Player.Velocity + Vector3.y]
+    fld     [edi + Player.Acceleration + Vector3.y]
+    fimul   [dt]
+
+    cmp     [edi + Player.Condition], SLIDE_CONDITION
+    jne     .SkipVelocitySlide    
+
+    fdiv    [div_2]
+    fdiv    [div_2]
+
+    .SkipVelocitySlide:
+
+    faddp   
+    fstp    [edi + Player.Velocity + Vector3.y]
+
+    lea     eax, [colDet]
+    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
+
+    cmp     [colDet], true
+    jne     @F
+    
+    mov     eax, [edi + Player.prevPosition + Vector3.y]
+    mov     [edi + Player.Position + Vector3.y], eax
+    
+    mov     [edi + Player.Velocity + Vector3.y], 0.0
+
+    mov     [edi + Player.Condition], WALK_CONDITION
+
+    jmp     .SkipOtherConditions
+
+    @@:
+
+    .SkipOtherConditions:
 
     pop     edi
 
@@ -338,15 +367,41 @@ proc Player.InputsKeys uses edi esi ebx,\
 
         stdcall Vector3.MultOnNumber, upVec, [edi + Player.jumpVeloc] 
         
-        cmp     [edi + Player.Condition], AIR_CONDITION
-        je      .JumpSkip
+        cmp     [edi + Player.Condition], WALK_CONDITION
+        jne      .notWalkJumpSkip
 
         push    edi
         add     edi, Player.Velocity
         stdcall Vector3.Add, edi, upVec
         pop     edi
 
-        .JumpSkip:
+        mov     [edi + Player.Condition], JUMP_CONDITION
+
+        .notWalkJumpSkip:
+
+        cmp     [edi + Player.Condition], SLIDE_CONDITION
+        jne     .notSlideJumpSkip
+
+        push    edi
+        add     edi, Player.Velocity
+        stdcall Vector3.MultOnNumber, upVec, 0.080
+        stdcall Vector3.Add, edi, upVec
+        pop     edi
+
+        fld     [edi + Player.Velocity + Vector3.y]
+        fcomp   [maxClimbSpeed]
+        fstsw   ax
+        sahf
+        jb      @F
+
+        fld    [maxClimbSpeed]    
+        fstp   [edi + Player.Velocity + Vector3.y]
+    
+        @@:
+
+        mov     [edi + Player.Condition], JUMP_CONDITION 
+
+        .notSlideJumpSkip:
 
         @@:
 
@@ -395,6 +450,30 @@ proc Player.InputsMouse uses edi esi ebx,\
         fld     [edi + Player.pitch]
         fadd    [yoffset]
         fstp    [edi + Player.pitch]
+
+        fld     [edi + Player.pitch]
+        fcomp   [maxPlayerPitch]
+        fstsw   ax
+        sahf 
+        jb      @F
+
+        mov     eax, [maxPlayerPitch]    
+        mov     [edi + Player.pitch], eax
+
+        @@:
+
+        fld     [maxPlayerPitch]
+        fchs
+        fcomp   [edi + Player.pitch]
+        fstsw   ax
+        sahf 
+        jb      @F
+
+        fld     [maxPlayerPitch]
+        fchs
+        fstp    [edi + Player.pitch]
+        
+        @@:
 
         stdcall Camera.Direction, edi
         stdcall Player.OrinDirection, edi
