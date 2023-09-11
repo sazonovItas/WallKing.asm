@@ -19,7 +19,8 @@ proc Player.Constructor uses edi,\
     pop     edi
 
     mov     [edi + Player.Acceleration + Vector3.x], 0.0
-    mov     [edi + Player.Acceleration + Vector3.y], -0.01
+    fld     [MOON_GRAVITY]
+    fstp    [edi + Player.Acceleration + Vector3.y]
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
     mov     [edi + Player.Velocity + Vector3.x], 0.0
@@ -37,7 +38,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.z], 0.0
 
     mov     [edi + Player.speed], 0.035
-    mov     [edi + Player.jumpVeloc], 0.20
+    mov     [edi + Player.jumpVeloc], 0.2
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], JUMP_CONDITION
 
@@ -290,6 +291,7 @@ proc Player.InputsKeys uses edi esi ebx,\
     locals 
         speed           dd          ?
         reverseSpeed    dd          ?
+        dGrav           dd          0.0001
     endl
 
     mov     edi, [pPlayer]
@@ -392,16 +394,43 @@ proc Player.InputsKeys uses edi esi ebx,\
         fcomp   [maxClimbSpeed]
         fstsw   ax
         sahf
-        jb      @F
+        jb      .notMaxVelocity
 
         fld    [maxClimbSpeed]    
         fstp   [edi + Player.Velocity + Vector3.y]
     
-        @@:
+        .notMaxVelocity:
 
         mov     [edi + Player.Condition], JUMP_CONDITION 
 
         .notSlideJumpSkip:
+
+        @@:
+
+        cmp     [pl_normal_grav], true
+        jne     @F
+
+        fld     [EARTH_GRAVITY]
+        fstp    [edi + Player.Acceleration + Vector3.y]
+
+        @@:
+        
+        cmp     [pl_enhance_grav], true
+        jne     @F
+
+        fld     [dGrav]
+        fchs
+        fadd    [edi + Player.Acceleration + Vector3.y]
+        fstp    [edi + Player.Acceleration + Vector3.y]
+
+        @@:
+
+        cmp     [pl_weak_grav], true
+        jne     @F
+
+        fld     [dGrav]
+        fadd    [edi + Player.Acceleration + Vector3.y]
+        fstp    [edi + Player.Acceleration + Vector3.y]
 
         @@:
 

@@ -193,6 +193,38 @@ proc WindowProc uses ebx,\
 
         @@:
 
+        cmp     [wParam], PL_SLIDE_JUMP
+        jne     @F
+
+        mov     [pl_slide_jump], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_NORMAL_GRAV
+        jne     @F
+
+        mov     [pl_normal_grav], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_ENHANCE_GRAV
+        jne     @F
+
+        mov     [pl_enhance_grav], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_WEAK_GRAV
+        jne     @F
+
+        mov     [pl_weak_grav], true
+        jmp     .SkipDown
+
+        @@:
+
         .SkipDown:
                 jmp     .ReturnZero
 
@@ -234,6 +266,38 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_right], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_SLIDE_JUMP
+        jne     @F
+
+        mov     [pl_slide_jump], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_NORMAL_GRAV
+        jne     @F
+
+        mov     [pl_normal_grav], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_ENHANCE_GRAV
+        jne     @F
+
+        mov     [pl_enhance_grav], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_WEAK_GRAV
+        jne     @F
+
+        mov     [pl_weak_grav], false
         jmp     .SkipDown
 
         @@:
