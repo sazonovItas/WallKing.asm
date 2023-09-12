@@ -27,18 +27,35 @@ struct Player
 
 ends
 
-    AIR_CONDITION      =        1
-    WALK_CONDITION     =        2
+    JUMP_CONDITION      =           1
+    WALK_CONDITION      =           2
+    SLIDE_CONDITION     =           3
 
     ;   Keys define for handlers
-    PL_JUMP         =       VK_SPACE
-    PL_FORWARD      =       'W'
-    PL_BACKWARD     =       'S'
-    PL_LEFT         =       'A'
-    PL_RIGHT        =       'D'
+    PL_JUMP             =       VK_SPACE
+    PL_SLIDE_JUMP       =       'T'
+    PL_FORWARD          =       'W'
+    PL_BACKWARD         =       'S'
+    PL_LEFT             =       'A'
+    PL_RIGHT            =       'D'
+    PL_NORMAL_GRAV      =       'E'
+    PL_ENHANCE_GRAV     =       VK_UP
+    PL_WEAK_GRAV        =       VK_DOWN
 
-    pl_jump         db      false
-    pl_forward      db      false
-    pl_backward     db      false
-    pl_left         db      false
-    pl_right        db      false
+    EARTH_GRAVITY       dd       -0.0098
+    MOON_GRAVITY        dd       -0.0016
+    MARS_GRAVITY        dd       -0.0031
+    MERCURY_GRAVITY     dd       -0.0036
+
+    pl_jump             db      false
+    pl_slide_jump       db      false
+    pl_forward          db      false
+    pl_backward         db      false
+    pl_left             db      false
+    pl_right            db      false 
+    pl_normal_grav      db      false
+    pl_enhance_grav     db      false 
+    pl_weak_grav        db      false
+
+    maxClimbSpeed       dd      0.1
+    maxPlayerPitch      dd      1.50
