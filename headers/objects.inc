@@ -88,17 +88,23 @@ lightIndices    GLuint          0, 1, 2,\
                                 4, 5, 6,\
                                 4, 6, 7
 
-sizeBlocksMapTry        dd      7
-sizeBlock               =       48
-;                               // Scale                // Rotate not working  // Translate            // Texture offset       // Material offset      //Colision detect
+        sizeBlock               =       36
+        scaleOffset             =       0     
+        translateOffset         =       12
+        texOffset               =       24
+        materialOffset          =       28
+        colisionOffset          =       32
+
+        sizeBlocksMapTry        dd      7
+;                               // Scale                // Translate            // Texture offset       // Material offset      //Colision detect
 blocksMapTry:
-                GLfloat         1.0, 1.0, 1.0,          0.0, 0.0, 0.0,          0.0, 2.0, 0.0,          0,                      0,                      0
-                GLfloat         1.0, 1.0, 1.0,          0.0, 0.0, 0.0,          1.0, 1.0, 0.0,          0,                      0,                      0
-                GLfloat         1.0, 1.0, 1.0,          0.0, 0.0, 0.0,          -1.0, 3.0, 1.0,         0,                      0,                      0
-                GLfloat         100.0, 1.0, 100.0,      0.0, 0.0, 0.0,          0.0, 0.0, 0.0,          0,                      0,                      0
-                GLfloat         2.0, 1.5, 1.0,          0.0, 0.0, 0.0,          -2.0, 4.0, 0.0,         0,                      0,                      0
-                GLfloat         5.0, 2.0, 5.0,          0.0, 0.0, 0.0,          -6.0, 5.0, -4.0,        0,                      0,                      0 
-                GLfloat         20.0, 20.0, 0.2,        0.0, 0.0, 0.0,          -3.0, 11.0, -8.0,        0,                      0,                      0
+                GLfloat         1.0, 1.0, 1.0,          0.0, 2.0, 0.0,          0,                      0,                      0
+                GLfloat         1.0, 1.0, 1.0,          1.0, 1.0, 0.0,          0,                      0,                      0
+                GLfloat         1.0, 1.0, 1.0,          -1.0, 3.0, 1.0,         0,                      0,                      0
+                GLfloat         100.0, 1.0, 100.0,      0.0, 0.0, 0.0,          4,                      0,                      0
+                GLfloat         2.0, 1.5, 1.0,          -2.0, 4.0, 0.0,         0,                      0,                      0
+                GLfloat         5.0, 2.0, 5.0,          -6.0, 5.0, -4.0,        0,                      0,                      0 
+                GLfloat         20.0, 20.0, 0.2,        -3.0, 11.0, -8.0,       4,                      0,                      0
 
 
 arrTextures     dd              20 dup(?)

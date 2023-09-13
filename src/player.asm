@@ -38,7 +38,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.z], 0.0
 
     mov     [edi + Player.speed], 0.035
-    mov     [edi + Player.jumpVeloc], 0.2
+    mov     [edi + Player.jumpVeloc], 0.15
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], JUMP_CONDITION
 
@@ -174,7 +174,11 @@ proc Player.Move uses edi esi ebx,\
 
     mov     [edi + Player.Condition], SLIDE_CONDITION
 
+    jmp     .SkipSlideConditionX
+
     @@:
+        
+    .SkipSlideConditionX:
 
     pop     edi
 
@@ -214,7 +218,11 @@ proc Player.Move uses edi esi ebx,\
 
     mov     [edi + Player.Condition], SLIDE_CONDITION
 
+    jmp     .SkipSlideConditionZ
+
     @@:
+
+    .SkipSlideConditionZ:
 
     pop     edi
 

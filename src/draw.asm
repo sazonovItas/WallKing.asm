@@ -94,7 +94,7 @@ proc Draw.Block uses edi esi,\
 
         mov     edi, [offsetBlock]
 
-        cmp     dword [edi + 44], 1
+        cmp     dword [edi + colisionOffset], 1
         je      .Ret
 
         ; block drawing
@@ -103,17 +103,14 @@ proc Draw.Block uses edi esi,\
         stdcall Camera.UniformBind, mainPlayer, [exampleShader.ID], uniProjName, uniViewName
 
         lea     esi, [arrTextures]
-        add     esi, [edi + 36]
+        add     esi, [edi + texOffset]
         stdcall Texture.Bind, GL_TEXTURE_2D, dword [esi], GL_TEXTURE0
         stdcall Texture.texUnit, [exampleShader.ID], uniTex0Name, GL_TEXTURE0
 
         invoke  glPushMatrix
                 invoke  glLoadIdentity
-                invoke  glTranslatef, dword [edi + 24], dword [edi + 28], dword [edi + 32]
-                invoke  glRotatef, dword [edi + 12], 1.0, 0.0, 0.0
-                invoke  glRotatef, dword [edi + 16], 0.0, 1.0, 0.0
-                invoke  glRotatef, dword [edi + 20], 0.0, 0.0, 1.0 
-                invoke  glScalef, dword [edi], dword [edi + 4], dword [edi + 8] 
+                invoke  glTranslatef, [edi + translateOffset + Vector3.x], [edi + translateOffset + Vector3.y], [edi + translateOffset + Vector3.z]
+                invoke  glScalef, [edi + scaleOffset + Vector3.x], [edi + scaleOffset + Vector3.y], [edi + scaleOffset + Vector3.z] 
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
         invoke  glGetUniformLocation, [exampleShader.ID], uniModelName

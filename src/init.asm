@@ -36,13 +36,11 @@ proc Init uses esi edi
     stdcall Glext.LoadFunctions
 
     lea     edi, [arrTextures]
-    lea     esi, [arrTextures + 4]
-    stdcall Texture.Constructor, edi, esi, fileBoxTexture,\
+    stdcall Texture.Constructor, edi, fileBoxTexture,\
                             GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    lea     edi, [arrTextures + 8]
-    lea     esi, [arrTextures + 12]
-    stdcall Texture.Constructor, edi, esi, fileLightTexture,\
+    lea     edi, [arrTextures + 4]
+    stdcall Texture.Constructor, edi, fileLightTexture,\
                             GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
 
     ; Shadow texture settings
