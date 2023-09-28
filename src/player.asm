@@ -96,7 +96,7 @@ proc Player.AssignPrevPosition uses edi, esi,\
 endp
 
 proc Player.Move uses edi esi ebx,\
-    pPlayer, dt
+    pPlayer, dt, fixDt
 
     locals 
         delta           Vector3 
@@ -104,9 +104,14 @@ proc Player.Move uses edi esi ebx,\
         curPlayerPos    Vector3     
         div_2           dd          2.0
         example         dd          0.2
+
     endl
 
     mov     edi, [pPlayer]
+
+    fild    [dt]
+    fidiv   [fixDt]
+    fstp    [dt]
 
     push    edi
     add     edi, Player.Position
@@ -145,18 +150,18 @@ proc Player.Move uses edi esi ebx,\
 
     fld     [edi + Player.Position + Vector3.x]
     fld     [edi + Player.Velocity + Vector3.x]
-    fimul   [dt]
+    fmul    [dt]
     faddp
     fld     [edi + Player.Acceleration + Vector3.x]
-    fimul   [dt]
-    fimul   [dt]
+    fmul    [dt]
+    fmul    [dt]
     fdiv    [div_2]
     faddp
     fstp    [edi + Player.Position + Vector3.x]
 
     fld     [edi + Player.Velocity + Vector3.x]
     fld     [edi + Player.Acceleration + Vector3.x]
-    fimul   [dt]
+    fmul    [dt]
     faddp   
     fstp    [edi + Player.Velocity + Vector3.x]
 
@@ -189,18 +194,18 @@ proc Player.Move uses edi esi ebx,\
 
     fld     [edi + Player.Position + Vector3.z]
     fld     [edi + Player.Velocity + Vector3.z]
-    fimul   [dt]
+    fmul    [dt]
     faddp
     fld     [edi + Player.Acceleration + Vector3.z]
-    fimul   [dt]
-    fimul   [dt]
+    fmul    [dt]
+    fmul    [dt]
     fdiv    [div_2]
     faddp
     fstp    [edi + Player.Position + Vector3.z]
 
     fld     [edi + Player.Velocity + Vector3.z]
     fld     [edi + Player.Acceleration + Vector3.z]
-    fimul   [dt]
+    fmul    [dt]
     faddp   
     fstp    [edi + Player.Velocity + Vector3.z]
 
@@ -234,13 +239,13 @@ proc Player.Move uses edi esi ebx,\
     ; Position
     fld     [edi + Player.Position + Vector3.y]
     fld     [edi + Player.Velocity + Vector3.y]
-    fimul   [dt]
+    fmul    [dt]
     faddp
     fld     [edi + Player.Acceleration + Vector3.y]
-    fimul   [dt]
-    fimul   [dt]
-    fdiv    [div_2]
-
+    fmul    [dt]
+    fmul    [dt]
+    
+    
     cmp     [edi + Player.Condition], SLIDE_CONDITION
     jne     .SkipPositionSlide    
 
@@ -256,7 +261,7 @@ proc Player.Move uses edi esi ebx,\
     ; Valocity
     fld     [edi + Player.Velocity + Vector3.y]
     fld     [edi + Player.Acceleration + Vector3.y]
-    fimul   [dt]
+    fmul    [dt]
 
     cmp     [edi + Player.Condition], SLIDE_CONDITION
     jne     .SkipVelocitySlide    

@@ -13,22 +13,11 @@ proc Draw.Scene uses esi edi
         cmp     eax, 10
         jle     .Skip
 
+        stdcall Player.InputsKeys, mainPlayer
+        stdcall Player.Move, mainPlayer, 12, 10
+
         mov     eax, [currentFrame]
         mov     [time], eax
-
-        fld     [angle]                 ; angle
-        fsub    [step]                  ; angle + step
-        fstp    [angle]                 ;
-
-        mov     eax, [currentFrame]
-        sub     eax, [lastFrame]
-        mov     [deltaTime], eax
-        mov     eax, [currentFrame]
-        mov     [lastFrame], eax
-        xor     ebx, ebx
-
-        stdcall Player.InputsKeys, mainPlayer
-        stdcall Player.Move, mainPlayer, 1
 
 .Skip: 
 
