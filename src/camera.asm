@@ -33,6 +33,16 @@ proc Camera.Constructor uses edi,\
     mov     [edi + Camera.speed], 0.002
     mov     [edi + Camera.sensitivity], 0.0005
 
+    ; Able to change field of view
+    mov     [edi + Camera.fovDeg], 90.0
+    mov     [edi + Camera.nearPlane], 0.001
+    mov     [edi + Camera.farPlane], 1000.0
+
+    ; translate camera for the player
+    mov     [edi + Camera.translate + Vector3.x], 0.0
+    mov     [edi + Camera.translate + Vector3.y], 0.0
+    mov     [edi + Camera.translate + Vector3.z], 0.0
+
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
     
@@ -69,20 +79,21 @@ proc Camera.Direction uses edi,\
 endp
 
 proc Camera.Matrix uses edi esi ebx,\
-    pCamera, FOVdeg, nearPlane, farPlane 
+    pCamera
 
     locals 
         aspect      dd         ?
     endl
 
     mov     edi, [pCamera]
-    fild    dword [edi + Camera.width]    ; width
-    fidiv   dword [edi + Camera.height]   ; width / height
+    fild    [edi + Camera.width]    ; width
+    fidiv   [edi + Camera.height]   ; width / height
     fstp    [aspect]                ;
 
     push    edi 
+    mov     esi, edi
     add     edi, Camera.proj
-    stdcall Matrix.Projection, [FOVdeg], [aspect], [nearPlane], [farPlane], edi
+    stdcall Matrix.Projection, [esi + Camera.fovDeg], [aspect], [esi + Camera.nearPlane], [esi + Camera.farPlane], edi
     pop     edi
 
     push    edi
@@ -103,6 +114,17 @@ proc Camera.Matrix uses edi esi ebx,\
     add     ebx, Camera.view
 
     stdcall Matrix.LookAt, edi, target, esi, ebx
+
+    pop     edi
+
+    ; Translate camera to the right place
+    invoke  glMatrixMode, GL_MODELVIEW
+    invoke  glPushMatrix
+        invoke  glLoadIdentity
+        invoke  glMultMatrixf, ebx
+        invoke  glTranslatef, -2.0, -1.0, 0.0 
+        invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
+    invoke  glPopMatrix
 
     ret
 endp

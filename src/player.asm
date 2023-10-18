@@ -4,9 +4,9 @@ proc Player.Constructor uses edi,\
     mov     edi, [pPlayer]
 
     mov     eax, [width]
-    mov     dword [edi + Player.width], eax
+    mov     [edi + Player.width], eax
     mov     eax, [height]
-    mov     dword [edi + Player.height], eax
+    mov     [edi + Player.height], eax
 
     push    edi
     add     edi, Player.Position
@@ -19,7 +19,7 @@ proc Player.Constructor uses edi,\
     pop     edi
 
     mov     [edi + Player.Acceleration + Vector3.x], 0.0
-    fld     [MOON_GRAVITY]
+    fld     [EARTH_GRAVITY]
     fstp    [edi + Player.Acceleration + Vector3.y]
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
@@ -38,9 +38,19 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.z], 0.0
 
     mov     [edi + Player.speed], 0.035
-    mov     [edi + Player.jumpVeloc], 0.15
+    mov     [edi + Player.jumpVeloc], 0.25
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], JUMP_CONDITION
+
+    ; Able to change field of view
+    mov     [edi + Camera.fovDeg], 90.0
+    mov     [edi + Camera.nearPlane], 0.001
+    mov     [edi + Camera.farPlane], 1000.0
+
+    ; translate camera for the player
+    mov     [edi + Camera.translate + Vector3.x], 0.0
+    mov     [edi + Camera.translate + Vector3.y], 0.0
+    mov     [edi + Camera.translate + Vector3.z], 0.0
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos

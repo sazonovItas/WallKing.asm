@@ -3,18 +3,22 @@ proc Draw.Scene uses esi edi
         locals 
                 currentFrame            dd     ?
                 testAngle               dd     180.0
+                rotAngle                dd     0.0
                 colDetected             dd     ?
+                timeBetweenChecking     dd     ?
         endl
 
         invoke  GetTickCount
         mov     [currentFrame], eax
 
         sub     eax, [time]
-        cmp     eax, 10
+        cmp     eax, 12 
         jle     .Skip
 
+        mov     [timeBetweenChecking], eax
+
         stdcall Player.InputsKeys, mainPlayer
-        stdcall Player.Move, mainPlayer, 12, 10
+        stdcall Player.Move, mainPlayer, [timeBetweenChecking], 12
 
         mov     eax, [currentFrame]
         mov     [time], eax
@@ -26,7 +30,7 @@ proc Draw.Scene uses esi edi
 
         ; stdcall Player.Move, mainPlayer, [deltaTime]
 
-        stdcall Camera.Matrix, mainPlayer, [fovY], [zNear], [zFar]
+        stdcall Camera.Matrix, mainPlayer
 
         invoke  glViewport, 0, 0, [mainPlayer.width], [mainPlayer.height]
         invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
@@ -53,6 +57,44 @@ proc Draw.Scene uses esi edi
 
         stdcall VAO.Bind, [lightVAO.ID]
         invoke  glDrawElements, GL_TRIANGLES, countLightIndices, GL_UNSIGNED_INT, 0
+        stdcall VAO.Unbind
+
+
+        ; draw player
+        stdcall Shader.Activate, [exampleShader.ID]
+
+        stdcall Camera.UniformBind, mainPlayer, [exampleShader.ID], uniProjName, uniViewName
+        lea     esi, [arrTextures]
+        add     esi, 0
+        stdcall Texture.Bind, GL_TEXTURE_2D, dword [esi], GL_TEXTURE0
+        stdcall Texture.texUnit, [exampleShader.ID], uniTex0Name, GL_TEXTURE0
+
+        lea     edi, [mainPlayer]
+
+        invoke  glPushMatrix
+                invoke  glLoadIdentity
+                invoke  glTranslatef, [edi + Player.Position + Vector3.x], [edi + Player.Position + Vector3.y], [edi + Player.Position + Vector3.z]
+                fld     [edi + Player.yaw]
+                fmul    [radian]
+                fstp    [rotAngle]
+                invoke  glRotatef, 0.0, [rotAngle], 0.0
+                invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
+        invoke  glPopMatrix
+        invoke  glGetUniformLocation, [exampleShader.ID], uniModelName
+        invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
+
+        invoke  glGetUniformLocation, [exampleShader.ID], uniLightColorName
+        invoke  glUniform4f, eax, [lightColor.r], [lightColor.g], [lightColor.b], [lightColor.a]
+
+        invoke  glGetUniformLocation, [exampleShader.ID], uniLightPosName
+        invoke  glUniform3f, eax, [lightPos.x], [lightPos.y], [lightPos.z]
+
+        lea     edi, [mainPlayer]
+        invoke  glGetUniformLocation, [exampleShader.ID], uniCamPosName
+        invoke  glUniform3f, eax, [edi + Camera.Position + Vector3.x], [edi + Camera.Position + Vector3.y], [edi + Camera.Position + Vector3.z]
+
+        stdcall VAO.Bind, [VAO1.ID]       
+        invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
         stdcall VAO.Unbind
 
         ret

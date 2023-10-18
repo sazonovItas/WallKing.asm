@@ -19,7 +19,6 @@
         className       db      "OpenGLDemo", 0
         clientRect      RECT
         hHeap           dd      ?
-        hdcBack         dd      ?
         time            dd      ?
         hdc             dd      ?
         angle           dd      0.0
@@ -32,7 +31,7 @@
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3         2.0, 3.0, 0.0
+        cameraPosition  Vector3         2.0, 4.0, 0.0
         targetPosition  Vector3         0.0, 0.0, 2.0
         upVector        Vector3         0.0, 1.0, 0.0
 
@@ -111,6 +110,10 @@ proc WinMain
         finit
         xor     ebx, ebx
         stdcall Init
+
+        invoke  GetTickCount
+        mov     [time], eax 
+        mov     [lastFrame], eax
 
         lea     esi, [msg]
 

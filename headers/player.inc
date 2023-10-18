@@ -14,7 +14,13 @@ struct Player
     yaw             GLfloat         ?
 
     view            Matrix4x4       ?
+
     proj            Matrix4x4       ?
+    fovDeg          GLfloat         ?
+    nearPlane       GLfloat         ?
+    farPlane        GLfloat         ?
+
+    translate       Vector3         ?
 
     ; Physics
     prevPosition        Vector3         ?

@@ -42,7 +42,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     pPlayerPosition, pBlockPosition, pResult
 
     locals 
-        minXYZplayer            Vector4     -0.5, -1.0, -0.5, 1.0
+        minXYZplayer            Vector4     -0.5, -0.5, -0.5, 1.0
         maxXYZplayer            Vector4     0.5, 0.5, 0.5, 1.0
         minXYZblock             Vector4     -0.5, -0.5, -0.5, 1.0
         maxXYZblock             Vector4     0.5, 0.5, 0.5, 1.0

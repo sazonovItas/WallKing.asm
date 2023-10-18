@@ -14,9 +14,6 @@ proc Init uses esi edi
 
     invoke  GetClientRect, eax, clientRect
     invoke  ShowCursor, ebx 
-    invoke  GetTickCount
-    mov     [time], eax 
-    mov     [lastFrame], eax
 
     invoke  GetDC, [hMainWindow]
     mov     [hdc], eax 
