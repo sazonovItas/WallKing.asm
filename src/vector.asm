@@ -126,10 +126,7 @@ endp
 proc Vector3.Copy uses esi edi,\
      dest, src
 
-        mov     esi, [src]
-        mov     edi, [dest]
-        mov     ecx, 3
-        rep     movsd
+        stdcall memcpy, [dest], [src], 3 * 4
 
         ret
 endp

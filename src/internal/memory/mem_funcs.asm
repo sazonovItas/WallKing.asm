@@ -25,3 +25,29 @@ proc free\
 
     ret
 endp
+
+; Copy memory from src to dest
+proc memcpy uses edi esi,\
+    pDest, pSrc, countInByte
+
+    mov     ecx, [countInByte]
+    mov     edi, [pDest]    
+    mov     esi, [pSrc]
+    rep     movsb
+
+    ret
+endp
+
+proc sizeOf ptr
+
+    invoke  HeapSize, [hHeap], 8, [ptr]
+
+    ret
+endp
+
+proc realloc ptr, countInBytes
+
+    invoke  HeapReAlloc, [hHeap], 8, [ptr], [countInBytes]
+
+    ret
+endp
