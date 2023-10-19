@@ -48,11 +48,6 @@ ends
     PL_ENHANCE_GRAV     =       VK_UP
     PL_WEAK_GRAV        =       VK_DOWN
 
-    EARTH_GRAVITY       dd       -0.0098
-    MOON_GRAVITY        dd       -0.0016
-    MARS_GRAVITY        dd       -0.0031
-    MERCURY_GRAVITY     dd       -0.0036
-
     pl_jump             db      false
     pl_slide_jump       db      false
     pl_forward          db      false
@@ -62,6 +57,12 @@ ends
     pl_normal_grav      db      false
     pl_enhance_grav     db      false 
     pl_weak_grav        db      false
+
+    ;   Gravity just for fun
+    EARTH_GRAVITY       dd       -0.0098
+    MOON_GRAVITY        dd       -0.0016
+    MARS_GRAVITY        dd       -0.0031
+    MERCURY_GRAVITY     dd       -0.0036
 
     maxClimbSpeed       dd      0.1
     maxPlayerPitch      dd      1.50

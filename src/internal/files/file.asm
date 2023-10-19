@@ -14,7 +14,7 @@ proc File.LoadContent uses edi,\
         invoke  GetFileSize, [hFile], ebx
         inc     eax
         mov     [length], eax
-        invoke  HeapAlloc, [hHeap], 8, [length]
+        stdcall malloc, [length]
         mov     [pBuffer], eax
 
         lea     edi, [read]
@@ -43,7 +43,7 @@ proc File.LoadBmp uses edi,\
         invoke  GetFileSize, [hFile], ebx
         inc     eax
         mov     [length], eax
-        invoke  HeapAlloc, [hHeap], 8, [length]
+        stdcall malloc, [length]
         mov     [pBuffer], eax
 
         lea     edi, [read]

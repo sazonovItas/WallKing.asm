@@ -5,8 +5,6 @@
         include         "vector.asm"
         include         "matrix.asm"
         include         "draw.asm"
-        include         "file.asm"
-        include         "glext.asm"
         include         "shader.asm"
         include         "VAO.asm"
         include         "VBO.asm"
@@ -15,10 +13,14 @@
         include         "camera.asm"
         include         "collision.asm"
         include         "player.asm"
+
+        ; Include some internal functionality
+        include         "internal/memory/mem_funcs.asm"
+        include         "internal/files/file.asm"
+        include         "internal/memory/glext.asm"
         
         className       db      "OpenGLDemo", 0
         clientRect      RECT
-        hHeap           dd      ?
         time            dd      ?
         hdc             dd      ?
         angle           dd      0.0

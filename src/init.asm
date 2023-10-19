@@ -4,8 +4,7 @@ proc Init uses esi edi
             hMainWindow     dd      ?
     endl 
 
-    invoke  GetProcessHeap
-    mov     [hHeap], eax
+    stdcall memInit
 
     invoke  RegisterClass, wndClass
     invoke  CreateWindowEx, ebx, className, className, WINDOW_STYLE,\

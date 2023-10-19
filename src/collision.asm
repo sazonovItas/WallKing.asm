@@ -69,7 +69,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     lea     ebx, [modelPlayerMat]
     invoke  glPushMatrix
         invoke  glLoadIdentity
-        invoke  glTranslatef, dword [esi + Vector3.x], dword [esi + Vector3.y], dword [esi + Vector3.z]
+        invoke  glTranslatef, [esi + Vector3.x], [esi + Vector3.y], [esi + Vector3.z]
         invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
     invoke  glPopMatrix
     

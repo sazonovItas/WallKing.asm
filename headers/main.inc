@@ -22,6 +22,11 @@ entry   WinMain
         include         "camera.inc"
         include         "physics.inc"
         include         "player.inc"
+        include         "collision.inc"
+
+        ; Internal functions
+        include         "memory.inc"
+        include         "string.inc"
 
 macro JumpIf value, label
 {

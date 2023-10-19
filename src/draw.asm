@@ -76,8 +76,9 @@ proc Draw.Scene uses esi edi
                 invoke  glTranslatef, [edi + Player.Position + Vector3.x], [edi + Player.Position + Vector3.y], [edi + Player.Position + Vector3.z]
                 fld     [edi + Player.yaw]
                 fmul    [radian]
+                fchs
                 fstp    [rotAngle]
-                invoke  glRotatef, 0.0, [rotAngle], 0.0
+                invoke  glRotatef, [rotAngle], 0.0, 1.0, 0.0
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
         invoke  glGetUniformLocation, [exampleShader.ID], uniModelName

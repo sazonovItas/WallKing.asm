@@ -121,8 +121,8 @@ proc Camera.Matrix uses edi esi ebx,\
     invoke  glMatrixMode, GL_MODELVIEW
     invoke  glPushMatrix
         invoke  glLoadIdentity
+        invoke  glTranslatef, 0.0, -1.0, -2.0 
         invoke  glMultMatrixf, ebx
-        invoke  glTranslatef, -2.0, -1.0, 0.0 
         invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
     invoke  glPopMatrix
 
