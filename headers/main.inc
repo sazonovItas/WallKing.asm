@@ -9,6 +9,11 @@ entry   WinMain
         include         "include/api/opengl.inc"
         include         "include/api/glut.inc"
 
+        ; Internal functions
+        include         "memory.inc"
+        include         "string.inc"
+        include         "easing.inc"
+
         include         "mesh.inc"
         include         "vector.inc"
         include         "matrix.inc"
@@ -24,17 +29,13 @@ entry   WinMain
         include         "player.inc"
         include         "collision.inc"
 
-        ; Internal functions
-        include         "memory.inc"
-        include         "string.inc"
+        include         "objects.inc"
 
 macro JumpIf value, label
 {
         cmp     eax, value
         je      label
 }
-
-        include         "objects.inc"
 
         true            =       1
         false           =       0

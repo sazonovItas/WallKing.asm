@@ -42,7 +42,7 @@ proc strconcat uses edi esi,\
 
     locals 
         sizeStr     dd      0
-        sizeDest     dd      0
+        sizeDest    dd      0
         sizeSrc     dd      0
     endl
 

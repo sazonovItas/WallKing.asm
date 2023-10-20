@@ -38,6 +38,17 @@ proc memcpy uses edi esi,\
     ret
 endp
 
+proc memzero uses edi,\
+    pDest, countInByte
+
+    mov     ecx, [countInByte]
+    mov     edi, [pDest]
+    mov     al, 0
+    rep     stosb
+
+    ret
+endp
+
 proc sizeOf ptr
 
     invoke  HeapSize, [hHeap], 8, [ptr]

@@ -131,6 +131,14 @@ proc Vector3.Copy uses esi edi,\
         ret
 endp
 
+proc Vector4.Copy uses esi edi,\
+     dest, src
+
+        stdcall memcpy, [dest], [src], 4 * 4
+
+        ret
+endp
+
 proc Vector3.Sub uses esi edi,\
      dest, src
 

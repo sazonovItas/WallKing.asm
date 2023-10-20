@@ -12,13 +12,13 @@ proc Draw.Scene uses esi edi
         mov     [currentFrame], eax
 
         sub     eax, [time]
-        cmp     eax, 12 
+        cmp     eax, 20 
         jle     .Skip
 
         mov     [timeBetweenChecking], eax
 
         stdcall Player.InputsKeys, mainPlayer
-        stdcall Player.Move, mainPlayer, [timeBetweenChecking], 12
+        stdcall Player.Move, mainPlayer, [timeBetweenChecking], 20 
 
         mov     eax, [currentFrame]
         mov     [time], eax
@@ -79,6 +79,7 @@ proc Draw.Scene uses esi edi
                 fchs
                 fstp    [rotAngle]
                 invoke  glRotatef, [rotAngle], 0.0, 1.0, 0.0
+                invoke  glScalef, [edi + Player.sizeBlockCol], [edi + Player.sizeBlockCol], [edi + Player.sizeBlockCol]
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
         invoke  glGetUniformLocation, [exampleShader.ID], uniModelName

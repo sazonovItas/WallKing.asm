@@ -43,14 +43,20 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Condition], JUMP_CONDITION
 
     ; Able to change field of view
-    mov     [edi + Camera.fovDeg], 90.0
-    mov     [edi + Camera.nearPlane], 0.001
-    mov     [edi + Camera.farPlane], 1000.0
+    mov     [edi + Player.fovDeg], 90.0
+    mov     [edi + Player.nearPlane], 0.001
+    mov     [edi + Player.farPlane], 1000.0
 
     ; translate camera for the player
-    mov     [edi + Camera.translate + Vector3.x], 0.0
-    mov     [edi + Camera.translate + Vector3.y], 0.0
-    mov     [edi + Camera.translate + Vector3.z], 0.0
+    mov     [edi + Player.translate + Vector3.x], 0.0
+    mov     [edi + Player.translate + Vector3.y], 0.0
+    mov     [edi + Player.translate + Vector3.z], 0.0
+
+    ; Animation functions
+    mov     [edi + Player.forwAni], dword Easing.easeInQuad
+
+    ; size of player collision
+    mov     [edi + Player.sizeBlockCol], 0.5 
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
@@ -102,6 +108,31 @@ proc Player.AssignPrevPosition uses edi, esi,\
 
     stdcall Vector3.Copy, edi, esi
 
+    ret
+endp
+
+
+proc Player.EasingMove uses edi esi ebx,\
+    pPlayer, dt, fixDt
+
+.Ret:
+
+    ret
+endp
+
+proc Player.EasingInputsKeys uses edi esi ebx,\
+    pPlayer
+
+
+.Ret:
+
+    ret
+endp
+
+proc Player.EasingHandler uses edi esi ebx,\
+    pPlayer
+
+.Ret:
     ret
 endp
 
@@ -184,7 +215,7 @@ proc Player.Move uses edi esi ebx,\
     mov     eax, [edi + Player.prevPosition + Vector3.x]
     mov     [edi + Player.Position + Vector3.x], eax
 
-    mov     [edi + Player.Velocity + Vector3.x], 0.0
+    mov     [edi + Player.Velocity + Vector3.x], 0.0000000001
     mov     [edi + Player.Acceleration + Vector3.x], 0.0
 
     mov     [edi + Player.Condition], SLIDE_CONDITION
@@ -228,7 +259,7 @@ proc Player.Move uses edi esi ebx,\
     mov     eax, [edi + Player.prevPosition + Vector3.z]
     mov     [edi + Player.Position + Vector3.z], eax
 
-    mov     [edi + Player.Velocity + Vector3.z], 0.0
+    mov     [edi + Player.Velocity + Vector3.z], 0.0000000001
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
     mov     [edi + Player.Condition], SLIDE_CONDITION
@@ -268,7 +299,7 @@ proc Player.Move uses edi esi ebx,\
     faddp
     fstp    [edi + Player.Position + Vector3.y]
 
-    ; Valocity
+    ; Velocity
     fld     [edi + Player.Velocity + Vector3.y]
     fld     [edi + Player.Acceleration + Vector3.y]
     fmul    [dt]
@@ -293,7 +324,7 @@ proc Player.Move uses edi esi ebx,\
     mov     eax, [edi + Player.prevPosition + Vector3.y]
     mov     [edi + Player.Position + Vector3.y], eax
     
-    mov     [edi + Player.Velocity + Vector3.y], 0.0
+    mov     [edi + Player.Velocity + Vector3.y], 0.0000000001
 
     mov     [edi + Player.Condition], WALK_CONDITION
 

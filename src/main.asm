@@ -1,9 +1,6 @@
         include "../headers/main.inc"
 
         include         "init.asm"
-        include         "mesh.asm"
-        include         "vector.asm"
-        include         "matrix.asm"
         include         "draw.asm"
         include         "shader.asm"
         include         "VAO.asm"
@@ -18,6 +15,10 @@
         include         "internal/memory/mem_funcs.asm"
         include         "internal/files/file.asm"
         include         "internal/memory/glext.asm"
+        include         "internal/math/mesh.asm"
+        include         "internal/math/vector.asm"
+        include         "internal/math/matrix.asm"
+        include         "internal/math/easing_funcs.asm"
         
         className       db      "OpenGLDemo", 0
         clientRect      RECT
