@@ -143,6 +143,9 @@ proc Draw.Block uses edi esi,\
         invoke  glPushMatrix
                 invoke  glLoadIdentity
                 invoke  glTranslatef, [edi + translateOffset + Vector3.x], [edi + translateOffset + Vector3.y], [edi + translateOffset + Vector3.z]
+                invoke  glRotatef, [edi + rotateOffset + Vector3.x], 1.0, 0.0, 0.0
+                invoke  glRotatef, [edi + rotateOffset + Vector3.y], 0.0, 1.0, 0.0
+                invoke  glRotatef, [edi + rotateOffset + Vector3.z], 0.0, 0.0, 1.0
                 invoke  glScalef, [edi + scaleOffset + Vector3.x], [edi + scaleOffset + Vector3.y], [edi + scaleOffset + Vector3.z] 
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix

@@ -207,10 +207,10 @@ proc Player.Move uses edi esi ebx,\
     fstp    [edi + Player.Velocity + Vector3.x]
 
     lea     eax, [colDet]
-    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
+    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax, dword X_COLLISION
 
-    cmp     [colDet], true
-    jne     @F
+    cmp     [colDet], NO_COLLISION 
+    je      @F
     
     mov     eax, [edi + Player.prevPosition + Vector3.x]
     mov     [edi + Player.Position + Vector3.x], eax
@@ -253,10 +253,10 @@ proc Player.Move uses edi esi ebx,\
     fstp    [edi + Player.Velocity + Vector3.z]
 
     lea     eax, [colDet]
-    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
+    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax, dword Z_COLLISION
 
-    cmp     [colDet], true
-    jne     @F
+    cmp     [colDet], NO_COLLISION
+    je      @F
     
     mov     eax, [edi + Player.prevPosition + Vector3.z]
     mov     [edi + Player.Position + Vector3.z], eax
@@ -320,10 +320,10 @@ proc Player.Move uses edi esi ebx,\
     fstp    [edi + Player.Velocity + Vector3.y]
 
     lea     eax, [colDet]
-    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax
+    stdcall Collision.MapDetection, [pPlayer], [sizeBlocksMapTry], blocksMapTry, eax, dword Y_COLLISION
 
-    cmp     [colDet], true
-    jne     @F
+    cmp     [colDet], NO_COLLISION 
+    je     @F
     
     mov     eax, [edi + Player.prevPosition + Vector3.y]
     mov     [edi + Player.Position + Vector3.y], eax
