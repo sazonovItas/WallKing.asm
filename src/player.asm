@@ -53,7 +53,11 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.translate + Vector3.z], 0.0
 
     ; Animation functions
-    mov     [edi + Player.forwAni], dword Easing.easeInQuad
+    mov     [edi + Player.forwAni + Easing.ptrEasingFun], dword Easing.easeInQuad
+    mov     [edi + Player.forwAni + Easing.duration], 1000000 
+    mov     [edi + Player.forwAni + Easing.startTime], 0
+    mov     [edi + Player.forwAni + Easing.start], false
+    mov     [edi + Player.forwAni + Easing.done], false
 
     ; size of player collision
     mov     [edi + Player.sizeBlockCol], 0.5 
@@ -113,24 +117,124 @@ endp
 
 
 proc Player.EasingMove uses edi esi ebx,\
-    pPlayer, dt, fixDt
+    pPlayer, dt
+
+    locals 
+        deltaPos        Vector3         0.02, 0.0, 0.0
+    endl
+
+    mov     edi, [pPlayer]
+    lea     ebx, [deltaPos]
+        
+    push    edi
+    add     edi, Player.Velocity
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
+
+    fild    [dt]
+    fstp    [dt]
+    stdcall Vector3.MultOnNumber, ebx, [dt]
+
+    push    edi
+    add     edi, Player.Position
+    stdcall Vector3.Add, edi, ebx
+    pop     edi
 
 .Ret:
-
     ret
 endp
 
 proc Player.EasingInputsKeys uses edi esi ebx,\
     pPlayer
 
+    locals 
+        velocity         dd          0.0
+    endl
+
+    mov     edi, [pPlayer]
+
+    push    edi 
+    add     edi, Player.Direction
+    stdcall Vector3.Copy, orinVec, edi
+    pop     edi
+
+    ; Forward animation
+    cmp     [pl_forward], false
+    je      .SkipForwUpdateAni
+
+    cmp     [edi + Player.forwAni + Easing.done], true
+    je     .SkipForwDoneAni
+
+    cmp     [edi + Player.forwAni + Easing.start], true
+    je      .SkipForwStartAni
+
+    mov     [edi + Player.forwAni + Easing.start], true
+    invoke  GetTickCount
+    mov     [edi + Player.forwAni + Easing.startTime], eax
+
+    .SkipForwStartAni:
+
+    invoke  GetTickCount
+    sub     eax, [edi + Player.forwAni + Easing.startTime]
+    cmp     eax, [edi + Player.forwAni + Easing.duration]
+    ja      .SkipForwDoneAni
+
+    stdcall [edi + Player.forwAni + Easing.ptrEasingFun], eax
+    mov     [velocity], eax 
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    stdcall Vector3.MultOnNumber, orinVec, [velocity]
+
+    mov     eax, [orinVec + Vector3.x]
+    mov     [edi + Player.Velocity + Vector3.x], eax 
+    mov     eax, [orinVec + Vector3.z]
+    mov     [edi + Player.Velocity + Vector3.z], eax 
+
+    jmp     .SkipForwAni
+
+    .SkipForwDoneAni:
+
+    mov     [edi + Player.forwAni + Easing.done], true
+
+    stdcall [edi + Player.forwAni + Easing.ptrEasingFun], [edi + Player.forwAni + Easing.duration]
+    mov     [velocity], eax
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    stdcall Vector3.MultOnNumber, orinVec, [velocity]
+
+    mov     eax, [orinVec + Vector3.x]
+    mov     [edi + Player.Velocity + Vector3.x], eax 
+    mov     eax, [orinVec + Vector3.z]
+    mov     [edi + Player.Velocity + Vector3.z], eax 
+
+    jmp     .SkipForwAni
+
+    .SkipForwUpdateAni:
+
+    cmp     [edi + Player.forwAni + Easing.start], false
+    je      .SkipForwAni
+
+    mov     [edi + Player.forwAni + Easing.start], false
+    mov     [edi + Player.forwAni + Easing.done], false
+
+    mov     [edi + Player.Velocity + Vector3.x], 0.0 
+    mov     [edi + Player.Velocity + Vector3.z], 0.0 
+
+    .SkipForwAni:
+    
 
 .Ret:
-
     ret
 endp
 
 proc Player.EasingHandler uses edi esi ebx,\
-    pPlayer
+    pPlayer, dt
 
 .Ret:
     ret
