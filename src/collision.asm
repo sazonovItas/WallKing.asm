@@ -54,69 +54,68 @@ proc Collision.BlockDetection uses edi esi ebx,\
     mov     esi, [pPlayer]
     mov     edi, [pBlockPosition]
 
-    lea     ebx, [modelBlockMat]
-    invoke  glPushMatrix
-        invoke  glMatrixMode, GL_MODELVIEW
-        invoke  glLoadIdentity
-        invoke  glTranslatef, [edi + translateOffset + Vector3.x], [edi + translateOffset + Vector3.y], [edi + translateOffset + Vector3.z]
-        invoke  glScalef, [edi + scaleOffset + Vector3.x], [edi + scaleOffset + Vector3.y], [edi + scaleOffset + Vector3.z] 
-        invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
-    invoke  glPopMatrix
-
-    lea     ebx, [modelPlayerMat]
-    invoke  glPushMatrix
-        invoke  glMatrixMode, GL_MODELVIEW
-        invoke  glLoadIdentity
-        invoke  glTranslatef, [esi + Player.Position + Vector3.x], [esi + Player.Position + Vector3.y], [esi + Player.Position + Vector3.z]
-        invoke  glScalef, [esi + Player.sizeBlockCol], [esi + Player.sizeBlockCol], [esi + Player.sizeBlockCol]
-        invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
-    invoke  glPopMatrix
-    
-    lea     eax, [modelBlockMat]
-    lea     ebx, [minResultBlock]
-    lea     esi, [maxResultBlock]
-    lea     edi, [minXYZblock]
-    stdcall Matrix.MultVec4OnMat4x4, edi, eax, ebx 
-    lea     edi, [maxXYZblock]
-    stdcall Matrix.MultVec4OnMat4x4, edi, eax, esi
-
-    lea     eax, [modelPlayerMat]
+    ; Calculate Player max and min vertices
     lea     ebx, [minResultPlayer]
-    lea     esi, [maxResultPlayer]
-    lea     edi, [minXYZplayer]
-    stdcall Matrix.MultVec4OnMat4x4, edi, eax, ebx
-    lea     edi, [maxXYZplayer]
-    stdcall Matrix.MultVec4OnMat4x4, edi, eax, esi
+    lea     eax, [maxResultPlayer]
+    mov     ecx, [esi + Player.sizeBlockCol]
+    push    esi
+    push    edi
+    add     esi, Player.Position
+    lea     edx, [scale]
+    mov     [edx + Vector3.x], ecx
+    mov     [edx + Vector3.y], ecx
+    mov     [edx + Vector3.z], ecx
+    lea     edi, [tmp]
+    stdcall Collision.minMaxBlockVerts, ebx, eax, edx, edi, esi 
+    pop     edi
+    pop     esi
 
+    ; Calculate Block max and min vertices
+    lea     ebx, [minResultBlock]
+    lea     eax, [maxResultBlock]
+    push    esi
+    push    edi
+    mov     esi, edi
+    add     edi, translateOffset
+    add     esi, scaleOffset
+    lea     edx, [tmp]
+    stdcall Collision.minMaxBlockVerts, ebx, eax, esi, edx, edi 
+    pop     edi
+    pop     esi
 
-    ; ; Calculate Player max and min vertices
-    ; lea     ebx, [minResultPlayer]
-    ; lea     eax, [maxResultPlayer]
-    ; mov     ecx, [esi + Player.sizeBlockCol]
-    ; push    esi
-    ; push    edi
-    ; add     esi, Player.Position
-    ; lea     edx, [scale]
-    ; mov     [edx + Vector3.x], ecx
-    ; mov     [edx + Vector3.y], ecx
-    ; mov     [edx + Vector3.z], ecx
-    ; lea     edi, [tmp]
-    ; stdcall Collision.minMaxBlockVerts, ebx, eax, edx, edi, esi 
-    ; pop     edi
-    ; pop     esi
+    ; lea     ebx, [modelBlockMat]
+    ; invoke  glPushMatrix
+    ;     invoke  glMatrixMode, GL_MODELVIEW
+    ;     invoke  glLoadIdentity
+    ;     invoke  glTranslatef, [edi + translateOffset + Vector3.x], [edi + translateOffset + Vector3.y], [edi + translateOffset + Vector3.z]
+    ;     invoke  glScalef, [edi + scaleOffset + Vector3.x], [edi + scaleOffset + Vector3.y], [edi + scaleOffset + Vector3.z] 
+    ;     invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
+    ; invoke  glPopMatrix
 
-    ; ; Calculate Block max and min vertices
+    ; lea     ebx, [modelPlayerMat]
+    ; invoke  glPushMatrix
+    ;     invoke  glMatrixMode, GL_MODELVIEW
+    ;     invoke  glLoadIdentity
+    ;     invoke  glTranslatef, [esi + Player.Position + Vector3.x], [esi + Player.Position + Vector3.y], [esi + Player.Position + Vector3.z]
+    ;     invoke  glScalef, [esi + Player.sizeBlockCol], [esi + Player.sizeBlockCol], [esi + Player.sizeBlockCol]
+    ;     invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
+    ; invoke  glPopMatrix
+    
+    ; lea     eax, [modelBlockMat]
     ; lea     ebx, [minResultBlock]
-    ; lea     eax, [maxResultBlock]
-    ; push    esi
-    ; push    edi
-    ; mov     esi, edi
-    ; add     edi, translateOffset
-    ; add     esi, scaleOffset
-    ; lea     edx, [tmp]
-    ; stdcall Collision.minMaxBlockVerts, ebx, eax, esi, edx, edi 
-    ; pop     edi
-    ; pop     esi
+    ; lea     esi, [maxResultBlock]
+    ; lea     edi, [minXYZblock]
+    ; stdcall Matrix.MultVec4OnMat4x4, edi, eax, ebx 
+    ; lea     edi, [maxXYZblock]
+    ; stdcall Matrix.MultVec4OnMat4x4, edi, eax, esi
+
+    ; lea     eax, [modelPlayerMat]
+    ; lea     ebx, [minResultPlayer]
+    ; lea     esi, [maxResultPlayer]
+    ; lea     edi, [minXYZplayer]
+    ; stdcall Matrix.MultVec4OnMat4x4, edi, eax, ebx
+    ; lea     edi, [maxXYZplayer]
+    ; stdcall Matrix.MultVec4OnMat4x4, edi, eax, esi
 
     lea     esi, [minResultPlayer]
     lea     ebx, [maxResultPlayer]
@@ -191,7 +190,6 @@ proc Collision.minMaxBlockVerts uses edi esi ebx,\
         model       Matrix4x4       ?
     endl
 
-    lea     eax, [model]
     mov     edi, [pScl]
     mov     esi, [pRot]
     mov     ebx, [pTrl]
@@ -201,16 +199,14 @@ proc Collision.minMaxBlockVerts uses edi esi ebx,\
         invoke  glLoadIdentity
         invoke  glTranslatef, [ebx + Vector3.x], [ebx + Vector3.y], [ebx + Vector3.z]
         invoke  glScalef, [edi + Vector3.x], [edi + Vector3.y], [edi + Vector3.z] 
+        lea     eax, [model]
         invoke  glGetFloatv, GL_MODELVIEW_MATRIX, eax
     invoke  glPopMatrix
 
     lea     ebx, [model] 
 
     ; 0 Vertice
-    lea     edi, [vrt8]
     lea     esi, [vrt0]
-    stdcall Vector4.Copy, edi, esi
-
     ; Max and Min vrt's X, Y and Z
     mov     edi, [pMinVrt]
     stdcall Matrix.MultVec4OnMat4x4, esi, ebx, edi 
