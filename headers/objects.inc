@@ -97,6 +97,7 @@ lightIndices    GLuint          0, 1, 2,\
         colisionOffset          =       44
 
         sizeBlocksMapTry        dd      7
+
 ;                               // Scale                // Rotate               // Translate            // Texture offset       // Material offset      //Colision detect
 blocksMapTry:
                 GLfloat         1.0, 1.0, 1.0,          0.0, 0.0, 0.0,          0.0, 2.0, 0.0,          0,                      0,                      0

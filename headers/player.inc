@@ -32,6 +32,7 @@ struct Player
     jumpVeloc       GLfloat         ?
 
     forwAni         Easing          ?
+    backAni         Easing          ?
     jumpAni         Easing          ?
 
     sizeBlockCol    GLfloat         ?

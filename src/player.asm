@@ -37,7 +37,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.y], 1.0
     mov     [edi + Player.Up + Vector3.z], 0.0
 
-    mov     [edi + Player.speed], 0.035
+    mov     [edi + Player.speed], 0.05
     mov     [edi + Player.jumpVeloc], 0.25
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], JUMP_CONDITION
@@ -53,11 +53,17 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.translate + Vector3.z], 0.0
 
     ; Animation functions
-    mov     [edi + Player.forwAni + Easing.ptrEasingFun], dword Easing.easeInQuad
-    mov     [edi + Player.forwAni + Easing.duration], 1000000 
+    mov     [edi + Player.forwAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
+    mov     [edi + Player.forwAni + Easing.duration], 500 
     mov     [edi + Player.forwAni + Easing.startTime], 0
     mov     [edi + Player.forwAni + Easing.start], false
     mov     [edi + Player.forwAni + Easing.done], false
+
+    mov     [edi + Player.backAni + Easing.ptrEasingFun], dword Easing.easeInQuad
+    mov     [edi + Player.backAni + Easing.duration], 500 
+    mov     [edi + Player.backAni + Easing.startTime], 0
+    mov     [edi + Player.backAni + Easing.start], false
+    mov     [edi + Player.backAni + Easing.done], false
 
     ; size of player collision
     mov     [edi + Player.sizeBlockCol], 0.5 
@@ -101,21 +107,6 @@ proc Player.OrinDirection uses edi,\
     ret
 endp
 
-proc Player.AssignPrevPosition uses edi, esi,\
-    pPlayer
-
-    mov     edi, [pPlayer]
-    add     edi, Player.Position
-
-    mov     esi, [pPlayer]
-    add     esi, Player.prevPosition
-
-    stdcall Vector3.Copy, edi, esi
-
-    ret
-endp
-
-
 proc Player.EasingMove uses edi esi ebx,\
     pPlayer, dt
 
@@ -148,7 +139,7 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     pPlayer
 
     locals 
-        velocity         dd          0.0
+        velocity        dd          0.0
     endl
 
     mov     edi, [pPlayer]
@@ -228,6 +219,83 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
 
     .SkipForwAni:
     
+
+    push    edi 
+    add     edi, Player.Direction
+    stdcall Vector3.Copy, orinVec, edi
+    pop     edi
+
+    ; Backward animation
+    cmp     [pl_backward], false
+    je      .SkipBackUpdateAni
+
+    cmp     [edi + Player.backAni + Easing.done], true
+    je     .SkipBackDoneAni
+
+    cmp     [edi + Player.backAni + Easing.start], true
+    je      .SkipBackStartAni
+
+    mov     [edi + Player.backAni + Easing.start], true
+    invoke  GetTickCount
+    mov     [edi + Player.backAni + Easing.startTime], eax
+
+    .SkipBackStartAni:
+
+    invoke  GetTickCount
+    sub     eax, [edi + Player.backAni + Easing.startTime]
+    cmp     eax, [edi + Player.backAni + Easing.duration]
+    ja      .SkipBackDoneAni
+
+    stdcall [edi + Player.backAni + Easing.ptrEasingFun], eax
+    mov     [velocity], eax 
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fchs
+    fstp    [velocity]
+
+    stdcall Vector3.MultOnNumber, orinVec, [velocity]
+
+    mov     eax, [orinVec + Vector3.x]
+    mov     [edi + Player.Velocity + Vector3.x], eax 
+    mov     eax, [orinVec + Vector3.z]
+    mov     [edi + Player.Velocity + Vector3.z], eax 
+
+    jmp     .SkipBackAni
+
+    .SkipBackDoneAni:
+
+    mov     [edi + Player.backAni + Easing.done], true
+
+    stdcall [edi + Player.backAni + Easing.ptrEasingFun], [edi + Player.backAni + Easing.duration]
+    mov     [velocity], eax
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fchs
+    fstp    [velocity]
+
+    stdcall Vector3.MultOnNumber, orinVec, [velocity]
+
+    mov     eax, [orinVec + Vector3.x]
+    mov     [edi + Player.Velocity + Vector3.x], eax 
+    mov     eax, [orinVec + Vector3.z]
+    mov     [edi + Player.Velocity + Vector3.z], eax 
+
+    jmp     .SkipBackAni
+
+    .SkipBackUpdateAni:
+
+    cmp     [edi + Player.backAni + Easing.start], false
+    je      .SkipBackAni
+
+    mov     [edi + Player.backAni + Easing.start], false
+    mov     [edi + Player.backAni + Easing.done], false
+
+    mov     [edi + Player.Velocity + Vector3.x], 0.0 
+    mov     [edi + Player.Velocity + Vector3.z], 0.0 
+
+    .SkipBackAni:
 
 .Ret:
     ret
