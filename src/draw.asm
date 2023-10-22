@@ -61,13 +61,12 @@ proc Draw.Scene uses esi edi
         invoke  glDrawElements, GL_TRIANGLES, countLightIndices, GL_UNSIGNED_INT, 0
         stdcall VAO.Unbind
 
-
         ; draw player
         stdcall Shader.Activate, [exampleShader.ID]
 
         stdcall Camera.UniformBind, mainPlayer, [exampleShader.ID], uniProjName, uniViewName
         lea     esi, [arrTextures]
-        add     esi, 0
+        add     esi, 8
         stdcall Texture.Bind, GL_TEXTURE_2D, dword [esi], GL_TEXTURE0
         stdcall Texture.texUnit, [exampleShader.ID], uniTex0Name, GL_TEXTURE0
 

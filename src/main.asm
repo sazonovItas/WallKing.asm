@@ -56,6 +56,7 @@
         stringOut               db              "Hello, World!", 0
 
         fileBoxTexture          db              "resources/textures/container2.bmp", 0
+        filePlayerTex           db              "resources/textures/test1.bmp", 0
         fileLightTexture        db              "resources/textures/test.bmp", 0
         blockTexture            Texture         ?
         lightTexture            Texture         ?        
