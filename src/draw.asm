@@ -12,7 +12,7 @@ proc Draw.Scene uses esi edi
         mov     [currentFrame], eax
 
         sub     eax, [time]
-        cmp     eax, 1 
+        cmp     eax, 1
         jle     .Skip
 
         mov     [timeBetweenChecking], eax
