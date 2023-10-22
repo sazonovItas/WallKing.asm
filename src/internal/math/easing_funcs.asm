@@ -22,7 +22,7 @@ proc Easing.easeOutQuort dt
     locals 
         sub1        dd      1.0
         div1000     dd      1000.0
-        divNorm     dd      2.0
+        divNorm     dd      1.5
         ans         dd      ?
     endl
 
@@ -64,6 +64,46 @@ proc Easing.easeLine dt
     fild    [dt]
     fdiv    [normDiv]
     fstp    [ans]
+
+    mov     eax, [ans]
+    ret
+endp
+
+proc Easing.easeInCos dt
+
+    locals 
+        div2        dd      2.0
+        div1000     dd      1000.0
+        ans         dd      ?
+    endl
+
+    fldpi
+    fimul    [dt]
+    fdiv    [div1000]
+    fcos
+    fdiv    [div2]
+    fstp    [ans] 
+
+    mov     eax, [ans]
+    ret
+endp
+
+proc Easing.easeSlow dt
+
+    locals 
+        div2        dd      2.0
+        div1000     dd      1000.0
+        normDiv     dd      2.5
+        ans         dd      ?
+    endl
+
+    fldpi
+    fimul   [dt]
+    fdiv    [div1000]
+    fmul    [normDiv]
+    fcos
+    fdiv    [div2]
+    fstp    [ans] 
 
     mov     eax, [ans]
     ret

@@ -37,8 +37,8 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.y], 1.0
     mov     [edi + Player.Up + Vector3.z], 0.0
 
-    mov     [edi + Player.speed], 0.02
-    mov     [edi + Player.jumpVeloc], 0.1
+    mov     [edi + Player.speed], 0.01
+    mov     [edi + Player.jumpVeloc], 0.04
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], JUMP_CONDITION
 
@@ -81,6 +81,34 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.rightAni + Easing.start], false
     mov     [edi + Player.rightAni + Easing.done], false
 
+    ; slow Forward ani
+    mov     [edi + Player.bforwAni + Easing.ptrEasingFun], dword Easing.easeSlow
+    mov     [edi + Player.bforwAni + Easing.duration], 230 
+    mov     [edi + Player.bforwAni + Easing.startTime], 0
+    mov     [edi + Player.bforwAni + Easing.start], false
+    mov     [edi + Player.bforwAni + Easing.done], false
+
+    ; slow Backward ani
+    mov     [edi + Player.bbackAni + Easing.ptrEasingFun], dword Easing.easeSlow
+    mov     [edi + Player.bbackAni + Easing.duration], 230 
+    mov     [edi + Player.bbackAni + Easing.startTime], 0
+    mov     [edi + Player.bbackAni + Easing.start], false
+    mov     [edi + Player.bbackAni + Easing.done], false
+
+    ; slow left  ani
+    mov     [edi + Player.bleftAni + Easing.ptrEasingFun], dword Easing.easeSlow
+    mov     [edi + Player.bleftAni + Easing.duration], 230 
+    mov     [edi + Player.bleftAni + Easing.startTime], 0
+    mov     [edi + Player.bleftAni + Easing.start], false
+    mov     [edi + Player.bleftAni + Easing.done], false
+
+    ; slow right  ani
+    mov     [edi + Player.brightAni + Easing.ptrEasingFun], dword Easing.easeSlow
+    mov     [edi + Player.brightAni + Easing.duration], 230 
+    mov     [edi + Player.brightAni + Easing.startTime], 0
+    mov     [edi + Player.brightAni + Easing.start], false
+    mov     [edi + Player.brightAni + Easing.done], false
+
     ; fall ani
     mov     [edi + Player.fallAni + Easing.ptrEasingFun], dword Easing.easeLine
     mov     [edi + Player.fallAni + Easing.duration], 2500 
@@ -89,14 +117,14 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.fallAni + Easing.done], false
 
     ; jump ani
-    mov     [edi + Player.jumpAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
+    mov     [edi + Player.jumpAni + Easing.ptrEasingFun], dword Easing.easeInCos
     mov     [edi + Player.jumpAni + Easing.duration], 200
     mov     [edi + Player.jumpAni + Easing.startTime], 0
     mov     [edi + Player.jumpAni + Easing.start], false
     mov     [edi + Player.jumpAni + Easing.done], false
 
     ; size of player collision
-    mov     [edi + Player.sizeBlockCol], 0.5 
+    mov     [edi + Player.sizeBlockCol], 0.25 
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
@@ -214,16 +242,16 @@ proc Player.EasingMove uses edi esi ebx,\
     lea     ebx, [collision]
     stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Y_COLLISION
     cmp     eax, NO_COLLISION
-    je      .SkipYCollision
+    je      .SkipWalkCondition
 
     mov     eax, [edi + Player.prevPosition + Vector3.y]
     mov     [edi + Player.Position + Vector3.y], eax
 
     cmp     [collision], DIR_Y_MAX
-    je      .UpY
+    je      .DownY
 
     cmp     [collision], DIR_Y_MIN
-    je      .DownY
+    je      .UpY
 
     jmp     .BothY
 
@@ -241,6 +269,7 @@ proc Player.EasingMove uses edi esi ebx,\
 
     .UpY:
 
+        mov     [edi + Player.Condition], JUMP_CONDITION
 
         mov     [edi + Player.fallAni + Easing.start], false
         mov     [edi + Player.fallAni + Easing.done], false
@@ -264,6 +293,12 @@ proc Player.EasingMove uses edi esi ebx,\
 
     .SkipY:
 
+    jmp     .SkipYCollision
+
+    .SkipWalkCondition:
+
+    mov     [edi + Player.Condition], JUMP_CONDITION
+
     .SkipYCollision:
     
 
@@ -278,6 +313,7 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
         velocity        dd          0.0
         negConst        dd          -1.0
         tmp             Vector3     ?
+        ok              db              0
     endl
 
     mov     edi, [pPlayer]
@@ -355,6 +391,76 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     stdcall Player.InputKeysHorizontAni, [pPlayer], edi, eax
     pop     edi
 
+    ; Slowing animation
+    ; Forward animation
+    push    edi 
+    add     edi, Player.Direction
+    stdcall Vector3.Copy, orinVec, edi
+    pop     edi
+
+    push    edi
+    add     edi, Player.bforwAni
+    movzx   eax, [pl_forward]
+    xor     eax, 1
+    stdcall Player.InputKeysHorizontAni, [pPlayer], edi, eax
+    pop     edi
+
+    ; Backward animation
+    push    edi 
+    add     edi, Player.Direction
+    stdcall Vector3.Copy, orinVec, edi
+    pop     edi
+
+    stdcall Vector3.MultOnNumber, orinVec, [negConst]
+
+    push    edi
+    add     edi, Player.bbackAni
+    movzx   eax, [pl_backward]
+    xor     eax, 1
+    stdcall Player.InputKeysHorizontAni, [pPlayer], edi, eax
+    pop     edi
+
+    ; Left animation
+    lea     ebx, [tmp]
+    push    edi
+    add     edi, Player.Direction
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
+
+    push    edi
+    add     edi, Player.Up
+    stdcall Vector3.Copy, upVec, edi
+    pop     edi
+
+    stdcall Vector3.Cross, upVec, ebx, orinVec
+
+    push    edi
+    add     edi, Player.bleftAni
+    movzx   eax, [pl_left]
+    xor     eax, 1
+    stdcall Player.InputKeysHorizontAni, [pPlayer], edi, eax
+    pop     edi
+
+    ; right animation
+    lea     ebx, [tmp]
+    push    edi
+    add     edi, Player.Direction
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
+
+    push    edi
+    add     edi, Player.Up
+    stdcall Vector3.Copy, upVec, edi
+    pop     edi
+
+    stdcall Vector3.Cross, ebx, upVec, orinVec
+
+    push    edi
+    add     edi, Player.brightAni
+    movzx   eax, [pl_right]
+    xor     eax, 1
+    stdcall Player.InputKeysHorizontAni, [pPlayer], edi, eax
+    pop     edi
 
     ; Fall animation
     mov     esi, edi 
@@ -423,14 +529,14 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     mov     esi, edi 
     add     esi, Player.jumpAni
 
-    cmp     [pl_jump], false
-    je     .SkipUpdateJumpAni
-
     cmp     [esi + Easing.done], true
     je     .SkipDoneJumpAni
 
     cmp     [esi + Easing.start], true
     je      .SkipStartJumpAni
+
+    cmp     [pl_jump], false
+    je     .SkipUpdateJumpAni
 
     cmp     [edi + Player.Condition], JUMP_CONDITION
     je     .SkipUpdateJumpAni
@@ -483,12 +589,7 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     mov     [esi + Easing.start], false
     mov     [esi + Easing.done], false
 
-    invoke  GetTickCount
-    sub     eax, 5
-    mov     [edi + Player.fallAni + Easing.startTime], eax
-
     .SkipJumpAni:
-
 
 
 .Ret:
@@ -595,6 +696,12 @@ endp
 
 proc Player.EasingHandler uses edi esi ebx,\
     pPlayer, dt
+
+.Ret:
+    ret
+endp
+
+proc Player.CameraHandler uses edi esi ebx,\
 
 .Ret:
     ret

@@ -119,13 +119,13 @@ proc Collision.BlockDetection uses edi esi ebx,\
     jb      .NoCollision
     
     lea     edi, [minResultPlayer]
-    lea     esi, [maxResultBlock]
+    lea     esi, [minResultBlock]
     stdcall [dir], edi, esi
     jmp     .Ret
 
     .NoCollision:
 
-    mov     eax, 0
+    mov     eax, NO_COLLISION
 
     .Ret:   
 

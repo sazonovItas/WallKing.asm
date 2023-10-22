@@ -22,6 +22,9 @@ struct Player
 
     translate       Vector3         ?
 
+    camTranslate    Vector3         ?
+    sizeBlockCol    GLfloat         ?
+
     ; Physics
     prevPosition    Vector3         ?
     Acceleration    Vector3         ?
@@ -36,10 +39,13 @@ struct Player
     leftAni         Easing          ?
     rightAni        Easing          ?
 
+    bforwAni        Easing          ?
+    bbackAni        Easing          ?
+    bleftAni        Easing          ?
+    brightAni       Easing          ?
+
     fallAni         Easing          ?
     jumpAni         Easing          ?
-
-    sizeBlockCol    GLfloat         ?
 
 ends
 
