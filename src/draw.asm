@@ -12,12 +12,12 @@ proc Draw.Scene uses esi edi
         mov     [currentFrame], eax
 
         sub     eax, [time]
-        cmp     eax, 1 
+        cmp     eax, 12 
         jle     .Skip
 
         mov     [timeBetweenChecking], eax
+        stdcall Player.EasingMove, mainPlayer, [timeBetweenChecking], [sizeBlocksMapTry], blocksMapTry
         stdcall Player.EasingInputsKeys, mainPlayer
-        stdcall Player.EasingMove, mainPlayer, [timeBetweenChecking]
 
         ; stdcall Player.InputsKeys, mainPlayer
         ; stdcall Player.Move, mainPlayer, [timeBetweenChecking], 1

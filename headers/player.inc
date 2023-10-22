@@ -33,6 +33,10 @@ struct Player
 
     forwAni         Easing          ?
     backAni         Easing          ?
+    leftAni         Easing          ?
+    rightAni        Easing          ?
+
+    fallAni         Easing          ?
     jumpAni         Easing          ?
 
     sizeBlockCol    GLfloat         ?

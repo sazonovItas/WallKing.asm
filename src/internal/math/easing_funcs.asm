@@ -22,6 +22,7 @@ proc Easing.easeOutQuort dt
     locals 
         sub1        dd      1.0
         div1000     dd      1000.0
+        divNorm     dd      2.0
         ans         dd      ?
     endl
 
@@ -37,6 +38,31 @@ proc Easing.easeOutQuort dt
     fstp    [ans]
     fld     [sub1]
     fsub    [ans]
+    fdiv    [divNorm]   
+    fstp    [ans]
+
+    mov     eax, [ans]
+    ret
+endp
+
+proc Easing.ease dt
+
+    locals 
+        ans         dd      ?
+    endl
+
+    ret
+endp
+
+proc Easing.easeLine dt
+
+    locals
+        ans         dd      ?
+        normDiv     dd      150.0
+    endl
+
+    fild    [dt]
+    fdiv    [normDiv]
     fstp    [ans]
 
     mov     eax, [ans]

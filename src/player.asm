@@ -37,8 +37,8 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.y], 1.0
     mov     [edi + Player.Up + Vector3.z], 0.0
 
-    mov     [edi + Player.speed], 0.05
-    mov     [edi + Player.jumpVeloc], 0.25
+    mov     [edi + Player.speed], 0.02
+    mov     [edi + Player.jumpVeloc], 0.1
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], JUMP_CONDITION
 
@@ -53,17 +53,47 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.translate + Vector3.z], 0.0
 
     ; Animation functions
+    ; Forward ani
     mov     [edi + Player.forwAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
     mov     [edi + Player.forwAni + Easing.duration], 500 
     mov     [edi + Player.forwAni + Easing.startTime], 0
     mov     [edi + Player.forwAni + Easing.start], false
     mov     [edi + Player.forwAni + Easing.done], false
 
-    mov     [edi + Player.backAni + Easing.ptrEasingFun], dword Easing.easeInQuad
+    ; Backward ani
+    mov     [edi + Player.backAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
     mov     [edi + Player.backAni + Easing.duration], 500 
     mov     [edi + Player.backAni + Easing.startTime], 0
     mov     [edi + Player.backAni + Easing.start], false
     mov     [edi + Player.backAni + Easing.done], false
+
+    ; left  ani
+    mov     [edi + Player.leftAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
+    mov     [edi + Player.leftAni + Easing.duration], 500 
+    mov     [edi + Player.leftAni + Easing.startTime], 0
+    mov     [edi + Player.leftAni + Easing.start], false
+    mov     [edi + Player.leftAni + Easing.done], false
+
+    ; right  ani
+    mov     [edi + Player.rightAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
+    mov     [edi + Player.rightAni + Easing.duration], 500 
+    mov     [edi + Player.rightAni + Easing.startTime], 0
+    mov     [edi + Player.rightAni + Easing.start], false
+    mov     [edi + Player.rightAni + Easing.done], false
+
+    ; fall ani
+    mov     [edi + Player.fallAni + Easing.ptrEasingFun], dword Easing.easeLine
+    mov     [edi + Player.fallAni + Easing.duration], 2500 
+    mov     [edi + Player.fallAni + Easing.startTime], 0
+    mov     [edi + Player.fallAni + Easing.start], false
+    mov     [edi + Player.fallAni + Easing.done], false
+
+    ; jump ani
+    mov     [edi + Player.jumpAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
+    mov     [edi + Player.jumpAni + Easing.duration], 200
+    mov     [edi + Player.jumpAni + Easing.startTime], 0
+    mov     [edi + Player.jumpAni + Easing.start], false
+    mov     [edi + Player.jumpAni + Easing.done], false
 
     ; size of player collision
     mov     [edi + Player.sizeBlockCol], 0.5 
@@ -108,13 +138,25 @@ proc Player.OrinDirection uses edi,\
 endp
 
 proc Player.EasingMove uses edi esi ebx,\
-    pPlayer, dt
+    pPlayer, dt, sizeMap, pMap
 
     locals 
-        deltaPos        Vector3         0.02, 0.0, 0.0
+        deltaPos        Vector3         ?
+        div2            dd              2.0
+        step            dd              0.001 
+        trueStep        dd              ?
+        collision       dd              0
     endl
 
     mov     edi, [pPlayer]
+
+    push    edi
+    mov     esi, edi
+    add     edi, Player.Position
+    add     esi, Player.prevPosition
+    stdcall Vector3.Copy, esi, edi
+    pop     edi
+
     lea     ebx, [deltaPos]
         
     push    edi
@@ -126,10 +168,104 @@ proc Player.EasingMove uses edi esi ebx,\
     fstp    [dt]
     stdcall Vector3.MultOnNumber, ebx, [dt]
 
-    push    edi
-    add     edi, Player.Position
-    stdcall Vector3.Add, edi, ebx
-    pop     edi
+    ; push    edi
+    ; add     edi, Player.Position
+    ; stdcall Vector3.Add, edi, ebx
+    ; pop     edi
+
+    lea     ebx, [deltaPos]
+    fld     [edi + Player.Position + Vector3.x]
+    fadd    [ebx + Vector3.x]
+    fstp    [edi + Player.Position + Vector3.x]
+
+    ; X collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipXCollision
+
+    mov     eax, [edi + Player.prevPosition + Vector3.x]
+    mov     [edi + Player.Position + Vector3.x], eax
+
+    .SkipXCollision:
+
+    lea     ebx, [deltaPos]
+    fld     [edi + Player.Position + Vector3.z]
+    fadd    [ebx + Vector3.z]
+    fstp    [edi + Player.Position + Vector3.z]
+
+    ; Z collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Z_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipZCollision
+
+    mov     eax, [edi + Player.prevPosition + Vector3.z]
+    mov     [edi + Player.Position + Vector3.z], eax
+
+    .SkipZCollision:
+
+    lea     ebx, [deltaPos]
+    fld     [edi + Player.Position + Vector3.y]
+    fadd    [ebx + Vector3.y]
+    fstp    [edi + Player.Position + Vector3.y]
+
+    ; Y collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Y_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipYCollision
+
+    mov     eax, [edi + Player.prevPosition + Vector3.y]
+    mov     [edi + Player.Position + Vector3.y], eax
+
+    cmp     [collision], DIR_Y_MAX
+    je      .UpY
+
+    cmp     [collision], DIR_Y_MIN
+    je      .DownY
+
+    jmp     .BothY
+
+    .DownY:
+
+        mov     [edi + Player.Condition], WALK_CONDITION
+    
+        mov     [edi + Player.fallAni + Easing.start], false
+        mov     [edi + Player.fallAni + Easing.done], false
+
+        mov     [edi + Player.jumpAni + Easing.start], false
+        mov     [edi + Player.jumpAni + Easing.done], false
+
+        jmp     .SkipY
+
+    .UpY:
+
+
+        mov     [edi + Player.fallAni + Easing.start], false
+        mov     [edi + Player.fallAni + Easing.done], false
+
+        mov     [edi + Player.jumpAni + Easing.start], false
+        mov     [edi + Player.jumpAni + Easing.done], false
+        
+        jmp     .SkipY
+
+    .BothY:
+
+        mov     [edi + Player.Condition], WALK_CONDITION
+
+        mov     [edi + Player.fallAni + Easing.start], false
+        mov     [edi + Player.fallAni + Easing.done], false
+
+        mov     [edi + Player.jumpAni + Easing.start], false
+        mov     [edi + Player.jumpAni + Easing.done], false
+
+        jmp     .SkipY
+
+    .SkipY:
+
+    .SkipYCollision:
+    
 
 .Ret:
     ret
@@ -140,164 +276,320 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
 
     locals 
         velocity        dd          0.0
+        negConst        dd          -1.0
+        tmp             Vector3     ?
     endl
 
     mov     edi, [pPlayer]
 
+    ; Zeroing Velocity
+    push    edi
+    add     edi, Player.Velocity
+    stdcall memzero, edi, 3 * 4
+    pop     edi
+
+    ; Calculate Velocity that depends on animations
+    ; Forward animation
     push    edi 
     add     edi, Player.Direction
     stdcall Vector3.Copy, orinVec, edi
     pop     edi
 
-    ; Forward animation
-    cmp     [pl_forward], false
-    je      .SkipForwUpdateAni
-
-    cmp     [edi + Player.forwAni + Easing.done], true
-    je     .SkipForwDoneAni
-
-    cmp     [edi + Player.forwAni + Easing.start], true
-    je      .SkipForwStartAni
-
-    mov     [edi + Player.forwAni + Easing.start], true
-    invoke  GetTickCount
-    mov     [edi + Player.forwAni + Easing.startTime], eax
-
-    .SkipForwStartAni:
-
-    invoke  GetTickCount
-    sub     eax, [edi + Player.forwAni + Easing.startTime]
-    cmp     eax, [edi + Player.forwAni + Easing.duration]
-    ja      .SkipForwDoneAni
-
-    stdcall [edi + Player.forwAni + Easing.ptrEasingFun], eax
-    mov     [velocity], eax 
-
-    fld     [edi + Player.speed]
-    fmul    [velocity]
-    fstp    [velocity]
-
-    stdcall Vector3.MultOnNumber, orinVec, [velocity]
-
-    mov     eax, [orinVec + Vector3.x]
-    mov     [edi + Player.Velocity + Vector3.x], eax 
-    mov     eax, [orinVec + Vector3.z]
-    mov     [edi + Player.Velocity + Vector3.z], eax 
-
-    jmp     .SkipForwAni
-
-    .SkipForwDoneAni:
-
-    mov     [edi + Player.forwAni + Easing.done], true
-
-    stdcall [edi + Player.forwAni + Easing.ptrEasingFun], [edi + Player.forwAni + Easing.duration]
-    mov     [velocity], eax
-
-    fld     [edi + Player.speed]
-    fmul    [velocity]
-    fstp    [velocity]
-
-    stdcall Vector3.MultOnNumber, orinVec, [velocity]
-
-    mov     eax, [orinVec + Vector3.x]
-    mov     [edi + Player.Velocity + Vector3.x], eax 
-    mov     eax, [orinVec + Vector3.z]
-    mov     [edi + Player.Velocity + Vector3.z], eax 
-
-    jmp     .SkipForwAni
-
-    .SkipForwUpdateAni:
-
-    cmp     [edi + Player.forwAni + Easing.start], false
-    je      .SkipForwAni
-
-    mov     [edi + Player.forwAni + Easing.start], false
-    mov     [edi + Player.forwAni + Easing.done], false
-
-    mov     [edi + Player.Velocity + Vector3.x], 0.0 
-    mov     [edi + Player.Velocity + Vector3.z], 0.0 
-
-    .SkipForwAni:
-    
-
-    push    edi 
-    add     edi, Player.Direction
-    stdcall Vector3.Copy, orinVec, edi
+    push    edi
+    add     edi, Player.forwAni
+    movzx   eax, [pl_forward]
+    stdcall Player.InputKeysHorizontAni, [pPlayer], edi, eax
     pop     edi
 
     ; Backward animation
-    cmp     [pl_backward], false
-    je      .SkipBackUpdateAni
+    push    edi 
+    add     edi, Player.Direction
+    stdcall Vector3.Copy, orinVec, edi
+    pop     edi
 
-    cmp     [edi + Player.backAni + Easing.done], true
-    je     .SkipBackDoneAni
+    stdcall Vector3.MultOnNumber, orinVec, [negConst]
 
-    cmp     [edi + Player.backAni + Easing.start], true
-    je      .SkipBackStartAni
+    push    edi
+    add     edi, Player.backAni
+    movzx   eax, [pl_backward]
+    stdcall Player.InputKeysHorizontAni, [pPlayer], edi, eax
+    pop     edi
 
-    mov     [edi + Player.backAni + Easing.start], true
+    ; Left animation
+    lea     ebx, [tmp]
+    push    edi
+    add     edi, Player.Direction
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
+
+    push    edi
+    add     edi, Player.Up
+    stdcall Vector3.Copy, upVec, edi
+    pop     edi
+
+    stdcall Vector3.Cross, upVec, ebx, orinVec
+
+    push    edi
+    add     edi, Player.leftAni
+    movzx   eax, [pl_left]
+    stdcall Player.InputKeysHorizontAni, [pPlayer], edi, eax
+    pop     edi
+
+    ; right animation
+    lea     ebx, [tmp]
+    push    edi
+    add     edi, Player.Direction
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
+
+    push    edi
+    add     edi, Player.Up
+    stdcall Vector3.Copy, upVec, edi
+    pop     edi
+
+    stdcall Vector3.Cross, ebx, upVec, orinVec
+
+    push    edi
+    add     edi, Player.rightAni
+    movzx   eax, [pl_right]
+    stdcall Player.InputKeysHorizontAni, [pPlayer], edi, eax
+    pop     edi
+
+
+    ; Fall animation
+    mov     esi, edi 
+    add     esi, Player.fallAni
+
+    cmp     [edi + Player.Condition], JUMP_CONDITION
+    jne     .SkipUpdateFallAni
+
+    cmp     [esi + Easing.done], true
+    je     .SkipDoneFallAni
+
+    cmp     [esi + Easing.start], true
+    je      .SkipStartFallAni
+
+    mov     [esi + Easing.start], true
     invoke  GetTickCount
-    mov     [edi + Player.backAni + Easing.startTime], eax
+    mov     [esi + Easing.startTime], eax
 
-    .SkipBackStartAni:
+    .SkipStartFallAni:
 
     invoke  GetTickCount
-    sub     eax, [edi + Player.backAni + Easing.startTime]
-    cmp     eax, [edi + Player.backAni + Easing.duration]
-    ja      .SkipBackDoneAni
+    sub     eax, [esi + Easing.startTime]
+    cmp     eax, [esi + Easing.duration]
+    ja      .SkipDoneFallAni
 
-    stdcall [edi + Player.backAni + Easing.ptrEasingFun], eax
+    stdcall [esi + Easing.ptrEasingFun], eax
+    mov     [velocity], eax 
+
+    fld     [edi + Player.Acceleration + Vector3.y]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    fld     [edi + Player.Velocity + Vector3.y]
+    fadd    [velocity]
+    fstp    [edi + Player.Velocity + Vector3.y]
+
+    jmp     .SkipFallAni
+
+    .SkipDoneFallAni:
+
+    stdcall [esi + Easing.ptrEasingFun], [esi + Easing.duration] 
+    mov     [velocity], eax 
+
+    fld     [edi + Player.Acceleration + Vector3.y]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    fld     [edi + Player.Velocity + Vector3.y]
+    fadd    [velocity]
+    fstp    [edi + Player.Velocity + Vector3.y]
+
+    jmp     .SkipFallAni
+
+    .SkipUpdateFallAni:
+
+    cmp     [esi + Easing.start], false
+    je      .SkipFallAni
+
+    mov     [esi + Easing.start], false
+    mov     [esi + Easing.done], false
+
+    .SkipFallAni:
+
+
+    ; Jump animation
+    mov     esi, edi 
+    add     esi, Player.jumpAni
+
+    cmp     [pl_jump], false
+    je     .SkipUpdateJumpAni
+
+    cmp     [esi + Easing.done], true
+    je     .SkipDoneJumpAni
+
+    cmp     [esi + Easing.start], true
+    je      .SkipStartJumpAni
+
+    cmp     [edi + Player.Condition], JUMP_CONDITION
+    je     .SkipUpdateJumpAni
+
+    mov     [edi + Player.Condition], JUMP_CONDITION
+    mov     [esi + Easing.start], true
+    invoke  GetTickCount
+    mov     [esi + Easing.startTime], eax
+
+    .SkipStartJumpAni:
+
+    invoke  GetTickCount
+    sub     eax, [esi + Easing.startTime]
+    cmp     eax, [esi + Easing.duration]
+    ja      .SkipDoneJumpAni
+
+    stdcall [esi + Easing.ptrEasingFun], eax
+    mov     [velocity], eax 
+
+    fld     [edi + Player.jumpVeloc]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    fld     [edi + Player.Velocity + Vector3.y]
+    fadd    [velocity]
+    fstp    [edi + Player.Velocity + Vector3.y]
+
+    jmp     .SkipJumpAni
+
+    .SkipDoneJumpAni:
+
+    stdcall [esi + Easing.ptrEasingFun], [esi + Easing.duration] 
+    mov     [velocity], eax 
+
+    fld     [edi + Player.jumpVeloc]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    fld     [edi + Player.Velocity + Vector3.y]
+    fadd    [velocity]
+    fstp    [edi + Player.Velocity + Vector3.y]
+
+    jmp     .SkipJumpAni
+
+    .SkipUpdateJumpAni:
+
+    cmp     [esi + Easing.start], false
+    je      .SkipJumpAni
+
+    mov     [esi + Easing.start], false
+    mov     [esi + Easing.done], false
+
+    invoke  GetTickCount
+    sub     eax, 5
+    mov     [edi + Player.fallAni + Easing.startTime], eax
+
+    .SkipJumpAni:
+
+
+
+.Ret:
+    ret
+endp
+
+proc Player.InputKeysHorizontAni uses edi esi,\
+    pPlayer, pAni, trigger
+
+    locals 
+        velocity        dd      0.0
+    endl
+
+    mov     edi, [pPlayer]
+    mov     esi, [pAni]
+
+    ; Forward animation
+    cmp     [trigger], false
+    je      .SkipUpdateAni
+
+    cmp     [esi + Easing.done], true
+    je     .SkipDoneAni
+
+    cmp     [esi + Easing.start], true
+    je      .SkipStartAni
+
+    mov     [esi + Easing.start], true
+    invoke  GetTickCount
+    mov     [esi + Easing.startTime], eax
+
+    .SkipStartAni:
+
+    invoke  GetTickCount
+    sub     eax, [esi + Easing.startTime]
+    cmp     eax, [esi + Easing.duration]
+    ja      .SkipDoneAni
+
+    stdcall [esi + Easing.ptrEasingFun], eax
     mov     [velocity], eax 
 
     fld     [edi + Player.speed]
     fmul    [velocity]
-    fchs
     fstp    [velocity]
 
     stdcall Vector3.MultOnNumber, orinVec, [velocity]
 
-    mov     eax, [orinVec + Vector3.x]
-    mov     [edi + Player.Velocity + Vector3.x], eax 
-    mov     eax, [orinVec + Vector3.z]
-    mov     [edi + Player.Velocity + Vector3.z], eax 
+    fld     [edi + Player.Velocity + Vector3.x]
+    fadd    [orinVec + Vector3.x]
+    fstp    [edi + Player.Velocity + Vector3.x]
+    fld     [edi + Player.Velocity + Vector3.z]
+    fadd    [orinVec + Vector3.z]
+    fstp    [edi + Player.Velocity + Vector3.z]
 
-    jmp     .SkipBackAni
+    ; mov     eax, [orinVec + Vector3.x]
+    ; mov     [edi + Player.Velocity + Vector3.x], eax 
+    ; mov     eax, [orinVec + Vector3.z]
+    ; mov     [edi + Player.Velocity + Vector3.z], eax 
 
-    .SkipBackDoneAni:
+    jmp     .SkipAni
 
-    mov     [edi + Player.backAni + Easing.done], true
+    .SkipDoneAni:
 
-    stdcall [edi + Player.backAni + Easing.ptrEasingFun], [edi + Player.backAni + Easing.duration]
+    mov     [esi + Easing.done], true
+
+    stdcall [esi + Easing.ptrEasingFun], [esi + Easing.duration]
     mov     [velocity], eax
 
     fld     [edi + Player.speed]
     fmul    [velocity]
-    fchs
     fstp    [velocity]
 
     stdcall Vector3.MultOnNumber, orinVec, [velocity]
 
-    mov     eax, [orinVec + Vector3.x]
-    mov     [edi + Player.Velocity + Vector3.x], eax 
-    mov     eax, [orinVec + Vector3.z]
-    mov     [edi + Player.Velocity + Vector3.z], eax 
+    fld     [edi + Player.Velocity + Vector3.x]
+    fadd    [orinVec + Vector3.x]
+    fstp    [edi + Player.Velocity + Vector3.x]
+    fld     [edi + Player.Velocity + Vector3.z]
+    fadd    [orinVec + Vector3.z]
+    fstp    [edi + Player.Velocity + Vector3.z]
 
-    jmp     .SkipBackAni
+    ; mov     eax, [orinVec + Vector3.x]
+    ; mov     [edi + Player.Velocity + Vector3.x], eax 
+    ; mov     eax, [orinVec + Vector3.z]
+    ; mov     [edi + Player.Velocity + Vector3.z], eax 
 
-    .SkipBackUpdateAni:
+    jmp     .SkipAni
 
-    cmp     [edi + Player.backAni + Easing.start], false
-    je      .SkipBackAni
+    .SkipUpdateAni:
 
-    mov     [edi + Player.backAni + Easing.start], false
-    mov     [edi + Player.backAni + Easing.done], false
+    cmp     [esi + Easing.start], false
+    je      .SkipAni
 
-    mov     [edi + Player.Velocity + Vector3.x], 0.0 
-    mov     [edi + Player.Velocity + Vector3.z], 0.0 
+    mov     [esi + Easing.start], false
+    mov     [esi + Easing.done], false
 
-    .SkipBackAni:
+    ; mov     [edi + Player.Velocity + Vector3.x], 0.0 
+    ; mov     [edi + Player.Velocity + Vector3.z], 0.0 
 
-.Ret:
+    .SkipAni:
+
+    .Ret: 
     ret
 endp
 

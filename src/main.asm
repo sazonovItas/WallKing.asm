@@ -34,7 +34,7 @@
         zNear           dd      0.001
         zFar            dd      1000.0
 
-        cameraPosition  Vector3         2.0, 4.0, 0.0
+        cameraPosition  Vector3         2.0, 10.0, 0.0
         targetPosition  Vector3         0.0, 0.0, 2.0
         upVector        Vector3         0.0, 1.0, 0.0
 
