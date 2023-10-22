@@ -48,14 +48,14 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.farPlane], 1000.0
 
     ; translate camera for the player
-    mov     [edi + Player.translate + Vector3.x], -1.0
-    mov     [edi + Player.translate + Vector3.y], -2.0
-    mov     [edi + Player.translate + Vector3.z], 0.0
+    mov     [edi + Player.translate + Vector3.x], 0.0
+    mov     [edi + Player.translate + Vector3.y], -1.0
+    mov     [edi + Player.translate + Vector3.z], -2.0
 
     ; Cam Translate for
-    mov     [edi + Player.camTranslate + Vector3.x], -1.0
-    mov     [edi + Player.camTranslate + Vector3.y], -2.0
-    mov     [edi + Player.camTranslate + Vector3.z], 0.0
+    mov     [edi + Player.camTranslate + Vector3.x], 0.0
+    mov     [edi + Player.camTranslate + Vector3.y], -1.0
+    mov     [edi + Player.camTranslate + Vector3.z], -2.0
 
     ; Animation functions
     ; Forward ani

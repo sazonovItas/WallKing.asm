@@ -39,6 +39,10 @@ proc Init uses esi edi
     stdcall Texture.Constructor, edi, fileLightTexture,\
                             GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
 
+    lea     edi, [arrTextures + 8]
+    stdcall Texture.Constructor, edi, filePlayerTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
+
     ; Shadow texture settings
     ; Create the FBO
     invoke  glGenFramebuffers, 1, m_fbo
