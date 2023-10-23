@@ -21,5 +21,5 @@ struct Camera
     farPlane        GLfloat         ?
 
     translate       Vector3         ?
-
+    radius          GLfloat         ?
 ends

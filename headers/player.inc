@@ -21,6 +21,7 @@ struct Player
     farPlane        GLfloat         ?
 
     translate       Vector3         ?
+    radius          GLfloat         ?
 
     camTranslate    Vector3         ?
     sizeBlockCol    GLfloat         ?
@@ -55,6 +56,7 @@ ends
 
     ;   Keys define for handlers
     PL_JUMP             =       VK_SPACE
+    PL_RUN              =       VK_SHIFT
     PL_SLIDE_JUMP       =       'T'
     PL_FORWARD          =       'W'
     PL_BACKWARD         =       'S'
@@ -65,6 +67,7 @@ ends
     PL_WEAK_GRAV        =       VK_DOWN
 
     pl_jump             db      false
+    pl_run              db      false
     pl_slide_jump       db      false
     pl_forward          db      false
     pl_backward         db      false

@@ -31,6 +31,98 @@ proc Collision.MapDetection uses edi esi ebx,\
 
 endp
 
+; Just for more easier fall
+proc Collision.BinSearch uses edi esi ebx,\
+    pPlayer, sizeMap, pMap, dir, offsetPositionDir, offsetPrevPositionDir, deltaPosDir 
+
+    locals 
+        div2            dd          2.0
+        constCmp        dd          0.0001
+        left            dd          0
+        right           dd          ?
+        mid             dd          ?
+        collision       dd          ?
+        tmp             dd          ?
+    endl
+
+    ; Player pointer
+    mov     edi, [pPlayer]
+
+    ; Pointer to Position and prevPosition dir
+    mov     esi, edi
+    add     esi, [offsetPositionDir]
+
+    mov     ebx, edi
+    add     ebx, [offsetPrevPositionDir]
+
+    ; Initial assignment
+    mov     eax, [deltaPosDir]
+    mov     [right], eax
+
+    ; Loop for binsearch position for player in order to 
+    ; player do not touch block's collision 
+    .BinLoop: 
+
+        ; Comparing to out of the cycle
+        fld     [right]
+        fsub    [left]
+        fabs
+        fcomp   [constCmp]
+        fstsw   ax
+        sahf
+        jb      .OutBinLoop
+
+        ; New mid
+        fld     [right]
+        fadd    [left]
+        fdiv    [div2]
+        fstp    [mid]
+
+        fld     dword [esi]
+        fadd    [mid]
+        fstp    dword [esi]
+
+        lea     edx, [collision]
+        stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], edx, [dir]
+
+        ; Update position of the player
+        cmp     eax, NO_COLLISION
+        je      .NoCollisionDetected
+        
+        .CollisionDetected:
+
+            stdcall Number.DoubleSign, [mid]
+            mov     [tmp], eax
+            fld     [tmp]
+            fmul    [constCmp]
+            fstp    [tmp]
+            
+            fld     [mid]
+            fsub    [tmp]
+            fstp    [right]
+
+            jmp     @F
+
+        .NoCollisionDetected:
+
+            mov     eax, [mid]
+            mov     [left], eax
+
+        @@:
+
+        mov     eax, dword [ebx]
+        mov     dword [esi], eax
+
+        jmp     .BinLoop
+    
+    .OutBinLoop:
+
+    fld     dword [esi]
+    fadd    [left]
+    fstp    dword [esi]
+
+    ret
+endp
 
 proc Collision.BlockDetection uses edi esi ebx,\
     pPlayer, pBlockPosition, dir

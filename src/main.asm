@@ -12,6 +12,7 @@
         include         "player.asm"
 
         ; Include some internal functionality
+        include         "internal/math/number.asm"
         include         "internal/memory/mem_funcs.asm"
         include         "internal/files/file.asm"
         include         "internal/memory/glext.asm"
@@ -168,6 +169,14 @@ proc WindowProc uses ebx,\
 
         @@:
 
+        cmp     [wParam], PL_RUN
+        jne     @F
+
+        mov     [pl_run], true
+        jmp     .SkipDown
+
+        @@:
+
         cmp     [wParam], PL_FORWARD
         jne     @F
 
@@ -241,6 +250,14 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_jump], false
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_RUN
+        jne     @F
+
+        mov     [pl_run], false
         jmp     .SkipDown
 
         @@:
