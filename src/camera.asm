@@ -17,7 +17,7 @@ proc Camera.Constructor uses edi,\
     mov     dword [edi + Camera.height], eax
 
     push    edi
-    add     edi, Camera.Position
+    add     edi, Camera.camPosition
     stdcall Vector3.Copy, edi, [pPosition] 
     pop     edi
 
@@ -99,7 +99,7 @@ proc Camera.Matrix uses edi esi ebx,\
     pop     edi
 
     push    edi
-    add     edi, Camera.Position
+    add     edi, Camera.camPosition
     stdcall Vector3.Copy, target, edi 
     pop     edi
 
@@ -110,7 +110,7 @@ proc Camera.Matrix uses edi esi ebx,\
 
     push    edi 
     mov     esi, edi
-    add     edi, Camera.Position
+    add     edi, Camera.camPosition
     add     esi, Camera.Up
     mov     ebx, [pCamera] 
     add     ebx, Camera.view

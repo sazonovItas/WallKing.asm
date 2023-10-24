@@ -1,6 +1,6 @@
 struct Camera
 
-    Position        Vector3         ?
+    camPosition     Vector3         ?
     Orientation     Vector3         ? 
     Up              Vector3         ?
 
@@ -8,7 +8,10 @@ struct Camera
     height          dd              ?
 
     speed           GLfloat         ?
+    camVelocity     Vector3         ?
     sensitivity     GLfloat         ? 
+
+    moving          Easing          ?
 
     pitch           GLfloat         ?
     yaw             GLfloat         ?

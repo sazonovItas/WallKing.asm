@@ -19,18 +19,10 @@ proc Draw.Scene uses esi edi
         stdcall Player.EasingMove, mainPlayer, [timeBetweenChecking], [sizeBlocksMapTry], blocksMapTry
         stdcall Player.EasingInputsKeys, mainPlayer
 
-        ; stdcall Player.InputsKeys, mainPlayer
-        ; stdcall Player.Move, mainPlayer, [timeBetweenChecking], 1
-
         mov     eax, [currentFrame]
         mov     [time], eax
 
 .Skip: 
-
-        ; lea     eax, [colDetected]
-        ; stdcall Collision.MapDetection, freeCamera, [sizeBlocksMapTry], blocksMapTry, eax
-
-        ; stdcall Player.Move, mainPlayer, [deltaTime]
 
         stdcall Camera.Matrix, mainPlayer
 
@@ -94,7 +86,7 @@ proc Draw.Scene uses esi edi
 
         lea     edi, [mainPlayer]
         invoke  glGetUniformLocation, [exampleShader.ID], uniCamPosName
-        invoke  glUniform3f, eax, [edi + Camera.Position + Vector3.x], [edi + Camera.Position + Vector3.y], [edi + Camera.Position + Vector3.z]
+        invoke  glUniform3f, eax, [edi + Camera.camPosition + Vector3.x], [edi + Camera.camPosition + Vector3.y], [edi + Camera.camPosition + Vector3.z]
 
         stdcall VAO.Bind, [VAO1.ID]       
         invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
@@ -162,7 +154,7 @@ proc Draw.Block uses edi esi,\
 
         mov     edi, freeCamera
         invoke  glGetUniformLocation, [exampleShader.ID], uniCamPosName
-        invoke  glUniform3f, eax, [edi + Camera.Position + Vector3.x], [edi + Camera.Position + Vector3.y], [edi + Camera.Position + Vector3.z]
+        invoke  glUniform3f, eax, [edi + Camera.camPosition + Vector3.x], [edi + Camera.camPosition + Vector3.y], [edi + Camera.camPosition + Vector3.z]
 
         stdcall VAO.Bind, [VAO1.ID]       
         invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0

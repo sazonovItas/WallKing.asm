@@ -78,7 +78,7 @@ proc Easing.easeInCos dt
     endl
 
     fldpi
-    fimul    [dt]
+    fimul   [dt]
     fdiv    [div1000]
     fcos
     fdiv    [div2]
@@ -91,7 +91,7 @@ endp
 proc Easing.easeSlow dt
 
     locals 
-        div2        dd      4.0
+        div2        dd      18.0
         div1000     dd      1000.0
         normDiv     dd      2.5
         ans         dd      ?
@@ -103,6 +103,25 @@ proc Easing.easeSlow dt
     fmul    [normDiv]
     fcos
     fdiv    [div2]
+    fstp    [ans] 
+
+    mov     eax, [ans]
+    ret
+endp
+
+proc Easing.easeCamera dt
+
+    locals 
+        normDiv     dd      1.0
+        div1000     dd      1000.0
+        ans         dd      ?
+    endl
+
+    fldpi
+    fimul    [dt]
+    fdiv    [div1000]
+    fsin
+    fdiv    [normDiv]
     fstp    [ans] 
 
     mov     eax, [ans]

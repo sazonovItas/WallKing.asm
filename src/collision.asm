@@ -147,6 +147,12 @@ proc Collision.BlockDetection uses edi esi ebx,\
     mov     [edx + Vector3.y], ecx
     mov     [edx + Vector3.z], ecx
 
+    lea     ecx, [rotate]
+    fld     [esi + Player.yaw]
+    fmul    [radian]
+    fchs
+    fstp    [ecx + Vector3.y]
+
     ; Calculate Player max and min vertices
     lea     ebx, [minResultPlayer]
     lea     eax, [maxResultPlayer]
@@ -154,8 +160,8 @@ proc Collision.BlockDetection uses edi esi ebx,\
     push    edi
     add     esi, Player.Position
     lea     edx, [scale]
-    lea     edi, [tmp]
-    stdcall Collision.minMaxOptimizeBlockVerts, ebx, eax, edx, esi 
+    lea     edi, [rotate]
+    stdcall Collision.minMaxOptimizeBlockVerts, ebx, eax, edx, edi, esi 
     pop     edi
     pop     esi
 
@@ -167,7 +173,8 @@ proc Collision.BlockDetection uses edi esi ebx,\
     mov     esi, edi
     add     edi, translateOffset
     add     esi, scaleOffset
-    stdcall Collision.minMaxOptimizeBlockVerts, ebx, eax, esi, edi 
+    lea     ecx, [tmp]
+    stdcall Collision.minMaxOptimizeBlockVerts, ebx, eax, esi, ecx, edi 
     pop     edi
     pop     esi
 
@@ -305,7 +312,7 @@ proc Collision.AllCollision\
 endp
 
 proc Collision.minMaxOptimizeBlockVerts uses edi esi ebx,\
-    pMinVrt, pMaxVrt, pScl, pTrl
+    pMinVrt, pMaxVrt, pScl, pRot, pTrl
 
     locals 
         ; Bottom vertecies
