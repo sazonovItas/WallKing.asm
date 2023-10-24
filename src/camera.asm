@@ -17,7 +17,7 @@ proc Camera.Constructor uses edi,\
     mov     dword [edi + Camera.height], eax
 
     push    edi
-    add     edi, Camera.Position
+    add     edi, Camera.camPosition
     stdcall Vector3.Copy, edi, [pPosition] 
     pop     edi
 
@@ -42,6 +42,8 @@ proc Camera.Constructor uses edi,\
     mov     [edi + Camera.translate + Vector3.x], 0.0
     mov     [edi + Camera.translate + Vector3.y], 0.0
     mov     [edi + Camera.translate + Vector3.z], 0.0
+
+    mov     [edi + Camera.radius], 2.24
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
@@ -97,7 +99,7 @@ proc Camera.Matrix uses edi esi ebx,\
     pop     edi
 
     push    edi
-    add     edi, Camera.Position
+    add     edi, Camera.camPosition
     stdcall Vector3.Copy, target, edi 
     pop     edi
 
@@ -108,7 +110,7 @@ proc Camera.Matrix uses edi esi ebx,\
 
     push    edi 
     mov     esi, edi
-    add     edi, Camera.Position
+    add     edi, Camera.camPosition
     add     esi, Camera.Up
     mov     ebx, [pCamera] 
     add     ebx, Camera.view
@@ -125,6 +127,16 @@ proc Camera.Matrix uses edi esi ebx,\
         invoke  glMultMatrixf, ebx
         invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
     invoke  glPopMatrix
+
+    ret
+endp
+
+proc Camera.ViewPosition uses edi,\
+    pCamera
+
+    mov     edi, [pCamera]
+
+    
 
     ret
 endp
