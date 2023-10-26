@@ -968,3 +968,82 @@ proc Collision.minMaxBlockVerts uses edi esi ebx,\
 
     ret
 endp
+
+; Return maxFar distance for ray 
+proc Collision.RayDetection uses edi esi ebx,\
+    pPlayer, sizeBlocksMap, blocksMap, result, dir
+
+    locals 
+        detected        dd      ?
+        null            dd      0.0
+        allDetected     dd      -1.0
+    endl
+
+    mov     edi, [pPlayer]
+    mov     esi, [blocksMap]
+    mov     ecx, [sizeBlocksMap]
+
+    fld     [edi + Player.maxCamRadius]
+    fsub    []
+
+    .CheckLoop:
+        push    ecx
+
+        stdcall Collision.BlockDetection, edi, esi
+        mov     [detected], eax
+
+        fld     [detected]
+        fcomp   [null]
+        fstsw   ax
+        sahf    
+        jb      .SkipWrongRadius
+
+        fld     [detected]
+        fcomp   [edi + Player.maxCamRadius]
+        fstsw   ax
+        sahf
+        jb     @F
+
+        push    [edi + Player.maxCamRadius]
+        pop     [detected]
+
+        @@:
+
+        fld     [detected]
+        fcomp   [edi + Player.minCamRadius]
+        fstsw   ax
+        sahf
+        ja      @F
+
+        push    [edi + Player.minCameraRadius]
+        pop     [detected] 
+
+        @@:
+
+        ;
+
+        @@:
+
+        .SkipWrongRadius:
+        
+    .Skip:
+        pop     ecx
+        add     esi, sizeBlock 
+        loop    .CheckLoop
+
+    .Go_out:
+    
+    mov     edi, [result]
+    mov     eax, [allDetected]
+    mov     [edi], eax
+    ret
+
+endp
+
+proc Collision.RayBlockIntersect uses edi esi ebx,\
+    pPlayer, pBlockPosition 
+
+
+
+    ret
+endp

@@ -96,7 +96,7 @@ lightIndices    GLuint          0, 1, 2,\
         materialOffset          =       40
         colisionOffset          =       44
 
-        sizeBlocksMapTry        dd      7
+        sizeBlocksMapTry        dd      10
 
 ;                               // Scale                // Rotate               // Translate            // Texture offset       // Material offset      //Colision detect
 blocksMapTry:
@@ -107,6 +107,9 @@ blocksMapTry:
                 GLfloat         2.0, 1.5, 1.0,          0.0, 0.0, 0.0,          -2.0, 4.0, 0.0,         0,                      0,                      0
                 GLfloat         5.0, 2.0, 5.0,          0.0, 0.0, 0.0,          -6.0, 5.0, -4.0,        0,                      0,                      0 
                 GLfloat         20.0, 20.0, 0.2,        0.0, 0.0, 0.0,          -3.0, 11.0, -8.0,       4,                      0,                      0
+                GLfloat         2.0, 1.0, 3.0,          0.0, 0.0, 0.0,          -2.0, 3.0, 8.0,         0,                      0,                      0 
+                GLfloat         3.0, 1.0, 3.0,          0.0, 0.0, 0.0,          -6.0, 7.0, 4.0,         0,                      0,                      0 
+                GLfloat         4.0, 1.0, 4.0,          0.0, 0.0, 0.0,          -6.0, 5.0, 14.0,        0,                      0,                      0 
 
 
 arrTextures     dd              20 dup(?)

@@ -43,7 +43,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.z], 0.0
 
     mov     [edi + Player.speed], 0.01
-    mov     [edi + Player.jumpVeloc], 0.03
+    mov     [edi + Player.jumpVeloc], 0.055
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], JUMP_CONDITION
 
@@ -52,13 +52,16 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.nearPlane], 0.001
     mov     [edi + Player.farPlane], 1000.0
 
-    ; radius of camera
-    mov     [edi + Player.radius], 1.0 
+    ; chasingRadius of camera
+    mov     [edi + Player.chasingRadius], 1.0 
 
     ; translate coordinates 
-    mov     [edi + Player.translate + Vector3.x], 0.5
-    mov     [edi + Player.translate + Vector3.y], -1.0
-    mov     [edi + Player.translate + Vector3.z], -3.0
+    mov     [edi + Player.camRadius], 4.5 
+    mov     [edi + Player.camMaxRadius], 4.5
+    mov     [edi + Player.camMinRadius], 0.2
+    mov     [edi + Player.translate + Vector3.x], 0.0
+    mov     [edi + Player.translate + Vector3.y], 0.0
+    mov     [edi + Player.translate + Vector3.z], 0.0 
 
     ; Camera chasing easing
     mov     [edi + Player.camChasing + Easing.ptrEasingFun], dword Easing.easeOutQuort
@@ -66,6 +69,13 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.camChasing + Easing.startTime], 0
     mov     [edi + Player.camChasing + Easing.start], false
     mov     [edi + Player.camChasing + Easing.done], false
+
+    ; slow camear ani
+    mov     [edi + Player.camSlowing + Easing.ptrEasingFun], dword Easing.easeSlow
+    mov     [edi + Player.camSlowing + Easing.duration], 230 
+    mov     [edi + Player.camSlowing + Easing.startTime], 0
+    mov     [edi + Player.camSlowing + Easing.start], false
+    mov     [edi + Player.camSlowing + Easing.done], false
 
     ; Animation functions
     ; Forward ani
@@ -133,7 +143,7 @@ proc Player.Constructor uses edi,\
 
     ; jump ani
     mov     [edi + Player.jumpAni + Easing.ptrEasingFun], dword Easing.easeInCos
-    mov     [edi + Player.jumpAni + Easing.duration], 200
+    mov     [edi + Player.jumpAni + Easing.duration], 250
     mov     [edi + Player.jumpAni + Easing.startTime], 0
     mov     [edi + Player.jumpAni + Easing.start], false
     mov     [edi + Player.jumpAni + Easing.done], false
@@ -323,15 +333,6 @@ proc Player.EasingMove uses edi esi ebx,\
 
     .SkipYCollision:
     
-    ; Copy position of player to camera position
-    ; push    edi
-    ; push    esi
-    ; mov     esi, edi
-    ; add     esi, Player.camPosition
-    ; add     edi, Player.Position
-    ; stdcall Vector3.Copy, esi, edi
-    ; pop     edi
-    ; pop     esi
 
     stdcall Player.EasingMoveCamera, [pPlayer], [dt]
 
@@ -750,7 +751,7 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
     pPlayer
 
     locals 
-        camRadius       dd              ?
+        camchasingRadius       dd              ?
         velocity        dd              0.0
         trigger         dd              false
         tmp             Vector3         ?
@@ -771,9 +772,9 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
     stdcall Vector3.Distance, edi, esi
     pop     edi
 
-    mov     [camRadius], eax
-    fld     [camRadius]
-    fcomp   [edi + Player.radius]
+    mov     [camchasingRadius], eax
+    fld     [camchasingRadius]
+    fcomp   [edi + Player.chasingRadius]
     fstsw   ax
     sahf
     jb      @F
@@ -795,24 +796,24 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
 
     ; Cam animation
     cmp     [trigger], false
-    je      .SkipUpdateAni
+    je      .SkipUpdateChasingAni
 
     cmp     [esi + Easing.done], true
-    je     .SkipDoneAni
+    je     .SkipDoneChasingAni
 
     cmp     [esi + Easing.start], true
-    je      .SkipStartAni
+    je      .SkipStartChasingAni
 
     mov     [esi + Easing.start], true
     invoke  GetTickCount
     mov     [esi + Easing.startTime], eax
 
-    .SkipStartAni:
+    .SkipStartChasingAni:
 
     invoke  GetTickCount
     sub     eax, [esi + Easing.startTime]
     cmp     eax, [esi + Easing.duration]
-    ja      .SkipDoneAni
+    ja      .SkipDoneChasingAni
 
     stdcall [esi + Easing.ptrEasingFun], eax
     mov     [velocity], eax 
@@ -833,9 +834,9 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
     fadd    [orinVec + Vector3.z]
     fstp    [edi + Player.camVelocity + Vector3.z]
 
-    jmp     .SkipAni
+    jmp     .SkipChasingAni
 
-    .SkipDoneAni:
+    .SkipDoneChasingAni:
 
     mov     [esi + Easing.done], true
 
@@ -858,18 +859,17 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
     fadd    [orinVec + Vector3.z]
     fstp    [edi + Player.camVelocity + Vector3.z]
 
-    jmp     .SkipAni
+    jmp     .SkipChasingAni
 
-    .SkipUpdateAni:
+    .SkipUpdateChasingAni:
 
     cmp     [esi + Easing.start], false
-    je      .SkipAni
+    je      .SkipChasingAni
 
     mov     [esi + Easing.start], false
     mov     [esi + Easing.done], false
 
-    .SkipAni:
-
+    .SkipChasingAni:
 
     ret
 endp
@@ -899,7 +899,7 @@ proc Player.EasingMoveCamera uses edi esi ebx,\
     ret
 endp
 
-proc Player.CameraHandler uses edi esi ebx,\
+proc Player.CameraRadiusHandler uses edi esi ebx,\
 
 .Ret:
     ret

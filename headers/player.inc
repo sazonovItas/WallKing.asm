@@ -13,6 +13,7 @@ struct Player
     sensitivity     GLfloat         ? 
 
     camChasing      Easing          ?
+    camSlowing      Easing          ?
 
     pitch           GLfloat         ?
     yaw             GLfloat         ?
@@ -25,9 +26,12 @@ struct Player
     farPlane        GLfloat         ?
 
     translate       Vector3         ?
-    radius          GLfloat         ?
+    camRadius       GLfloat         ?
 
-    camTranslate    Vector3         ?
+    chasingRadius   GLfloat         ?
+    maxCamRadius    GLfloat         ?
+    curCamRadius    GLfloat         ?
+    minCamRadius    GLfloat         ?
 
     sizeBlockCol    GLfloat         ?
 
