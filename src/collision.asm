@@ -971,11 +971,11 @@ endp
 
 ; Return maxFar distance for ray 
 proc Collision.RayDetection uses edi esi ebx,\
-    pPlayer, sizeBlocksMap, blocksMap, result, dir
+    pPlayer, sizeBlocksMap, blocksMap
 
     locals 
         detected        dd      ?
-        null            dd      0.0
+        null            dd      0.0 
         allDetected     dd      -1.0
     endl
 
@@ -983,44 +983,36 @@ proc Collision.RayDetection uses edi esi ebx,\
     mov     esi, [blocksMap]
     mov     ecx, [sizeBlocksMap]
 
-    fld     [edi + Player.maxCamRadius]
-    fsub    []
-
     .CheckLoop:
         push    ecx
 
-        stdcall Collision.BlockDetection, edi, esi
+        stdcall Collision.RayBlockIntersect, edi, esi
         mov     [detected], eax
 
+        ; Start checking ray distance for collisions
+        ; If ray is not intersect with block
         fld     [detected]
         fcomp   [null]
         fstsw   ax
         sahf    
         jb      .SkipWrongRadius
 
+        ; If ray intersect with block after player
         fld     [detected]
         fcomp   [edi + Player.maxCamRadius]
         fstsw   ax
         sahf
-        jb     @F
+        ja      .SkipWrongRadius
 
-        push    [edi + Player.maxCamRadius]
-        pop     [detected]
-
-        @@:
-
-        fld     [detected]
-        fcomp   [edi + Player.minCamRadius]
+        ; Checking for maximum intersection
+        fld     [allDetected]
+        fcomp   [detected]
         fstsw   ax
         sahf
-        ja      @F
+        ja  @F
 
-        push    [edi + Player.minCameraRadius]
-        pop     [detected] 
-
-        @@:
-
-        ;
+        push    [detected]
+        pop     [allDetected]
 
         @@:
 
@@ -1032,10 +1024,24 @@ proc Collision.RayDetection uses edi esi ebx,\
         loop    .CheckLoop
 
     .Go_out:
-    
-    mov     edi, [result]
+
+    ; convert to distance of ray to radius
+    fld     [allDetected]
+    fcomp   [null]
+    fstsw   ax
+    sahf    
+    ja      @F
+
+    fld     [null]
+    fstp    [allDetected]
+
+    @@:
+
+    fld     [edi + Player.maxCamRadius]
+    fsub    [allDetected]
+    fstp    [allDetected]
+
     mov     eax, [allDetected]
-    mov     [edi], eax
     ret
 
 endp
@@ -1043,7 +1049,145 @@ endp
 proc Collision.RayBlockIntersect uses edi esi ebx,\
     pPlayer, pBlockPosition 
 
+    locals 
+        minBlockVrt         Vector3         ?
+        maxBlockVrt         Vector3         ?
+        cameraPos           Vector3         0.0, 0.0, 0.0
+        tmp                 Vector3         0.0, 0.0, 0.0
+        null                GLfloat         0.0
+        dir                 Vector3         ?
+        tFar                GLfloat         ? 
+        tNear               GLfloat         ?
+        t1                  Vector3         ?
+        t2                  Vector3         ?
+        try                 GLfloat         -1.0
+    endl   
 
+    mov     edi, [pBlockPosition]
+
+    ; Calculate Block max and min vertices
+    lea     ebx, [minBlockVrt]
+    lea     eax, [maxBlockVrt]
+    push    edi
+    mov     esi, edi
+    add     edi, translateOffset
+    add     esi, scaleOffset
+    lea     ecx, [tmp]
+    stdcall Collision.minMaxOptimizeBlockVerts, ebx, eax, esi, ecx, edi 
+    pop     edi
+
+    ; Calculate camera ray dir 
+    mov     edi, [pPlayer]
+    lea     ebx, [dir]
+
+    push    edi
+    add     edi, Player.camPosition
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
+
+    lea     esi, [cameraPos]
+    push    edi 
+    add     edi, Player.translate
+    stdcall Vector3.Add, esi, ebx
+    stdcall Vector3.Add, esi, edi
+    stdcall Vector3.MultOnNumber, esi, [try]
+    pop     edi
+
+    stdcall Vector3.Sub, ebx, esi
+    stdcall Vector3.Normalize, ebx
+
+    lea     edi, [minBlockVrt]
+    lea     esi, [maxBlockVrt]
+    lea     edx, [cameraPos]
+    lea     ebx, [dir]
+    lea     eax, [t1]
+    lea     ecx, [t2]
+
+    ; X min
+    fld     [edi + Vector3.x]
+    fsub    [edx + Vector3.x]
+    fdiv    [ebx + Vector3.x]
+    fstp    [eax + Vector3.x]
+
+    ; Y min
+    fld     [edi + Vector3.y]
+    fsub    [edx + Vector3.y]
+    fdiv    [ebx + Vector3.y]
+    fstp    [eax + Vector3.y]
+
+    ; Z min
+    fld     [edi + Vector3.z]
+    fsub    [edx + Vector3.z]
+    fdiv    [ebx + Vector3.z]
+    fstp    [eax + Vector3.z]
+
+    ; X max
+    fld     [esi + Vector3.x]
+    fsub    [edx + Vector3.x]
+    fdiv    [ebx + Vector3.x]
+    fstp    [ecx + Vector3.x]
+
+    ; Y max
+    fld     [esi + Vector3.y]
+    fsub    [edx + Vector3.y]
+    fdiv    [ebx + Vector3.y]
+    fstp    [ecx + Vector3.y]
+
+    ; Z max
+    fld     [esi + Vector3.z]
+    fsub    [edx + Vector3.z]
+    fdiv    [ebx + Vector3.z]
+    fstp    [ecx + Vector3.z]
+
+    lea     esi, [t1]
+    lea     edi, [t2]
+
+    ; tNear
+    stdcall Number.DoubleMin, [esi + Vector3.x], [edi + Vector3.x]
+    mov     [tNear], eax
+    stdcall Number.DoubleMin, [esi + Vector3.y], [edi + Vector3.y]
+    stdcall Number.DoubleMax, [tNear], eax
+    mov     [tNear], eax
+    stdcall Number.DoubleMin, [esi + Vector3.z], [edi + Vector3.z]
+    stdcall Number.DoubleMax, [tNear], eax
+    mov     [tNear], eax
+
+    ; tFar
+    stdcall Number.DoubleMax, [esi + Vector3.x], [edi + Vector3.x]
+    mov     [tFar], eax
+    stdcall Number.DoubleMax, [esi + Vector3.y], [edi + Vector3.y]
+    stdcall Number.DoubleMin, [tFar], eax
+    mov     [tFar], eax
+    stdcall Number.DoubleMax, [esi + Vector3.z], [edi + Vector3.z]
+    stdcall Number.DoubleMin, [tFar], eax
+    mov     [tFar], eax
+
+    ; check for collision
+    mov     edx, [tFar]
+
+    fld     [tNear]
+    fcomp   [tFar]
+    fstsw   ax
+    sahf
+    jb      @F
+
+    mov     edx, -1.0
+
+    @@:
+
+    fld     [tFar]
+    fcomp   [null]
+    fstsw   ax
+    sahf
+    ja      @F
+
+    mov     edx, -1.0
+
+    @@:
+    
+.Ret:
+
+    mov     eax, edx
 
     ret
 endp

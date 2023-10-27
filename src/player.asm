@@ -49,7 +49,7 @@ proc Player.Constructor uses edi,\
 
     ; Able to change field of view
     mov     [edi + Player.fovDeg], 90.0
-    mov     [edi + Player.nearPlane], 0.001
+    mov     [edi + Player.nearPlane], 0.01
     mov     [edi + Player.farPlane], 1000.0
 
     ; chasingRadius of camera
@@ -57,8 +57,9 @@ proc Player.Constructor uses edi,\
 
     ; translate coordinates 
     mov     [edi + Player.camRadius], 4.5 
-    mov     [edi + Player.camMaxRadius], 4.5
-    mov     [edi + Player.camMinRadius], 0.2
+    mov     [edi + Player.maxCamRadius], 4.5
+    mov     [edi + Player.minCamRadius], 0.2
+    mov     [edi + Player.curCamRadius], 4.5
     mov     [edi + Player.translate + Vector3.x], 0.0
     mov     [edi + Player.translate + Vector3.y], 0.0
     mov     [edi + Player.translate + Vector3.z], 0.0 
@@ -335,6 +336,9 @@ proc Player.EasingMove uses edi esi ebx,\
     
 
     stdcall Player.EasingMoveCamera, [pPlayer], [dt]
+
+    stdcall Collision.RayDetection, [pPlayer], [sizeMap], [pMap]
+    mov     [edi + Player.camRadius], eax
 
 .Ret:
     ret
