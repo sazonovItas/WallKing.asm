@@ -982,6 +982,10 @@ proc Collision.RayDetection uses edi esi ebx,\
     mov     edi, [pPlayer]
     mov     esi, [blocksMap]
     mov     ecx, [sizeBlocksMap]
+    
+    fld     [edi + Player.maxCamRadius]
+    fstp    [edi + Player.camRadius]
+    stdcall Camera.ViewPosition, [pPlayer]
 
     .CheckLoop:
         push    ecx
@@ -1081,7 +1085,7 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     lea     ebx, [dir]
 
     push    edi
-    add     edi, Player.Position
+    add     edi, Player.camPosition
     stdcall Vector3.Copy, ebx, edi
     pop     edi
 

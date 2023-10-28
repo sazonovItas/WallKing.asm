@@ -49,11 +49,11 @@ proc Player.Constructor uses edi,\
 
     ; Able to change field of view
     mov     [edi + Player.fovDeg], 90.0
-    mov     [edi + Player.nearPlane], 0.01
+    mov     [edi + Player.nearPlane], 0.001
     mov     [edi + Player.farPlane], 1000.0
 
     ; chasingRadius of camera
-    mov     [edi + Player.chasingRadius], 1.0 
+    mov     [edi + Player.chasingRadius], 0.5 
 
     ; translate coordinates 
     mov     [edi + Player.camRadius], 4.5 
