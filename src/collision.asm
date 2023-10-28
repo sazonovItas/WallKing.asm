@@ -636,7 +636,7 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     sahf
     jb      @F
 
-    mov     edx, -1.0
+    mov     edx, [tNear] 
 
     @@:
 

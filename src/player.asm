@@ -335,8 +335,8 @@ proc Player.EasingMove uses edi esi ebx,\
 
     stdcall Player.EasingMoveCamera, [pPlayer], [dt]
 
-    stdcall Collision.RayDetection, [pPlayer], [sizeMap], [pMap]
-    mov     [edi + Player.camRadius], eax
+    ; stdcall Collision.RayDetection, [pPlayer], [sizeMap], [pMap]
+    ; mov     [edi + Player.camRadius], eax
 
 .Ret:
     ret
