@@ -1081,14 +1081,14 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     lea     ebx, [dir]
 
     push    edi
-    add     edi, Player.camPosition
+    add     edi, Player.Position
     stdcall Vector3.Copy, ebx, edi
     pop     edi
 
     lea     esi, [cameraPos]
     push    edi 
     add     edi, Player.translate
-    stdcall Vector3.Add, esi, ebx
+    stdcall Vector3.Sub, esi, ebx
     stdcall Vector3.Add, esi, edi
     stdcall Vector3.MultOnNumber, esi, [try]
     pop     edi
