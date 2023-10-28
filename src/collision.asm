@@ -161,7 +161,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     add     esi, Player.Position
     lea     edx, [scale]
     lea     edi, [rotate]
-    stdcall Collision.minMaxOptimizeBlockVerts, ebx, eax, edx, edi, esi 
+    stdcall Collision.minMaxOptimizeBlockVerts, ebx, eax, edx, edi, esi;, vertices, 24, 44
     pop     edi
     pop     esi
 
@@ -350,22 +350,11 @@ proc Collision.minMaxOptimizeBlockVerts uses edi esi ebx,\
     ret
 endp
 proc Collision.minMaxBlockVerts uses edi esi ebx,\
-    pMinVrt, pMaxVrt, pScl, pRot, pTrl
+    pMinVrt, pMaxVrt, pScl, pRot, pTrl, pObject, cntVertecies, sizeVertex
 
     locals 
         ; Bottom vertecies
-        vrt0        Vector4         -0.5, -0.5,  0.5, 1.0
-        vrt1        Vector4         -0.5, -0.5, -0.5, 1.0
-        vrt2        Vector4          0.5, -0.5, -0.5, 1.0
-        vrt3        Vector4          0.5, -0.5,  0.5, 1.0
-
-        ; Top vertecies
-        vrt4        Vector4         -0.5,  0.5,  0.5, 1.0
-        vrt5        Vector4         -0.5,  0.5, -0.5, 1.0
-        vrt6        Vector4          0.5,  0.5, -0.5, 1.0
-        vrt7        Vector4          0.5,  0.5,  0.5, 1.0
-
-        vrt8        Vector4         ?
+        vrtTmp        Vector4         0.0, 0.0, 0.0, 1.0
 
         ; Model matrix
         model       Matrix4x4       ?
@@ -383,586 +372,58 @@ proc Collision.minMaxBlockVerts uses edi esi ebx,\
         invoke  glRotatef, [esi + Vector3.y], 0.0, 1.0, 0.0
         invoke  glRotatef, [esi + Vector3.z], 0.0, 0.0, 1.0
         invoke  glScalef, [edi + Vector3.x], [edi + Vector3.y], [edi + Vector3.z] 
-        lea     eax, [model]
-        invoke  glGetFloatv, GL_MODELVIEW_MATRIX, eax
+        lea     ebx, [model]
+        invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
     invoke  glPopMatrix
 
-    lea     ebx, [model] 
+    mov     esi, [pObject]
 
     ; 0 Vertice
-    lea     esi, [vrt0]
+    lea     edi, [vrtTmp]
+    stdcall Vector3.Copy, edi, esi
     ; Max and Min vrt's X, Y and Z
-    mov     edi, [pMinVrt]
-    stdcall Matrix.MultVec4OnMat4x4, esi, ebx, edi 
-    mov     esi, [pMaxVrt]
-    stdcall Vector4.Copy, esi, edi
-
-    ; 1 Vertice
-    lea     edi, [vrt8]
-    lea     esi, [vrt1]
-    stdcall Vector4.Copy, edi, esi
-    stdcall Matrix.MultVec4OnMat4x4, edi, ebx, esi
-
-    ; 2 Vertice
-    lea     edi, [vrt8]
-    lea     esi, [vrt2]
-    stdcall Vector4.Copy, edi, esi
-    stdcall Matrix.MultVec4OnMat4x4, edi, ebx, esi
-
-    ; 3 Vertice
-    lea     edi, [vrt8]
-    lea     esi, [vrt3]
-    stdcall Vector4.Copy, edi, esi
-    stdcall Matrix.MultVec4OnMat4x4, edi, ebx, esi
-
-    ; 4 Vertice
-    lea     edi, [vrt8]
-    lea     esi, [vrt4]
-    stdcall Vector4.Copy, edi, esi
-    stdcall Matrix.MultVec4OnMat4x4, edi, ebx, esi
-
-    ; 5 Vertice
-    lea     edi, [vrt8]
-    lea     esi, [vrt5]
-    stdcall Vector4.Copy, edi, esi
-    stdcall Matrix.MultVec4OnMat4x4, edi, ebx, esi
-
-    ; 6 Vertice
-    lea     edi, [vrt8]
-    lea     esi, [vrt6]
-    stdcall Vector4.Copy, edi, esi
-    stdcall Matrix.MultVec4OnMat4x4, edi, ebx, esi
-
-    ; 7 Vertice
-    lea     edi, [vrt8]
-    lea     esi, [vrt7]
-    stdcall Vector4.Copy, edi, esi
-    stdcall Matrix.MultVec4OnMat4x4, edi, ebx, esi
-
-    ; Calculate min max vertecies
-    ; vertices 1
-    mov     edi, [pMinVrt]
-    mov     esi, [pMaxVrt]
-    lea     ebx, [vrt1]
-
-    ; X
-    fld     [edi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [edi + Vector4.x], eax
-
-    @@:
-
-    fld     [esi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [esi + Vector4.x], eax
-
-    @@:
-
-    ; Y
-    fld     [edi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [edi + Vector4.y], eax
-
-    @@:
-
-    fld     [esi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [esi + Vector4.y], eax
-
-    @@:
-
-    ; Z
-    fld     [edi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [edi + Vector4.z], eax
-
-    @@:
-
-    fld     [esi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [esi + Vector4.z], eax
-
-    @@:
-
-    ; Calculate min max vertecies
-    ; vertices 2
-    mov     edi, [pMinVrt]
-    mov     esi, [pMaxVrt]
-    lea     ebx, [vrt2]
-
-    ; X
-    fld     [edi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [edi + Vector4.x], eax
-
-    @@:
-
-    fld     [esi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [esi + Vector4.x], eax
-
-    @@:
-
-    ; Y
-    fld     [edi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [edi + Vector4.y], eax
-
-    @@:
-
-    fld     [esi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [esi + Vector4.y], eax
-
-    @@:
-
-    ; Z
-    fld     [edi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [edi + Vector4.z], eax
-
-    @@:
-
-    fld     [esi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [esi + Vector4.z], eax
-
-    @@:
-
-    ; Calculate min max vertecies
-    ; vertices 3
-    mov     edi, [pMinVrt]
-    mov     esi, [pMaxVrt]
-    lea     ebx, [vrt3]
-
-    ; X
-    fld     [edi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [edi + Vector4.x], eax
-
-    @@:
-
-    fld     [esi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [esi + Vector4.x], eax
-
-    @@:
-
-    ; Y
-    fld     [edi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [edi + Vector4.y], eax
-
-    @@:
-
-    fld     [esi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [esi + Vector4.y], eax
-
-    @@:
-
-    ; Z
-    fld     [edi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [edi + Vector4.z], eax
-
-    @@:
-
-    fld     [esi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [esi + Vector4.z], eax
-
-    @@:
-
-    ; Calculate min max vertecies
-    ; vertices 4
-    mov     edi, [pMinVrt]
-    mov     esi, [pMaxVrt]
-    lea     ebx, [vrt4]
-
-    ; X
-    fld     [edi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [edi + Vector4.x], eax
-
-    @@:
-
-    fld     [esi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [esi + Vector4.x], eax
-
-    @@:
-
-    ; Y
-    fld     [edi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [edi + Vector4.y], eax
-
-    @@:
-
-    fld     [esi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [esi + Vector4.y], eax
-
-    @@:
-
-    ; Z
-    fld     [edi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [edi + Vector4.z], eax
-
-    @@:
-
-    fld     [esi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [esi + Vector4.z], eax
-
-    @@:
-
-    ; Calculate min max vertecies
-    ; vertices 5
-    mov     edi, [pMinVrt]
-    mov     esi, [pMaxVrt]
-    lea     ebx, [vrt5]
-
-    ; X
-    fld     [edi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [edi + Vector4.x], eax
-
-    @@:
-
-    fld     [esi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [esi + Vector4.x], eax
-
-    @@:
-
-    ; Y
-    fld     [edi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [edi + Vector4.y], eax
-
-    @@:
-
-    fld     [esi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [esi + Vector4.y], eax
-
-    @@:
-
-    ; Z
-    fld     [edi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [edi + Vector4.z], eax
-
-    @@:
-
-    fld     [esi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [esi + Vector4.z], eax
-
-    @@:
-
-    ; Calculate min max vertecies
-    ; vertices 6
-    mov     edi, [pMinVrt]
-    mov     esi, [pMaxVrt]
-    lea     ebx, [vrt6]
-
-    ; X
-    fld     [edi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [edi + Vector4.x], eax
-
-    @@:
-
-    fld     [esi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [esi + Vector4.x], eax
-
-    @@:
-
-    ; Y
-    fld     [edi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [edi + Vector4.y], eax
-
-    @@:
-
-    fld     [esi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [esi + Vector4.y], eax
-
-    @@:
-
-    ; Z
-    fld     [edi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [edi + Vector4.z], eax
-
-    @@:
-
-    fld     [esi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [esi + Vector4.z], eax
-
-    @@:
-
-    ; Calculate min max vertecies
-    ; vertices 7
-    mov     edi, [pMinVrt]
-    mov     esi, [pMaxVrt]
-    lea     ebx, [vrt7]
-
-    ; X
-    fld     [edi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [edi + Vector4.x], eax
-
-    @@:
-
-    fld     [esi + Vector4.x]
-    fcomp   [ebx + Vector4.x]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.x]
-    mov     [esi + Vector4.x], eax
-
-    @@:
-
-    ; Y
-    fld     [edi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [edi + Vector4.y], eax
-
-    @@:
-
-    fld     [esi + Vector4.y]
-    fcomp   [ebx + Vector4.y]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.y]
-    mov     [esi + Vector4.y], eax
-
-    @@:
-
-    ; Z
-    fld     [edi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [edi + Vector4.z], eax
-
-    @@:
-
-    fld     [esi + Vector4.z]
-    fcomp   [ebx + Vector4.z]
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     eax, [ebx + Vector4.z]
-    mov     [esi + Vector4.z], eax
-
-    @@:
+    mov     edx, [pMinVrt]
+    push    edx
+    stdcall Matrix.MultVec4OnMat4x4, edi, ebx, edx 
+    pop     edx
+    mov     edi, [pMaxVrt]
+    stdcall Vector4.Copy, edi, edx
+
+    mov     ecx, [cntVertecies]
+    dec     ecx
+
+    cmp     ecx, 0
+    jbe     .SkipMinMaxLoop
+
+    add     esi, [sizeVertex]
+    .loopMinMax:
+        push    ecx
+
+        lea     edi, [vrtTmp]
+        stdcall Matrix.MultVec4OnMat4x4, esi, ebx, edi
+
+        mov     edx, [pMinVrt]
+        stdcall Number.DoubleMin, [edi + Vector3.x], [edx + Vector3.x]
+        mov     [edx + Vector3.x], eax
+        stdcall Number.DoubleMin, [edi + Vector3.y], [edx + Vector3.y]
+        mov     [edx + Vector3.y], eax
+        stdcall Number.DoubleMin, [edi + Vector3.z], [edx + Vector3.z]
+        mov     [edx + Vector3.z], eax
+
+        mov     edx, [pMaxVrt]
+        stdcall Number.DoubleMax, [edi + Vector3.x], [edx + Vector3.x]
+        mov     [edx + Vector3.x], eax
+        stdcall Number.DoubleMax, [edi + Vector3.y], [edx + Vector3.y]
+        mov     [edx + Vector3.y], eax
+        stdcall Number.DoubleMax, [edi + Vector3.z], [edx + Vector3.z]
+        mov     [edx + Vector3.z], eax
+
+    .Countinue:
+        add     esi, [sizeVertex]
+        pop     ecx
+        loop    .loopMinMax
+
+    .SkipMinMaxLoop:
 
 .Ret:
 
@@ -1085,7 +546,7 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     lea     ebx, [dir]
 
     push    edi
-    add     edi, Player.camPosition
+    add     edi, Player.Position
     stdcall Vector3.Copy, ebx, edi
     pop     edi
 
