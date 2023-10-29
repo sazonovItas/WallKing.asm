@@ -17,7 +17,7 @@ proc Draw.Scene uses esi edi
 
         mov     [timeBetweenChecking], eax
         stdcall Player.EasingMove, mainPlayer, [timeBetweenChecking], [sizeBlocksMapTry], blocksMapTry
-        stdcall Player.EasingInputsKeys, mainPlayer
+        stdcall Player.EasingInputsKeys, mainPlayer, [sizeBlocksMapTry], blocksMapTry
 
         mov     eax, [currentFrame]
         mov     [time], eax

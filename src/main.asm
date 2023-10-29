@@ -326,6 +326,22 @@ proc WindowProc uses ebx,\
 
         @@:
 
+        cmp     [wParam], PL_STOP_CAM_CHASING
+        jne     @F
+
+        xor     [pl_stop_cam_chasing], true
+        jmp     .SkipDown
+
+        @@:
+
+        cmp     [wParam], PL_STOP_CAM_TEX
+        jne     @F
+
+        xor     [pl_stop_cam_tex], true
+        jmp     .SkipDown
+
+        @@:
+
         .SkipUp:
                 jmp     .ReturnZero
 
