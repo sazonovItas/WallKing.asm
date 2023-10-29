@@ -28,10 +28,6 @@ proc Player.Constructor uses edi,\
     fstp    [edi + Player.Acceleration + Vector3.y]
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
-    mov     [edi + Player.Velocity + Vector3.x], 0.0
-    mov     [edi + Player.Velocity + Vector3.y], 0.0
-    mov     [edi + Player.Velocity + Vector3.z], 0.0
-
     mov     [edi + Player.pitch], 0.0
     mov     [edi + Player.yaw], -1.57
 
@@ -43,22 +39,26 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.Up + Vector3.z], 0.0
 
     mov     [edi + Player.speed], 0.01
-    mov     [edi + Player.jumpVeloc], 0.03
+    mov     [edi + Player.jumpVeloc], 0.055
     mov     [edi + Player.sensitivity], 0.0005
     mov     [edi + Player.Condition], JUMP_CONDITION
 
     ; Able to change field of view
     mov     [edi + Player.fovDeg], 90.0
-    mov     [edi + Player.nearPlane], 0.001
+    mov     [edi + Player.nearPlane], 0.01
     mov     [edi + Player.farPlane], 1000.0
 
-    ; radius of camera
-    mov     [edi + Player.radius], 1.0 
+    ; chasingRadius of camera
+    mov     [edi + Player.chasingRadius], 0.5 
 
     ; translate coordinates 
-    mov     [edi + Player.translate + Vector3.x], 0.5
-    mov     [edi + Player.translate + Vector3.y], -1.0
-    mov     [edi + Player.translate + Vector3.z], -3.0
+    mov     [edi + Player.camRadius], 4.5 
+    mov     [edi + Player.maxCamRadius], 6.0
+    mov     [edi + Player.minCamRadius], 0.2
+    mov     [edi + Player.curCamRadius], 4.5
+    mov     [edi + Player.translate + Vector3.x], 0.0
+    mov     [edi + Player.translate + Vector3.y], 0.0
+    mov     [edi + Player.translate + Vector3.z], 0.0 
 
     ; Camera chasing easing
     mov     [edi + Player.camChasing + Easing.ptrEasingFun], dword Easing.easeOutQuort
@@ -66,6 +66,13 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.camChasing + Easing.startTime], 0
     mov     [edi + Player.camChasing + Easing.start], false
     mov     [edi + Player.camChasing + Easing.done], false
+
+    ; Camera texture easing 
+    mov     [edi + Player.camTexture + Easing.ptrEasingFun], dword Easing.easeOutQuort
+    mov     [edi + Player.camTexture + Easing.duration], 500 
+    mov     [edi + Player.camTexture + Easing.startTime], 0
+    mov     [edi + Player.camTexture + Easing.start], false
+    mov     [edi + Player.camTexture + Easing.done], false
 
     ; Animation functions
     ; Forward ani
@@ -133,7 +140,7 @@ proc Player.Constructor uses edi,\
 
     ; jump ani
     mov     [edi + Player.jumpAni + Easing.ptrEasingFun], dword Easing.easeInCos
-    mov     [edi + Player.jumpAni + Easing.duration], 200
+    mov     [edi + Player.jumpAni + Easing.duration], 250
     mov     [edi + Player.jumpAni + Easing.startTime], 0
     mov     [edi + Player.jumpAni + Easing.start], false
     mov     [edi + Player.jumpAni + Easing.done], false
@@ -186,8 +193,6 @@ proc Player.EasingMove uses edi esi ebx,\
     locals 
         deltaPos        Vector3         ?
         div2            dd              2.0
-        step            dd              0.001 
-        trueStep        dd              ?
         collision       dd              0
     endl
 
@@ -210,46 +215,6 @@ proc Player.EasingMove uses edi esi ebx,\
     fild    [dt]
     fstp    [dt]
     stdcall Vector3.MultOnNumber, ebx, [dt]
-
-    lea     ebx, [deltaPos]
-    fld     [edi + Player.Position + Vector3.x]
-    fadd    [ebx + Vector3.x]
-    fstp    [edi + Player.Position + Vector3.x]
-
-    ; X collision
-    lea     ebx, [collision]
-    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
-    cmp     eax, NO_COLLISION
-    je      .SkipXCollision
-
-    mov     eax, [edi + Player.prevPosition + Vector3.x]
-    mov     [edi + Player.Position + Vector3.x], eax
-
-    lea     ebx, [deltaPos]
-    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.x),\
-                (Player.prevPosition + Vector3.x), [ebx + Vector3.x]
-
-    .SkipXCollision:
-
-    lea     ebx, [deltaPos]
-    fld     [edi + Player.Position + Vector3.z]
-    fadd    [ebx + Vector3.z]
-    fstp    [edi + Player.Position + Vector3.z]
-
-    ; Z collision
-    lea     ebx, [collision]
-    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Z_COLLISION
-    cmp     eax, NO_COLLISION
-    je      .SkipZCollision
-
-    mov     eax, [edi + Player.prevPosition + Vector3.z]
-    mov     [edi + Player.Position + Vector3.z], eax
-
-    lea     ebx, [deltaPos]
-    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.z),\
-                (Player.prevPosition + Vector3.z), [ebx + Vector3.z]
-
-    .SkipZCollision:
 
     lea     ebx, [deltaPos]
     fld     [edi + Player.Position + Vector3.y]
@@ -322,25 +287,55 @@ proc Player.EasingMove uses edi esi ebx,\
     mov     [edi + Player.Condition], JUMP_CONDITION
 
     .SkipYCollision:
-    
-    ; Copy position of player to camera position
-    ; push    edi
-    ; push    esi
-    ; mov     esi, edi
-    ; add     esi, Player.camPosition
-    ; add     edi, Player.Position
-    ; stdcall Vector3.Copy, esi, edi
-    ; pop     edi
-    ; pop     esi
 
-    stdcall Player.EasingMoveCamera, [pPlayer], [dt]
+    lea     ebx, [deltaPos]
+    fld     [edi + Player.Position + Vector3.x]
+    fadd    [ebx + Vector3.x]
+    fstp    [edi + Player.Position + Vector3.x]
+
+    ; X collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipXCollision
+
+    mov     eax, [edi + Player.prevPosition + Vector3.x]
+    mov     [edi + Player.Position + Vector3.x], eax
+
+    lea     ebx, [deltaPos]
+    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.x),\
+                (Player.prevPosition + Vector3.x), [ebx + Vector3.x]
+
+    .SkipXCollision:
+
+    lea     ebx, [deltaPos]
+    fld     [edi + Player.Position + Vector3.z]
+    fadd    [ebx + Vector3.z]
+    fstp    [edi + Player.Position + Vector3.z]
+
+    ; Z collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Z_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipZCollision
+
+    mov     eax, [edi + Player.prevPosition + Vector3.z]
+    mov     [edi + Player.Position + Vector3.z], eax
+
+    lea     ebx, [deltaPos]
+    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.z),\
+                (Player.prevPosition + Vector3.z), [ebx + Vector3.z]
+
+    .SkipZCollision:
+
+    stdcall Player.EasingMoveCamera, [pPlayer], [dt], [sizeMap], [pMap]
 
 .Ret:
     ret
 endp
 
 proc Player.EasingInputsKeys uses edi esi ebx,\
-    pPlayer
+    pPlayer, sizeMap, pMap
 
     locals 
         velocity        dd          0.0
@@ -512,7 +507,7 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
 
     .SkipRun:
 
-    stdcall Player.EasingHandlerCamera, [pPlayer]
+    stdcall Player.EasingHandlerCamera, [pPlayer], [sizeMap], [pMap]
 
 .Ret:
     ret
@@ -747,13 +742,15 @@ proc Player.EasingHandlerJump uses edi esi ebx,\
 endp
 
 proc Player.EasingHandlerCamera uses edi esi ebx,\
-    pPlayer
+    pPlayer, sizeMap, pMap
 
     locals 
-        camRadius       dd              ?
-        velocity        dd              0.0
-        trigger         dd              false
-        tmp             Vector3         ?
+        camchasingRadius        dd              ?
+        velocity                dd              0.0
+        tmpDist                 dd              0.05
+        trigger                 dd              false
+        tmp                     Vector3         ?
+        tmpVel                  dd              ?
     endl
 
     mov     edi, [pPlayer]
@@ -771,9 +768,9 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
     stdcall Vector3.Distance, edi, esi
     pop     edi
 
-    mov     [camRadius], eax
-    fld     [camRadius]
-    fcomp   [edi + Player.radius]
+    mov     [camchasingRadius], eax
+    fld     [camchasingRadius]
+    fcomp   [edi + Player.chasingRadius]
     fstsw   ax
     sahf
     jb      @F
@@ -781,6 +778,9 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
     mov     [trigger], true
 
     @@: 
+
+    cmp     [pl_stop_cam_chasing], true
+    je      .SkipCamChasing
 
     push    edi
     mov     esi, edi
@@ -795,24 +795,24 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
 
     ; Cam animation
     cmp     [trigger], false
-    je      .SkipUpdateAni
+    je      .SkipUpdateChasingAni
 
     cmp     [esi + Easing.done], true
-    je     .SkipDoneAni
+    je     .SkipDoneChasingAni
 
     cmp     [esi + Easing.start], true
-    je      .SkipStartAni
+    je      .SkipStartChasingAni
 
     mov     [esi + Easing.start], true
     invoke  GetTickCount
     mov     [esi + Easing.startTime], eax
 
-    .SkipStartAni:
+    .SkipStartChasingAni:
 
     invoke  GetTickCount
     sub     eax, [esi + Easing.startTime]
     cmp     eax, [esi + Easing.duration]
-    ja      .SkipDoneAni
+    ja      .SkipDoneChasingAni
 
     stdcall [esi + Easing.ptrEasingFun], eax
     mov     [velocity], eax 
@@ -833,9 +833,9 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
     fadd    [orinVec + Vector3.z]
     fstp    [edi + Player.camVelocity + Vector3.z]
 
-    jmp     .SkipAni
+    jmp     .SkipChasingAni
 
-    .SkipDoneAni:
+    .SkipDoneChasingAni:
 
     mov     [esi + Easing.done], true
 
@@ -858,27 +858,107 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
     fadd    [orinVec + Vector3.z]
     fstp    [edi + Player.camVelocity + Vector3.z]
 
-    jmp     .SkipAni
+    jmp     .SkipChasingAni
 
-    .SkipUpdateAni:
+    .SkipUpdateChasingAni:
 
     cmp     [esi + Easing.start], false
-    je      .SkipAni
+    je      .SkipChasingAni
 
     mov     [esi + Easing.start], false
     mov     [esi + Easing.done], false
 
-    .SkipAni:
+    .SkipChasingAni:
+
+    .SkipCamChasing:
+
+
+    ; texture easing
+    mov     [edi + Player.camTextureVel], 0.0
+
+    ; texture radius
+    cmp     [pl_stop_cam_tex], true
+    je      .SkipCamTex
+
+    stdcall Collision.RayDetection, [pPlayer], [sizeMap], [pMap]
+    mov     [edi + Player.curCamRadius], eax
+
+    fld     [edi + Player.curCamRadius]
+    fsub    [edi + Player.camRadius]
+    fstp    [tmpVel]
+
+    mov     esi, edi
+    add     esi, Player.camTexture
+
+    cmp     [esi + Easing.done], true
+    je     .SkipDoneTextureAni
+
+    cmp     [esi + Easing.start], true
+    je      .SkipStartTextureAni
+
+    mov     [esi + Easing.start], true
+    invoke  GetTickCount
+    mov     [esi + Easing.startTime], eax
+
+    .SkipStartTextureAni:
+
+    invoke  GetTickCount
+    sub     eax, [esi + Easing.startTime]
+    cmp     eax, [esi + Easing.duration]
+    ja      .SkipDoneTextureAni
+
+    stdcall [esi + Easing.ptrEasingFun], eax
+    mov     [velocity], eax 
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    fld     [tmpVel]
+    fmul    [velocity]
+    fstp    [edi + Player.camTextureVel]
+
+    jmp     .SkipTextureAni
+
+    .SkipDoneTextureAni:
+
+    mov     [esi + Easing.done], true
+
+    stdcall [esi + Easing.ptrEasingFun], [esi + Easing.duration]
+    mov     [velocity], eax
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    fld     [tmpVel]
+    fmul    [velocity]
+    fstp    [edi + Player.camTextureVel]
+
+    jmp     .SkipTextureAni
+
+    .SkipUpdateTextureAni:
+
+    cmp     [esi + Easing.start], false
+    je      .SkipTextureAni
+
+    mov     [esi + Easing.start], false
+    mov     [esi + Easing.done], false
+
+    .SkipTextureAni:
+
+    .SkipCamTex:
 
 
     ret
 endp
 
 proc Player.EasingMoveCamera uses edi esi ebx,\
-    pPlayer, dt
+    pPlayer, dt, sizeMap, pMap
 
     locals 
         deltaPos        Vector3         ?
+        deltaRadius     GLfloat         ?
     endl
 
     mov     edi, [pPlayer]
@@ -896,10 +976,18 @@ proc Player.EasingMoveCamera uses edi esi ebx,\
     stdcall Vector3.Add, edi, ebx
     pop     edi
 
+    fld     [edi + Player.camTextureVel]
+    fmul    [dt]
+    fstp    [deltaRadius]
+
+    fld     [edi + Player.camRadius]
+    fadd    [deltaRadius]
+    fstp    [edi + Player.camRadius]
+
     ret
 endp
 
-proc Player.CameraHandler uses edi esi ebx,\
+proc Player.CameraRadiusHandler uses edi esi ebx,\
 
 .Ret:
     ret

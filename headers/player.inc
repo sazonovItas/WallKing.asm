@@ -13,6 +13,7 @@ struct Player
     sensitivity     GLfloat         ? 
 
     camChasing      Easing          ?
+    camTexture      Easing          ?
 
     pitch           GLfloat         ?
     yaw             GLfloat         ?
@@ -25,9 +26,14 @@ struct Player
     farPlane        GLfloat         ?
 
     translate       Vector3         ?
-    radius          GLfloat         ?
+    camRadius       GLfloat         ?
 
-    camTranslate    Vector3         ?
+    chasingRadius   GLfloat         ?
+    maxCamRadius    GLfloat         ?
+    curCamRadius    GLfloat         ?
+    minCamRadius    GLfloat         ?
+
+    camTextureVel   GLfloat         ?
 
     sizeBlockCol    GLfloat         ?
 
@@ -71,6 +77,8 @@ ends
     PL_NORMAL_GRAV      =       'E'
     PL_ENHANCE_GRAV     =       VK_UP
     PL_WEAK_GRAV        =       VK_DOWN
+    PL_STOP_CAM_TEX     =       'O'
+    PL_STOP_CAM_CHASING =       'P'
 
     pl_jump             db      false
     pl_run              db      false
@@ -82,6 +90,8 @@ ends
     pl_normal_grav      db      false
     pl_enhance_grav     db      false 
     pl_weak_grav        db      false
+    pl_stop_cam_tex     db      true
+    pl_stop_cam_chasing db      false
 
     ;   Gravity just for fun
     EARTH_GRAVITY       dd       -0.0098

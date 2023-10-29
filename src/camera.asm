@@ -120,11 +120,12 @@ proc Camera.Matrix uses edi esi ebx,\
     pop     edi
 
     ; Translate camera to the right place
+    stdcall Camera.ViewPosition, [pCamera]
     invoke  glMatrixMode, GL_MODELVIEW
     invoke  glPushMatrix
         invoke  glLoadIdentity
-        invoke  glTranslatef, [edi + Camera.translate + Vector3.x], [edi + Camera.translate + Vector3.y], [edi + Camera.translate + Vector3.z]
         invoke  glMultMatrixf, ebx
+        invoke  glTranslatef, [edi + Camera.translate + Vector3.x], [edi + Camera.translate + Vector3.y], [edi + Camera.translate + Vector3.z]
         invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ebx
     invoke  glPopMatrix
 
@@ -136,7 +137,31 @@ proc Camera.ViewPosition uses edi,\
 
     mov     edi, [pCamera]
 
-    
+    ; Y
+    fld     [edi + Camera.pitch]
+    fsin
+    fmul    [edi + Camera.radius]
+    fstp    [edi + Camera.translate + Vector3.y]
+
+    ; X
+    fld     [edi + Camera.pitch]
+    fcos
+    fstp    [edi + Camera.translate + Vector3.x]
+    fld     [edi + Camera.yaw]
+    fcos    
+    fmul    [edi + Camera.radius]
+    fmul    [edi + Camera.translate + Vector3.x]
+    fstp    [edi + Camera.translate + Vector3.x]
+
+    ; Z
+    fld     [edi + Camera.pitch]
+    fcos
+    fstp    [edi + Camera.translate + Vector3.z]
+    fld     [edi + Camera.yaw]
+    fsin    
+    fmul    [edi + Camera.radius]
+    fmul    [edi + Camera.translate + Vector3.z]
+    fstp    [edi + Camera.translate + Vector3.z]
 
     ret
 endp
