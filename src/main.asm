@@ -21,7 +21,7 @@
         include         "internal/math/matrix.asm"
         include         "internal/math/easing_funcs.asm"
         
-        className       db      "OpenGLDemo", 0
+        className       db      "WallKing", 0
         clientRect      RECT
         time            dd      ?
         hdc             dd      ?
