@@ -1,12 +1,12 @@
 compile:
-	fasm ./src/main.asm main.exe
+	fasm ./src/main.asm WallKing.exe
 
 run:
-	./main.exe
+	./WallKing.exe
 
 exec:
-	fasm ./src/main.asm main.exe
-	./main.exe
+	fasm ./src/main.asm WallKing.exe
+	./WallKing.exe
 
 clean:
-	rm main.exe
+	rm WallKing.exe
