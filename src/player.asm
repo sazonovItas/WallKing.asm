@@ -217,46 +217,6 @@ proc Player.EasingMove uses edi esi ebx,\
     stdcall Vector3.MultOnNumber, ebx, [dt]
 
     lea     ebx, [deltaPos]
-    fld     [edi + Player.Position + Vector3.x]
-    fadd    [ebx + Vector3.x]
-    fstp    [edi + Player.Position + Vector3.x]
-
-    ; X collision
-    lea     ebx, [collision]
-    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
-    cmp     eax, NO_COLLISION
-    je      .SkipXCollision
-
-    mov     eax, [edi + Player.prevPosition + Vector3.x]
-    mov     [edi + Player.Position + Vector3.x], eax
-
-    lea     ebx, [deltaPos]
-    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.x),\
-                (Player.prevPosition + Vector3.x), [ebx + Vector3.x]
-
-    .SkipXCollision:
-
-    lea     ebx, [deltaPos]
-    fld     [edi + Player.Position + Vector3.z]
-    fadd    [ebx + Vector3.z]
-    fstp    [edi + Player.Position + Vector3.z]
-
-    ; Z collision
-    lea     ebx, [collision]
-    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Z_COLLISION
-    cmp     eax, NO_COLLISION
-    je      .SkipZCollision
-
-    mov     eax, [edi + Player.prevPosition + Vector3.z]
-    mov     [edi + Player.Position + Vector3.z], eax
-
-    lea     ebx, [deltaPos]
-    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.z),\
-                (Player.prevPosition + Vector3.z), [ebx + Vector3.z]
-
-    .SkipZCollision:
-
-    lea     ebx, [deltaPos]
     fld     [edi + Player.Position + Vector3.y]
     fadd    [ebx + Vector3.y]
     fstp    [edi + Player.Position + Vector3.y]
@@ -327,6 +287,46 @@ proc Player.EasingMove uses edi esi ebx,\
     mov     [edi + Player.Condition], JUMP_CONDITION
 
     .SkipYCollision:
+
+    lea     ebx, [deltaPos]
+    fld     [edi + Player.Position + Vector3.x]
+    fadd    [ebx + Vector3.x]
+    fstp    [edi + Player.Position + Vector3.x]
+
+    ; X collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipXCollision
+
+    mov     eax, [edi + Player.prevPosition + Vector3.x]
+    mov     [edi + Player.Position + Vector3.x], eax
+
+    lea     ebx, [deltaPos]
+    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.x),\
+                (Player.prevPosition + Vector3.x), [ebx + Vector3.x]
+
+    .SkipXCollision:
+
+    lea     ebx, [deltaPos]
+    fld     [edi + Player.Position + Vector3.z]
+    fadd    [ebx + Vector3.z]
+    fstp    [edi + Player.Position + Vector3.z]
+
+    ; Z collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Z_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipZCollision
+
+    mov     eax, [edi + Player.prevPosition + Vector3.z]
+    mov     [edi + Player.Position + Vector3.z], eax
+
+    lea     ebx, [deltaPos]
+    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.z),\
+                (Player.prevPosition + Vector3.z), [ebx + Vector3.z]
+
+    .SkipZCollision:
 
     stdcall Player.EasingMoveCamera, [pPlayer], [dt], [sizeMap], [pMap]
 
