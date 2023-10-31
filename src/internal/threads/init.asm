@@ -1,0 +1,1 @@
+proc InitDataForMove uses edi\

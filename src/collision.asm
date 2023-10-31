@@ -437,6 +437,7 @@ proc Collision.RayDetection uses edi esi ebx,\
     locals 
         detected        dd      ?
         null            dd      0.0 
+        norm            dd      0.2
         allDetected     dd      -1.0
     endl
 
@@ -479,8 +480,9 @@ proc Collision.RayDetection uses edi esi ebx,\
         sahf
         ja  @F
 
-        push    [detected]
-        pop     [allDetected]
+        fld     [detected]
+        fadd    [norm]
+        fstp    [allDetected]
 
         @@:
 
@@ -639,7 +641,7 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     sahf
     jb      @F
 
-    mov     edx, [tNear] 
+    mov     edx, -1.0 
 
     @@:
 

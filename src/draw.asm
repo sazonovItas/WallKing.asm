@@ -53,6 +53,28 @@ proc Draw.Scene uses esi edi
         invoke  glDrawElements, GL_TRIANGLES, countLightIndices, GL_UNSIGNED_INT, 0
         stdcall VAO.Unbind
 
+        ; camera draw
+        mov     edi, mainPlayer
+        stdcall Shader.Activate, [lightShader.ID]
+
+        stdcall Camera.UniformBind, mainPlayer, [lightShader.ID], uniProjName, uniViewName
+
+        invoke  glPushMatrix
+                invoke  glLoadIdentity
+                invoke  glTranslatef, [edi + Player.camPosition + Vector3.x], [edi + Player.camPosition + Vector3.y], [edi + Player.camPosition + Vector3.z]
+                invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
+        invoke  glPopMatrix
+        invoke  glGetUniformLocation, [lightShader.ID], uniModelName
+        ; mov     [uniModel], eax
+        invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
+
+        invoke  glGetUniformLocation, [lightShader.ID], uniLightColorName
+        invoke  glUniform4f, eax, [lightColor.r], [lightColor.g], [lightColor.b], [lightColor.a]
+
+        stdcall VAO.Bind, [lightVAO.ID]
+        invoke  glDrawElements, GL_TRIANGLES, countLightIndices, GL_UNSIGNED_INT, 0
+        stdcall VAO.Unbind
+
         ; draw player
         stdcall Shader.Activate, [exampleShader.ID]
 
