@@ -451,11 +451,24 @@ proc Collision.RayDetection uses edi esi ebx,\
     stdcall Camera.ViewPosition, [pPlayer]
     pop     [edi + Player.camRadius]
 
-    ; push    edi
-    ; add     edi, Player.camPosition
-    ; lea     ebx, [dir]
-    ; stdcall Vector3.Copy, ebx, edi
-    ; pop     edi
+    ; Calculate camera ray dir 
+    mov     edi, [pPlayer]
+
+    lea     esi, [origin]
+    push    edi
+    add     edi, Player.camPosition
+    stdcall Vector3.Add, esi, edi
+    pop     edi
+    push    edi
+    add     edi, Player.translate
+    stdcall Vector3.Sub, esi, edi
+    pop     edi
+
+    lea     ebx, [dir]
+    push    edi
+    add     edi, Player.Orientation
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
 
     ; loop for intersect
     mov     esi, [blocksMap]
@@ -464,7 +477,9 @@ proc Collision.RayDetection uses edi esi ebx,\
     .CheckLoop:
         push    ecx
 
-        stdcall Collision.RayBlockIntersect, edi, esi
+        lea     edx, [dir]
+        lea     eax, [origin]
+        stdcall Collision.RayBlockIntersect, edi, esi, edx, eax
         mov     [detected], eax
 
         ; Start checking ray distance for collisions
@@ -526,15 +541,13 @@ proc Collision.RayDetection uses edi esi ebx,\
 endp
 
 proc Collision.RayBlockIntersect uses edi esi ebx,\
-    pPlayer, pBlockPosition 
+    pPlayer, pBlockPosition, dir, origin
 
     locals 
         minBlockVrt         Vector4         0.0, 0.0, 0.0, 1.0
         maxBlockVrt         Vector4         0.0, 0.0, 0.0, 1.0
-        cameraPos           Vector3         0.0, 0.0, 0.0
         tmp                 Vector3         0.0, 0.0, 0.0
         null                GLfloat         0.0
-        dir                 Vector3         ?
         tFar                GLfloat         ? 
         tNear               GLfloat         ?
         t1                  Vector3         ?
@@ -554,28 +567,10 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     stdcall Collision.minMaxOptimizeBlockVerts, ebx, eax, esi, ecx, edi 
     pop     edi
 
-    ; Calculate camera ray dir 
-    mov     edi, [pPlayer]
-
-    lea     esi, [cameraPos]
-    push    edi
-    add     edi, Player.camPosition
-    stdcall Vector3.Add, esi, edi
-    pop     edi
-    push    edi
-    add     edi, Player.translate
-    stdcall Vector3.Sub, esi, edi
-    pop     edi
-
-    lea     ebx, [dir]
-    push    edi
-    add     edi, Player.Orientation
-    stdcall Vector3.Copy, ebx, edi
-    pop     edi
 
     lea     edi, [minBlockVrt]
-    lea     edx, [cameraPos]
-    lea     ebx, [dir]
+    mov     edx, [origin]
+    mov     ebx, [dir]
     lea     eax, [t1]
 
     ; X min
