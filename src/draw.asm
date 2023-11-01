@@ -6,6 +6,7 @@ proc Draw.Scene uses esi edi
                 rotAngle                dd     0.0
                 colDetected             dd     ?
                 timeBetweenChecking     dd     ?
+                tmp                     Vector3 ?
         endl
 
         invoke  GetTickCount

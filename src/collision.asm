@@ -435,15 +435,15 @@ proc Collision.RayDetection uses edi esi ebx,\
     pPlayer, sizeBlocksMap, blocksMap
 
     locals 
-        detected        dd      ?
-        null            dd      0.0 
-        norm            dd      0.2
-        allDetected     dd      -1.0
+        detected        dd              ?
+        null            dd              0.0 
+        norm            dd              0.2
+        allDetected     dd              -1.0
+        dir             Vector3         ?
+        origin          Vector3         ?
     endl
 
     mov     edi, [pPlayer]
-    mov     esi, [blocksMap]
-    mov     ecx, [sizeBlocksMap]
     
     push    [edi + Player.camRadius]
     fld     [edi + Player.maxCamRadius]
@@ -451,6 +451,15 @@ proc Collision.RayDetection uses edi esi ebx,\
     stdcall Camera.ViewPosition, [pPlayer]
     pop     [edi + Player.camRadius]
 
+    ; push    edi
+    ; add     edi, Player.camPosition
+    ; lea     ebx, [dir]
+    ; stdcall Vector3.Copy, ebx, edi
+    ; pop     edi
+
+    ; loop for intersect
+    mov     esi, [blocksMap]
+    mov     ecx, [sizeBlocksMap]
 
     .CheckLoop:
         push    ecx
@@ -520,8 +529,8 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     pPlayer, pBlockPosition 
 
     locals 
-        minBlockVrt         Vector3         ?
-        maxBlockVrt         Vector3         ?
+        minBlockVrt         Vector4         0.0, 0.0, 0.0, 1.0
+        maxBlockVrt         Vector4         0.0, 0.0, 0.0, 1.0
         cameraPos           Vector3         0.0, 0.0, 0.0
         tmp                 Vector3         0.0, 0.0, 0.0
         null                GLfloat         0.0
@@ -530,7 +539,6 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
         tNear               GLfloat         ?
         t1                  Vector3         ?
         t2                  Vector3         ?
-        try                 GLfloat         -1.0
     endl   
 
     mov     edi, [pBlockPosition]
@@ -548,30 +556,27 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
 
     ; Calculate camera ray dir 
     mov     edi, [pPlayer]
-    lea     ebx, [dir]
 
+    lea     esi, [cameraPos]
     push    edi
     add     edi, Player.camPosition
+    stdcall Vector3.Add, esi, edi
+    pop     edi
+    push    edi
+    add     edi, Player.translate
+    stdcall Vector3.Sub, esi, edi
+    pop     edi
+
+    lea     ebx, [dir]
+    push    edi
+    add     edi, Player.Orientation
     stdcall Vector3.Copy, ebx, edi
     pop     edi
 
-    lea     esi, [cameraPos]
-    push    edi 
-    add     edi, Player.translate
-    stdcall Vector3.Sub, esi, ebx
-    stdcall Vector3.Add, esi, edi
-    stdcall Vector3.MultOnNumber, esi, [try]
-    pop     edi
-
-    stdcall Vector3.Sub, ebx, esi
-    stdcall Vector3.Normalize, ebx
-
     lea     edi, [minBlockVrt]
-    lea     esi, [maxBlockVrt]
     lea     edx, [cameraPos]
     lea     ebx, [dir]
     lea     eax, [t1]
-    lea     ecx, [t2]
 
     ; X min
     fld     [edi + Vector3.x]
@@ -591,23 +596,26 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     fdiv    [ebx + Vector3.z]
     fstp    [eax + Vector3.z]
 
+    lea     edi, [maxBlockVrt]
+    lea     eax, [t2]
     ; X max
-    fld     [esi + Vector3.x]
+    fld     [edi + Vector3.x]
     fsub    [edx + Vector3.x]
     fdiv    [ebx + Vector3.x]
-    fstp    [ecx + Vector3.x]
+    fstp    [eax + Vector3.x]
 
     ; Y max
-    fld     [esi + Vector3.y]
+    fld     [edi + Vector3.y]
     fsub    [edx + Vector3.y]
     fdiv    [ebx + Vector3.y]
-    fstp    [ecx + Vector3.y]
+    fstp    [eax + Vector3.y]
 
     ; Z max
-    fld     [esi + Vector3.z]
+    fld     [edi + Vector3.z]
     fsub    [edx + Vector3.z]
     fdiv    [ebx + Vector3.z]
-    fstp    [ecx + Vector3.z]
+    fstp    [eax + Vector3.z]
+
 
     lea     esi, [t1]
     lea     edi, [t2]
@@ -639,11 +647,22 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     fcomp   [tFar]
     fstsw   ax
     sahf
-    jb      @F
+    jb      .SkipNearGrFar
 
     mov     edx, -1.0 
+    mov     edx, [tNear]
+
+    fld     [tNear]
+    fcomp   [null]
+    fstsw   ax
+    sahf
+    ja      @F
+
+    mov     edx, -1.0
 
     @@:
+
+    .SkipNearGrFar:
 
     fld     [tFar]
     fcomp   [null]
@@ -654,6 +673,7 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     mov     edx, -1.0
 
     @@:
+
     
 .Ret:
 

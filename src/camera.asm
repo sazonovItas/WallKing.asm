@@ -84,7 +84,9 @@ proc Camera.Matrix uses edi esi ebx,\
     pCamera
 
     locals 
-        aspect      dd         ?
+        aspect      dd          ?
+        tmp         Vector3     ?
+        div2        dd          4.0
     endl
 
     mov     edi, [pCamera]
