@@ -250,7 +250,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_jump], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -258,7 +258,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_run], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -266,7 +266,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_forward], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -274,7 +274,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_backward], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -282,7 +282,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_left], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -290,7 +290,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_right], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -298,7 +298,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_slide_jump], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -306,7 +306,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_normal_grav], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -314,7 +314,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_enhance_grav], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -322,7 +322,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         mov     [pl_weak_grav], false
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -330,7 +330,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         xor     [pl_stop_cam_chasing], true
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 
@@ -338,7 +338,7 @@ proc WindowProc uses ebx,\
         jne     @F
 
         xor     [pl_stop_cam_tex], true
-        jmp     .SkipDown
+        jmp     .SkipUp
 
         @@:
 

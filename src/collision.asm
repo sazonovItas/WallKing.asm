@@ -567,7 +567,6 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     stdcall Collision.minMaxOptimizeBlockVerts, ebx, eax, esi, ecx, edi 
     pop     edi
 
-
     lea     edi, [minBlockVrt]
     mov     edx, [origin]
     mov     ebx, [dir]
@@ -642,22 +641,11 @@ proc Collision.RayBlockIntersect uses edi esi ebx,\
     fcomp   [tFar]
     fstsw   ax
     sahf
-    jb      .SkipNearGrFar
-
-    mov     edx, -1.0 
-    mov     edx, [tNear]
-
-    fld     [tNear]
-    fcomp   [null]
-    fstsw   ax
-    sahf
-    ja      @F
+    jb      @F
 
     mov     edx, -1.0
 
     @@:
-
-    .SkipNearGrFar:
 
     fld     [tFar]
     fcomp   [null]

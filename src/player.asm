@@ -69,7 +69,7 @@ proc Player.Constructor uses edi,\
 
     ; Camera texture easing 
     mov     [edi + Player.camTexture + Easing.ptrEasingFun], dword Easing.easeOutQuort
-    mov     [edi + Player.camTexture + Easing.duration], 500 
+    mov     [edi + Player.camTexture + Easing.duration], 200 
     mov     [edi + Player.camTexture + Easing.startTime], 0
     mov     [edi + Player.camTexture + Easing.start], false
     mov     [edi + Player.camTexture + Easing.done], false
@@ -105,28 +105,28 @@ proc Player.Constructor uses edi,\
 
     ; slow Forward ani
     mov     [edi + Player.bforwAni + Easing.ptrEasingFun], dword Easing.easeSlow
-    mov     [edi + Player.bforwAni + Easing.duration], 230 
+    mov     [edi + Player.bforwAni + Easing.duration], 250 
     mov     [edi + Player.bforwAni + Easing.startTime], 0
     mov     [edi + Player.bforwAni + Easing.start], false
     mov     [edi + Player.bforwAni + Easing.done], false
 
     ; slow Backward ani
     mov     [edi + Player.bbackAni + Easing.ptrEasingFun], dword Easing.easeSlow
-    mov     [edi + Player.bbackAni + Easing.duration], 230 
+    mov     [edi + Player.bbackAni + Easing.duration], 250 
     mov     [edi + Player.bbackAni + Easing.startTime], 0
     mov     [edi + Player.bbackAni + Easing.start], false
     mov     [edi + Player.bbackAni + Easing.done], false
 
     ; slow left  ani
     mov     [edi + Player.bleftAni + Easing.ptrEasingFun], dword Easing.easeSlow
-    mov     [edi + Player.bleftAni + Easing.duration], 230 
+    mov     [edi + Player.bleftAni + Easing.duration], 250 
     mov     [edi + Player.bleftAni + Easing.startTime], 0
     mov     [edi + Player.bleftAni + Easing.start], false
     mov     [edi + Player.bleftAni + Easing.done], false
 
     ; slow right  ani
     mov     [edi + Player.brightAni + Easing.ptrEasingFun], dword Easing.easeSlow
-    mov     [edi + Player.brightAni + Easing.duration], 230 
+    mov     [edi + Player.brightAni + Easing.duration], 250 
     mov     [edi + Player.brightAni + Easing.startTime], 0
     mov     [edi + Player.brightAni + Easing.start], false
     mov     [edi + Player.brightAni + Easing.done], false
@@ -751,6 +751,7 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
         trigger                 dd              false
         tmp                     Vector3         ?
         tmpVel                  dd              ?
+        conNum                  dd              3.0
     endl
 
     mov     edi, [pPlayer]
