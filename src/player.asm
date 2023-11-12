@@ -66,6 +66,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.camChasing + Easing.startTime], 0
     mov     [edi + Player.camChasing + Easing.start], false
     mov     [edi + Player.camChasing + Easing.done], false
+    mov     [edi + Player.camChasing + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.camChasing + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.camChasing + Easing.orinVec + Vector3.z], 0.0
 
     ; Camera texture easing 
     mov     [edi + Player.camTexture + Easing.ptrEasingFun], dword Easing.easeOutQuort
@@ -73,6 +76,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.camTexture + Easing.startTime], 0
     mov     [edi + Player.camTexture + Easing.start], false
     mov     [edi + Player.camTexture + Easing.done], false
+    mov     [edi + Player.camTexture + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.camTexture + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.camTexture + Easing.orinVec + Vector3.z], 0.0
 
     ; Animation functions
     ; Forward ani
@@ -81,6 +87,10 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.forwAni + Easing.startTime], 0
     mov     [edi + Player.forwAni + Easing.start], false
     mov     [edi + Player.forwAni + Easing.done], false
+    mov     [edi + Player.forwAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.forwAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.forwAni + Easing.orinVec + Vector3.z], 0.0
+
 
     ; Backward ani
     mov     [edi + Player.backAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
@@ -88,6 +98,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.backAni + Easing.startTime], 0
     mov     [edi + Player.backAni + Easing.start], false
     mov     [edi + Player.backAni + Easing.done], false
+    mov     [edi + Player.backAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.backAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.backAni + Easing.orinVec + Vector3.z], 0.0
 
     ; left  ani
     mov     [edi + Player.leftAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
@@ -95,6 +108,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.leftAni + Easing.startTime], 0
     mov     [edi + Player.leftAni + Easing.start], false
     mov     [edi + Player.leftAni + Easing.done], false
+    mov     [edi + Player.leftAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.leftAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.leftAni + Easing.orinVec + Vector3.z], 0.0
 
     ; right  ani
     mov     [edi + Player.rightAni + Easing.ptrEasingFun], dword Easing.easeOutQuort
@@ -102,6 +118,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.rightAni + Easing.startTime], 0
     mov     [edi + Player.rightAni + Easing.start], false
     mov     [edi + Player.rightAni + Easing.done], false
+    mov     [edi + Player.rightAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.rightAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.rightAni + Easing.orinVec + Vector3.z], 0.0
 
     ; slow Forward ani
     mov     [edi + Player.bforwAni + Easing.ptrEasingFun], dword Easing.easeSlow
@@ -109,6 +128,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.bforwAni + Easing.startTime], 0
     mov     [edi + Player.bforwAni + Easing.start], false
     mov     [edi + Player.bforwAni + Easing.done], false
+    mov     [edi + Player.bforwAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.bforwAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.bforwAni + Easing.orinVec + Vector3.z], 0.0
 
     ; slow Backward ani
     mov     [edi + Player.bbackAni + Easing.ptrEasingFun], dword Easing.easeSlow
@@ -116,6 +138,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.bbackAni + Easing.startTime], 0
     mov     [edi + Player.bbackAni + Easing.start], false
     mov     [edi + Player.bbackAni + Easing.done], false
+    mov     [edi + Player.bbackAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.bbackAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.bbackAni + Easing.orinVec + Vector3.z], 0.0
 
     ; slow left  ani
     mov     [edi + Player.bleftAni + Easing.ptrEasingFun], dword Easing.easeSlow
@@ -123,6 +148,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.bleftAni + Easing.startTime], 0
     mov     [edi + Player.bleftAni + Easing.start], false
     mov     [edi + Player.bleftAni + Easing.done], false
+    mov     [edi + Player.bleftAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.bleftAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.bleftAni + Easing.orinVec + Vector3.z], 0.0
 
     ; slow right  ani
     mov     [edi + Player.brightAni + Easing.ptrEasingFun], dword Easing.easeSlow
@@ -130,6 +158,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.brightAni + Easing.startTime], 0
     mov     [edi + Player.brightAni + Easing.start], false
     mov     [edi + Player.brightAni + Easing.done], false
+    mov     [edi + Player.brightAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.brightAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.brightAni + Easing.orinVec + Vector3.z], 0.0
 
     ; fall ani
     mov     [edi + Player.fallAni + Easing.ptrEasingFun], dword Easing.easeLine
@@ -137,6 +168,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.fallAni + Easing.startTime], 0
     mov     [edi + Player.fallAni + Easing.start], false
     mov     [edi + Player.fallAni + Easing.done], false
+    mov     [edi + Player.fallAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.fallAni + Easing.orinVec + Vector3.y], -1.0
+    mov     [edi + Player.fallAni + Easing.orinVec + Vector3.z], 0.0
 
     ; jump ani
     mov     [edi + Player.jumpAni + Easing.ptrEasingFun], dword Easing.easeInCos
@@ -144,6 +178,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.jumpAni + Easing.startTime], 0
     mov     [edi + Player.jumpAni + Easing.start], false
     mov     [edi + Player.jumpAni + Easing.done], false
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 1.0
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], 0.0
 
     ; size of player collision
     mov     [edi + Player.sizeBlockCol], 0.5 

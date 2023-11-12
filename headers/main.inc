@@ -12,10 +12,10 @@ entry   WinMain
         ; Internal functions
         include         "memory.inc"
         include         "string.inc"
+        include         "vector.inc"
         include         "easing.inc"
 
         include         "mesh.inc"
-        include         "vector.inc"
         include         "matrix.inc"
         include         "color.inc"
         include         "glext.inc"
