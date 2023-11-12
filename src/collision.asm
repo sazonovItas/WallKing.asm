@@ -148,7 +148,7 @@ proc Collision.BlockDetection uses edi esi ebx,\
     mov     [edx + Vector3.z], ecx
 
     lea     ecx, [rotate]
-    fld     [esi + Player.yaw]
+    fld     [esi + Player.camera + Camera.yaw]
     fmul    [radian]
     fchs
     fstp    [ecx + Vector3.y]
@@ -445,28 +445,28 @@ proc Collision.RayDetection uses edi esi ebx,\
 
     mov     edi, [pPlayer]
     
-    push    [edi + Player.camRadius]
+    push    [edi + Player.camera + Camera.radius]
     fld     [edi + Player.maxCamRadius]
-    fstp    [edi + Player.camRadius]
+    fstp    [edi + Player.camera + Camera.radius]
     stdcall Camera.ViewPosition, [pPlayer]
-    pop     [edi + Player.camRadius]
+    pop     [edi + Player.camera + Camera.radius]
 
     ; Calculate camera ray dir 
     mov     edi, [pPlayer]
 
     lea     esi, [origin]
     push    edi
-    add     edi, Player.camPosition
+    add     edi, (Player.camera + Camera.camPosition)
     stdcall Vector3.Add, esi, edi
     pop     edi
     push    edi
-    add     edi, Player.translate
+    add     edi, (Player.camera + Camera.translate)
     stdcall Vector3.Sub, esi, edi
     pop     edi
 
     lea     ebx, [dir]
     push    edi
-    add     edi, Player.Orientation
+    add     edi, (Player.camera + Camera.Orientation)
     stdcall Vector3.Copy, ebx, edi
     pop     edi
 

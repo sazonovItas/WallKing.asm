@@ -17,6 +17,8 @@ proc Draw.Scene uses esi edi
         jle     .Skip
 
         mov     [timeBetweenChecking], eax
+        fild    [timeBetweenChecking]
+        fstp    [timeBetweenChecking]
         stdcall Player.EasingInputsKeys, mainPlayer, [sizeBlocksMapTry], blocksMapTry
         stdcall Player.EasingMove, mainPlayer, [timeBetweenChecking], [sizeBlocksMapTry], blocksMapTry
 
@@ -27,7 +29,7 @@ proc Draw.Scene uses esi edi
 
         stdcall Camera.Matrix, mainPlayer
 
-        invoke  glViewport, 0, 0, [mainPlayer.width], [mainPlayer.height]
+        invoke  glViewport, 0, 0, [mainPlayer.camera + Camera.width], [mainPlayer.camera + Camera.height]
         invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
         invoke  glClearColor, 0.22, 0.22, 0.22
 
@@ -62,7 +64,8 @@ proc Draw.Scene uses esi edi
 
         invoke  glPushMatrix
                 invoke  glLoadIdentity
-                invoke  glTranslatef, [edi + Player.camPosition + Vector3.x], [edi + Player.camPosition + Vector3.y], [edi + Player.camPosition + Vector3.z]
+                invoke  glTranslatef, [edi + Player.camera + Camera.camPosition + Vector3.x],\
+                                 [edi + Player.camera + Camera.camPosition + Vector3.y], [edi + Player.camera + Camera.camPosition + Vector3.z]
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
         invoke  glGetUniformLocation, [lightShader.ID], uniModelName
@@ -90,7 +93,7 @@ proc Draw.Scene uses esi edi
         invoke  glPushMatrix
                 invoke  glLoadIdentity
                 invoke  glTranslatef, [edi + Player.Position + Vector3.x], [edi + Player.Position + Vector3.y], [edi + Player.Position + Vector3.z]
-                fld     [edi + Player.yaw]
+                fld     [edi + Player.camera + Camera.yaw]
                 fmul    [radian]
                 fchs
                 fstp    [rotAngle]

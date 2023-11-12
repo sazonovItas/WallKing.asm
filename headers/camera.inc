@@ -12,7 +12,7 @@ struct Camera
     sensitivity     GLfloat         ? 
 
     moving          Easing          ?
-    slowing         Easing          ?
+    bmoving         Easing          ?
 
     pitch           GLfloat         ?
     yaw             GLfloat         ?

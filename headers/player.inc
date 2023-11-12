@@ -1,37 +1,15 @@
 struct Player
 
     ; Camera
-    camPosition     Vector3         ?
-    Orientation     Vector3         ? 
-    Up              Vector3         ?
+    camera          Camera          ?
 
-    width           dd              ?
-    height          dd              ?
-
+    ; Different types movement velocity 
     speed           GLfloat         ?
-    camVelocity     Vector3         ?
-    sensitivity     GLfloat         ? 
-
-    camChasing      Easing          ?
-    bcamChasing     Easing          ?
-
-    pitch           GLfloat         ?
-    yaw             GLfloat         ?
-
-    view            Matrix4x4       ?
-
-    proj            Matrix4x4       ?
-    fovDeg          GLfloat         ?
-    nearPlane       GLfloat         ?
-    farPlane        GLfloat         ?
-
-    translate       Vector3         ?
-    camRadius       GLfloat         ?
 
     chasingRadius   GLfloat         ?
     maxCamRadius    GLfloat         ?
-    curCamRadius    GLfloat         ?
     minCamRadius    GLfloat         ?
+    curCamRadius    GLfloat         ?
 
     camTexture      Easing          ?
     camTextureVel   GLfloat         ?
@@ -43,7 +21,7 @@ struct Player
     prevPosition    Vector3         ?
     Acceleration    Vector3         ?
     Velocity        Vector3         ?
-    Direction       Vector3         ?
+    Dir             Vector3         ?
     Condition       dd              ? 
 
     jumpVeloc       GLfloat         ?
