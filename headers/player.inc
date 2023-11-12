@@ -41,9 +41,10 @@ struct Player
 
 ends
 
-    JUMP_CONDITION      =           1
-    WALK_CONDITION      =           2
-    SLIDE_CONDITION     =           3
+    FALL_STATE          =       1
+    SLIDE_STATE         =       2
+    WALK_STATE          =       3
+    RUN_STATE           =       4
 
     ;   Keys define for handlers
     PL_JUMP             =       VK_SPACE

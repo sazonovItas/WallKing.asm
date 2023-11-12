@@ -14,6 +14,7 @@ entry   WinMain
         include         "string.inc"
         include         "vector.inc"
         include         "easing.inc"
+        include         "list.inc"
 
         include         "mesh.inc"
         include         "matrix.inc"

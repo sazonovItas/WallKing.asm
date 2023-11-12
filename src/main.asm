@@ -20,6 +20,7 @@
         include         "internal/math/vector.asm"
         include         "internal/math/matrix.asm"
         include         "internal/math/easing_funcs.asm"
+        include         "internal/list/list.asm"
         
         className       db      "WallKing", 0
         clientRect      RECT
@@ -160,190 +161,15 @@ proc WindowProc uses ebx,\
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
+        stdcall Player.KeyDown, [wParam], [lParam]
 
-        cmp     [wParam], PL_JUMP
-        jne     @F
-
-        mov     [pl_jump], true
-        jmp     .SkipDown
-
-        @@:
-
-        cmp     [wParam], PL_RUN
-        jne     @F
-
-        mov     [pl_run], true
-        jmp     .SkipDown
-
-        @@:
-
-        cmp     [wParam], PL_FORWARD
-        jne     @F
-
-        mov     [pl_forward], true
-        jmp     .SkipDown
-
-        @@:
-
-        cmp     [wParam], PL_BACKWARD
-        jne     @F
-
-        mov     [pl_backward], true
-        jmp     .SkipDown
-
-        @@:
-
-        cmp     [wParam], PL_LEFT
-        jne     @F
-
-        mov     [pl_left], true
-        jmp     .SkipDown
-
-        @@:
-
-        cmp     [wParam], PL_RIGHT
-        jne     @F
-
-        mov     [pl_right], true
-        jmp     .SkipDown
-
-        @@:
-
-        cmp     [wParam], PL_SLIDE_JUMP
-        jne     @F
-
-        mov     [pl_slide_jump], true
-        jmp     .SkipDown
-
-        @@:
-
-        cmp     [wParam], PL_NORMAL_GRAV
-        jne     @F
-
-        mov     [pl_normal_grav], true
-        jmp     .SkipDown
-
-        @@:
-
-        cmp     [wParam], PL_ENHANCE_GRAV
-        jne     @F
-
-        mov     [pl_enhance_grav], true
-        jmp     .SkipDown
-
-        @@:
-
-        cmp     [wParam], PL_WEAK_GRAV
-        jne     @F
-
-        mov     [pl_weak_grav], true
-        jmp     .SkipDown
-
-        @@:
-
-        .SkipDown:
-                jmp     .ReturnZero
+        jmp     .ReturnZero
 
 .KeysManipulateUp:
 
-        cmp     [wParam], PL_JUMP
-        jne     @F
+        stdcall Player.KeyUp, [wParam], [lParam]
 
-        mov     [pl_jump], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_RUN
-        jne     @F
-
-        mov     [pl_run], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_FORWARD
-        jne     @F
-
-        mov     [pl_forward], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_BACKWARD
-        jne     @F
-
-        mov     [pl_backward], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_LEFT
-        jne     @F
-
-        mov     [pl_left], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_RIGHT
-        jne     @F
-
-        mov     [pl_right], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_SLIDE_JUMP
-        jne     @F
-
-        mov     [pl_slide_jump], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_NORMAL_GRAV
-        jne     @F
-
-        mov     [pl_normal_grav], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_ENHANCE_GRAV
-        jne     @F
-
-        mov     [pl_enhance_grav], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_WEAK_GRAV
-        jne     @F
-
-        mov     [pl_weak_grav], false
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_STOP_CAM_CHASING
-        jne     @F
-
-        xor     [pl_stop_cam_chasing], true
-        jmp     .SkipUp
-
-        @@:
-
-        cmp     [wParam], PL_STOP_CAM_TEX
-        jne     @F
-
-        xor     [pl_stop_cam_tex], true
-        jmp     .SkipUp
-
-        @@:
-
-        .SkipUp:
-                jmp     .ReturnZero
+        jmp     .ReturnZero
 
 .MouseManipulate:
 

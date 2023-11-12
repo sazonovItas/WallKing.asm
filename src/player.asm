@@ -42,7 +42,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.speed], 0.01
     mov     [edi + Player.jumpVeloc], 0.055
     mov     [edi + Player.camera + Camera.sensitivity], 0.0005
-    mov     [edi + Player.Condition], JUMP_CONDITION
+    mov     [edi + Player.Condition], FALL_STATE
 
     ; Able to change field of view
     mov     [edi + Player.camera + Camera.fovDeg], 90.0
@@ -192,35 +192,80 @@ proc Player.Constructor uses edi,\
     ret
 endp
 
-proc Player.Direction uses edi,\
-    pPlayer 
+; New player functions
+proc Player.Update uses edi esi ebx,\
+    pPlayer, dt, sizeMap, pMap
 
     locals 
-        null        dd      0.0
+        deltaPos        Vector3         ?
+        collisionX      dd              0
+        collisionY      dd              0
+        collisionZ      dd              0
     endl
 
     mov     edi, [pPlayer]
 
-    ; Ox camera direction
-    fld     [null]
-    fcos    
-    fld     [edi + Player.camera + Camera.yaw]
-    fcos 
-    fmulp
-    fstp    [edi + Player.Dir + Vector3.x]
+    push    edi
+    mov     esi, edi
+    add     edi, Player.Position
+    add     esi, Player.prevPosition
+    stdcall Vector3.Copy, esi, edi
+    pop     edi
 
-    ; Oy camera direction
-    fld     [null]
-    fsin    
-    fstp    [edi + Player.Dir + Vector3.y]
+    lea     ebx, [deltaPos]
+        
+    push    edi
+    add     edi, Player.Velocity
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
 
-    ; Oz camera direction
-    fld     [null]
-    fcos    
-    fld     [edi + Player.camera + Camera.yaw]
-    fsin 
-    fmulp
-    fstp    [edi + Player.Dir + Vector3.z]
+    stdcall Vector3.MultOnNumber, ebx, [dt]
+
+    ret
+endp
+
+; Return collision X at eax
+proc Player.UpdatePosX uses edi esi ebx,\
+    pPlayer, dt, sizeMap, pMap, deltaPos
+
+    ret
+endp
+
+; Return collision Z at eax
+proc Player.UpdatePosZ uses edi esi ebx,\
+    pPlayer, dt, sizeMap, pMap, deltaPos
+
+    ret
+endp
+
+; Return collision Y at eax
+proc Player.UpdatePosY uses edi esi ebx,\
+    pPlayer, dt, sizeMap, pMap, deltaPos
+
+    locals 
+        collision       dd          NO_COLLISION
+    endl
+
+    mov     edi, [pPlayer]
+
+    mov     esi, [deltaPos]
+    fld     [edi + Player.Position + Vector3.y]
+    fadd    [esi + Vector3.y]
+    fstp    [edi + Player.Position + Vector3.y]
+
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Y_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipUpdatePos
+
+    mov     eax, [edi + Player.prevPosition + Vector3.y]
+    mov     [edi + Player.Position + Vector3.y], eax
+
+    lea     ebx, [deltaPos]
+    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.y),\
+                (Player.prevPosition + Vector3.y), [ebx + Vector3.y]
+
+    .SkipUpdatePos:
 
     ret
 endp
@@ -280,7 +325,7 @@ proc Player.EasingMove uses edi esi ebx,\
 
     .DownY:
 
-        mov     [edi + Player.Condition], WALK_CONDITION
+        mov     [edi + Player.Condition], WALK_STATE
     
         mov     [edi + Player.fallAni + Easing.start], false
         mov     [edi + Player.fallAni + Easing.done], false
@@ -292,7 +337,7 @@ proc Player.EasingMove uses edi esi ebx,\
 
     .UpY:
 
-        mov     [edi + Player.Condition], JUMP_CONDITION
+        mov     [edi + Player.Condition], FALL_STATE
 
         mov     [edi + Player.fallAni + Easing.start], false
         mov     [edi + Player.fallAni + Easing.done], false
@@ -304,7 +349,7 @@ proc Player.EasingMove uses edi esi ebx,\
 
     .BothY:
 
-        mov     [edi + Player.Condition], WALK_CONDITION
+        mov     [edi + Player.Condition], WALK_STATE
 
         mov     [edi + Player.fallAni + Easing.start], false
         mov     [edi + Player.fallAni + Easing.done], false
@@ -320,7 +365,7 @@ proc Player.EasingMove uses edi esi ebx,\
 
     .SkipWalkCondition:
 
-    mov     [edi + Player.Condition], JUMP_CONDITION
+    mov     [edi + Player.Condition], FALL_STATE
 
     .SkipYCollision:
 
@@ -647,7 +692,7 @@ proc Player.EasingHandlerJump uses edi esi ebx,\
     mov     esi, edi 
     add     esi, Player.fallAni
 
-    cmp     [edi + Player.Condition], JUMP_CONDITION
+    cmp     [edi + Player.Condition], FALL_STATE
     jne     .SkipUpdateFallAni
 
     cmp     [esi + Easing.done], true
@@ -719,10 +764,10 @@ proc Player.EasingHandlerJump uses edi esi ebx,\
     cmp     [pl_jump], false
     je     .SkipUpdateJumpAni
 
-    cmp     [edi + Player.Condition], JUMP_CONDITION
+    cmp     [edi + Player.Condition], FALL_STATE
     je     .SkipUpdateJumpAni
 
-    mov     [edi + Player.Condition], JUMP_CONDITION
+    mov     [edi + Player.Condition], FALL_STATE
     mov     [esi + Easing.start], true
     invoke  GetTickCount
     mov     [esi + Easing.startTime], eax
@@ -1125,6 +1170,231 @@ proc Player.InputsMouse uses edi esi ebx,\
         stdcall Camera.Direction, edi
         stdcall Player.Direction, edi
         stdcall Camera.NormalizeCursor, lastCursorPos
+
+    ret
+endp
+
+proc Player.KeyDown\
+    wParam, lParam
+
+    cmp     [wParam], PL_JUMP
+    jne     @F
+
+    mov     [pl_jump], true
+    jmp     .SkipDown
+
+    @@:
+
+    cmp     [wParam], PL_RUN
+    jne     @F
+
+    mov     [pl_run], true
+    jmp     .SkipDown
+
+    @@:
+
+    cmp     [wParam], PL_FORWARD
+    jne     @F
+
+    mov     [pl_forward], true
+    jmp     .SkipDown
+
+    @@:
+
+    cmp     [wParam], PL_BACKWARD
+    jne     @F
+
+    mov     [pl_backward], true
+    jmp     .SkipDown
+
+    @@:
+
+    cmp     [wParam], PL_LEFT
+    jne     @F
+
+    mov     [pl_left], true
+    jmp     .SkipDown
+
+    @@:
+
+    cmp     [wParam], PL_RIGHT
+    jne     @F
+
+    mov     [pl_right], true
+    jmp     .SkipDown
+
+    @@:
+
+    cmp     [wParam], PL_SLIDE_JUMP
+    jne     @F
+
+    mov     [pl_slide_jump], true
+    jmp     .SkipDown
+
+    @@:
+
+    cmp     [wParam], PL_NORMAL_GRAV
+    jne     @F
+
+    mov     [pl_normal_grav], true
+    jmp     .SkipDown
+
+    @@:
+
+    cmp     [wParam], PL_ENHANCE_GRAV
+    jne     @F
+
+    mov     [pl_enhance_grav], true
+    jmp     .SkipDown
+
+    @@:
+
+    cmp     [wParam], PL_WEAK_GRAV
+    jne     @F
+
+    mov     [pl_weak_grav], true
+    jmp     .SkipDown
+
+    @@:
+
+    .SkipDown:
+
+    ret
+endp
+
+proc Player.KeyUp\
+    wParam, lParam
+
+    cmp     [wParam], PL_JUMP
+    jne     @F
+
+    mov     [pl_jump], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_RUN
+    jne     @F
+
+    mov     [pl_run], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_FORWARD
+    jne     @F
+
+    mov     [pl_forward], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_BACKWARD
+    jne     @F
+
+    mov     [pl_backward], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_LEFT
+    jne     @F
+
+    mov     [pl_left], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_RIGHT
+    jne     @F
+
+    mov     [pl_right], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_SLIDE_JUMP
+    jne     @F
+
+    mov     [pl_slide_jump], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_NORMAL_GRAV
+    jne     @F
+
+    mov     [pl_normal_grav], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_ENHANCE_GRAV
+    jne     @F
+
+    mov     [pl_enhance_grav], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_WEAK_GRAV
+    jne     @F
+
+    mov     [pl_weak_grav], false
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_STOP_CAM_CHASING
+    jne     @F
+
+    xor     [pl_stop_cam_chasing], true
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_STOP_CAM_TEX
+    jne     @F
+
+    xor     [pl_stop_cam_tex], true
+    jmp     .SkipUp
+
+    @@:
+
+    .SkipUp:
+
+    ret
+endp
+
+proc Player.Direction uses edi,\
+    pPlayer 
+
+    locals 
+        null        dd      0.0
+    endl
+
+    mov     edi, [pPlayer]
+
+    ; Ox camera direction
+    fld     [null]
+    fcos    
+    fld     [edi + Player.camera + Camera.yaw]
+    fcos 
+    fmulp
+    fstp    [edi + Player.Dir + Vector3.x]
+
+    ; Oy camera direction
+    fld     [null]
+    fsin    
+    fstp    [edi + Player.Dir + Vector3.y]
+
+    ; Oz camera direction
+    fld     [null]
+    fcos    
+    fld     [edi + Player.camera + Camera.yaw]
+    fsin 
+    fmulp
+    fstp    [edi + Player.Dir + Vector3.z]
 
     ret
 endp
