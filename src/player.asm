@@ -242,7 +242,7 @@ proc Player.Update uses edi esi ebx,\
 
     ; TODO: Need to add slide condition detection
     ; update state of the player
-    stdcall Player.UpdateState, [pPlayer], [collisionX], [collisionY], [collisionZ]
+    stdcall Player.UpdateState, [pPlayer], [pMap], [sizeMap], [collisionX], [collisionY], [collisionZ]
 
     ; TODO: Need to rewrite to update camera
     ; BUG: Need to fix bugs, when camera start moving doging textures don't work
@@ -253,9 +253,94 @@ endp
 
 
 proc Player.UpdateState uses edi esi ebx,\
-    pPlayer, colX, colY, colZ
+    pPlayer, pMap, sizeMap, colX, colY, colZ
+
+    locals 
+        constSl         dd          0.001
+        collision       dd          0
+    endl
 
     mov     edi, [pPlayer]
+
+    ; check positive X collision
+    push    [edi + Player.Position + Vector3.x]
+    fld     [edi + Player.Position + Vector3.x]
+    fadd    [constSl]
+    fstp    [edi + Player.Position + Vector3.x]
+
+    ; check collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
+    cmp     eax, NO_COLLISION
+    je      @F
+
+    mov     [edi + Player.Condition], SLIDE_STATE
+    pop     [edi + Player.Position + Vector3.x]
+
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], 0.5
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 0.0
+
+    @@:
+
+    ; check negative X collision
+    push    [edi + Player.Position + Vector3.x]
+    fld     [edi + Player.Position + Vector3.x]
+    fsub    [constSl]
+    fstp    [edi + Player.Position + Vector3.x]
+
+    ; check collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
+    cmp     eax, NO_COLLISION
+    je      @F
+
+    mov     [edi + Player.Condition], SLIDE_STATE
+    pop     [edi + Player.Position + Vector3.x]
+
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], -0.5
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 0.0
+
+    @@:
+
+    ; check positive Z collision
+    push    [edi + Player.Position + Vector3.z]
+    fld     [edi + Player.Position + Vector3.z]
+    fadd    [constSl]
+    fstp    [edi + Player.Position + Vector3.z]
+
+    ; check collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Z_COLLISION
+    cmp     eax, NO_COLLISION
+    je      @F
+
+    mov     [edi + Player.Condition], SLIDE_STATE
+    pop     [edi + Player.Position + Vector3.z]
+
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], 0.5
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 0.0
+
+    @@:
+
+    ; check negative Z collision
+    push    [edi + Player.Position + Vector3.z]
+    fld     [edi + Player.Position + Vector3.z]
+    fsub    [constSl]
+    fstp    [edi + Player.Position + Vector3.z]
+
+    ; check collision
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Z_COLLISION
+    cmp     eax, NO_COLLISION
+    je      @F
+
+    mov     [edi + Player.Condition], SLIDE_STATE
+    pop     [edi + Player.Position + Vector3.z]
+
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], -0.5
+    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 0.0
+
+    @@:
 
     ; check Y collision
     cmp     [colY], DIR_Y_MAX
@@ -282,12 +367,16 @@ proc Player.UpdateState uses edi esi ebx,\
         mov     [edi + Player.slideAni + Easing.start], false
         mov     [edi + Player.slideAni + Easing.done], false
 
+        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], 0.0
+        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 1.0
+        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], 0.0
+
         jmp     .SkipY
 
     .UpY:
 
-        cmp     [edi + Player.Condition], SLIDE_STATE
-        je      @F
+        test    [edi + Player.Condition], SLIDE_STATE
+        jnz      @F
 
         mov     [edi + Player.Condition], FALL_STATE
 
@@ -308,7 +397,7 @@ proc Player.UpdateState uses edi esi ebx,\
 
         mov     [edi + Player.Condition], WALK_STATE
 
-        mov     [edi + Player.fallAni + Easing.start], false
+        
         mov     [edi + Player.fallAni + Easing.done], false
 
         mov     [edi + Player.jumpAni + Easing.start], false
@@ -316,6 +405,10 @@ proc Player.UpdateState uses edi esi ebx,\
 
         mov     [edi + Player.slideAni + Easing.start], false
         mov     [edi + Player.slideAni + Easing.done], false
+
+        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], 0.0
+        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 1.0
+        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], 0.0
 
         jmp     .SkipY
 
@@ -843,15 +936,10 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
     stdcall Vector3.MultOnNumber, orinVec, [velocity]
     pop     esi
 
-    fld     [edi + Player.Velocity + Vector3.x]
-    fadd    [orinVec + Vector3.x]
-    fstp    [edi + Player.Velocity + Vector3.x]
-    fld     [edi + Player.Velocity + Vector3.y]
-    fadd    [orinVec + Vector3.y]
-    fstp    [edi + Player.Velocity + Vector3.y]
-    fld     [edi + Player.Velocity + Vector3.z]
-    fadd    [orinVec + Vector3.z]
-    fstp    [edi + Player.Velocity + Vector3.z]
+    push    edi
+    add     edi, Player.Velocity
+    stdcall Vector3.Add, edi, orinVec
+    pop     edi
 
     jmp     .SkipJumpAni
 
@@ -870,16 +958,10 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
     stdcall Vector3.MultOnNumber, orinVec, [velocity]
     pop     esi
 
-    fld     [edi + Player.Velocity + Vector3.x]
-    fadd    [orinVec + Vector3.x]
-    fstp    [edi + Player.Velocity + Vector3.x]
-    fld     [edi + Player.Velocity + Vector3.y]
-    fadd    [orinVec + Vector3.y]
-    fstp    [edi + Player.Velocity + Vector3.y]
-    fld     [edi + Player.Velocity + Vector3.z]
-    fadd    [orinVec + Vector3.z]
-    fstp    [edi + Player.Velocity + Vector3.z]
-
+    push    edi
+    add     edi, Player.Velocity
+    stdcall Vector3.Add, edi, orinVec
+    pop     edi
 
     jmp     .SkipJumpAni
 
