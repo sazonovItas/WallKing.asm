@@ -38,13 +38,17 @@ struct Player
 
     fallAni         Easing          ?
     jumpAni         Easing          ?
+    slideAni        Easing          ?
 
 ends
 
     FALL_STATE          =       1
     SLIDE_STATE         =       2
     WALK_STATE          =       3
-    RUN_STATE           =       4
+
+    ;   Some player const
+    WALK_SPEED          =       0.01
+    RUN_SPEED           =       0.015
 
     ;   Keys define for handlers
     PL_JUMP             =       VK_SPACE

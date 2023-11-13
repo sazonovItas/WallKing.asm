@@ -125,7 +125,7 @@ proc Player.Constructor uses edi,\
 
     ; slow Forward ani
     mov     [edi + Player.bforwAni + Easing.ptrEasingFun], dword Easing.easeSlow
-    mov     [edi + Player.bforwAni + Easing.duration], 250 
+    mov     [edi + Player.bforwAni + Easing.duration], 320 
     mov     [edi + Player.bforwAni + Easing.startTime], 0
     mov     [edi + Player.bforwAni + Easing.start], false
     mov     [edi + Player.bforwAni + Easing.done], false
@@ -135,7 +135,7 @@ proc Player.Constructor uses edi,\
 
     ; slow Backward ani
     mov     [edi + Player.bbackAni + Easing.ptrEasingFun], dword Easing.easeSlow
-    mov     [edi + Player.bbackAni + Easing.duration], 250 
+    mov     [edi + Player.bbackAni + Easing.duration], 320 
     mov     [edi + Player.bbackAni + Easing.startTime], 0
     mov     [edi + Player.bbackAni + Easing.start], false
     mov     [edi + Player.bbackAni + Easing.done], false
@@ -145,7 +145,7 @@ proc Player.Constructor uses edi,\
 
     ; slow left  ani
     mov     [edi + Player.bleftAni + Easing.ptrEasingFun], dword Easing.easeSlow
-    mov     [edi + Player.bleftAni + Easing.duration], 250 
+    mov     [edi + Player.bleftAni + Easing.duration], 320 
     mov     [edi + Player.bleftAni + Easing.startTime], 0
     mov     [edi + Player.bleftAni + Easing.start], false
     mov     [edi + Player.bleftAni + Easing.done], false
@@ -155,7 +155,7 @@ proc Player.Constructor uses edi,\
 
     ; slow right  ani
     mov     [edi + Player.brightAni + Easing.ptrEasingFun], dword Easing.easeSlow
-    mov     [edi + Player.brightAni + Easing.duration], 250 
+    mov     [edi + Player.brightAni + Easing.duration], 320 
     mov     [edi + Player.brightAni + Easing.startTime], 0
     mov     [edi + Player.brightAni + Easing.start], false
     mov     [edi + Player.brightAni + Easing.done], false
@@ -182,6 +182,16 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], 0.0
     mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 1.0
     mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], 0.0
+
+    ; Slide ani
+    mov     [edi + Player.slideAni + Easing.ptrEasingFun], dword Easing.easeLine
+    mov     [edi + Player.slideAni + Easing.duration], 250
+    mov     [edi + Player.slideAni + Easing.startTime], 0
+    mov     [edi + Player.slideAni + Easing.start], false
+    mov     [edi + Player.slideAni + Easing.done], false
+    mov     [edi + Player.slideAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.slideAni + Easing.orinVec + Vector3.y], 0.6
+    mov     [edi + Player.slideAni + Easing.orinVec + Vector3.z], 0.0
 
     ; size of player collision
     mov     [edi + Player.sizeBlockCol], 0.5 
@@ -221,6 +231,106 @@ proc Player.Update uses edi esi ebx,\
 
     stdcall Vector3.MultOnNumber, ebx, [dt]
 
+    ; start of update
+    stdcall Player.UpdatePosX, [pPlayer], [dt], [sizeMap], [pMap], ebx
+    mov     [collisionX], eax
+    stdcall Player.UpdatePosY, [pPlayer], [dt], [sizeMap], [pMap], ebx
+    mov     [collisionY], eax
+    stdcall Player.UpdatePosZ, [pPlayer], [dt], [sizeMap], [pMap], ebx
+    mov     [collisionZ], eax
+
+    ; TODO: Need to add slide condition detection
+    ; update state of the player
+    stdcall Player.UpdateState, [pPlayer], [collisionX], [collisionY], [collisionZ]
+
+    ; TODO: Need to rewrite to update camera
+    ; BUG: Need to fix bugs, when camera start moving doging textures don't work
+    stdcall Player.UpdateCamera, [pPlayer], [dt], [sizeMap], [pMap]
+
+    ret
+endp
+
+
+proc Player.UpdateState uses edi esi ebx,\
+    pPlayer, colX, colY, colZ
+
+    mov     edi, [pPlayer]
+
+    ; check Y collision
+    cmp     [colY], DIR_Y_MAX
+    je      .DownY
+
+    cmp     [colY], DIR_Y_MIN
+    je      .UpY
+
+    cmp     [colY], NO_COLLISION
+    je      .NoY
+
+    jmp     .BothY
+
+    .DownY:
+
+        mov     [edi + Player.Condition], WALK_STATE
+    
+        mov     [edi + Player.fallAni + Easing.start], false
+        mov     [edi + Player.fallAni + Easing.done], false
+
+        mov     [edi + Player.jumpAni + Easing.start], false
+        mov     [edi + Player.jumpAni + Easing.done], false
+
+        mov     [edi + Player.slideAni + Easing.start], false
+        mov     [edi + Player.slideAni + Easing.done], false
+
+        jmp     .SkipY
+
+    .UpY:
+
+        cmp     [edi + Player.Condition], SLIDE_STATE
+        je      @F
+
+        mov     [edi + Player.Condition], FALL_STATE
+
+        @@:
+
+        mov     [edi + Player.fallAni + Easing.start], false
+        mov     [edi + Player.fallAni + Easing.done], false
+
+        mov     [edi + Player.jumpAni + Easing.start], false
+        mov     [edi + Player.jumpAni + Easing.done], false
+        
+        mov     [edi + Player.slideAni + Easing.start], false
+        mov     [edi + Player.slideAni + Easing.done], false
+
+        jmp     .SkipY
+
+    .BothY:
+
+        mov     [edi + Player.Condition], WALK_STATE
+
+        mov     [edi + Player.fallAni + Easing.start], false
+        mov     [edi + Player.fallAni + Easing.done], false
+
+        mov     [edi + Player.jumpAni + Easing.start], false
+        mov     [edi + Player.jumpAni + Easing.done], false
+
+        mov     [edi + Player.slideAni + Easing.start], false
+        mov     [edi + Player.slideAni + Easing.done], false
+
+        jmp     .SkipY
+
+    .NoY:
+
+        cmp     [edi + Player.Condition], SLIDE_STATE
+        je      @F
+
+        mov     [edi + Player.Condition], FALL_STATE
+
+        @@:
+
+        jmp     .SkipY
+
+    .SkipY:
+
     ret
 endp
 
@@ -228,12 +338,66 @@ endp
 proc Player.UpdatePosX uses edi esi ebx,\
     pPlayer, dt, sizeMap, pMap, deltaPos
 
+    locals 
+        collision       dd          NO_COLLISION
+    endl
+
+    mov     edi, [pPlayer]
+
+    mov     esi, [deltaPos]
+    fld     [edi + Player.Position + Vector3.x]
+    fadd    [esi + Vector3.x]
+    fstp    [edi + Player.Position + Vector3.x]
+
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipUpdatePos
+
+    mov     eax, [edi + Player.prevPosition + Vector3.x]
+    mov     [edi + Player.Position + Vector3.x], eax
+
+    mov     ebx, [deltaPos]
+    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], X_COLLISION, (Player.Position + Vector3.x),\
+                (Player.prevPosition + Vector3.x), [ebx + Vector3.x]
+
+    .SkipUpdatePos:
+
+    mov     eax, [collision]
+
     ret
 endp
 
 ; Return collision Z at eax
 proc Player.UpdatePosZ uses edi esi ebx,\
     pPlayer, dt, sizeMap, pMap, deltaPos
+
+    locals 
+        collision       dd          NO_COLLISION
+    endl
+
+    mov     edi, [pPlayer]
+
+    mov     esi, [deltaPos]
+    fld     [edi + Player.Position + Vector3.z]
+    fadd    [esi + Vector3.z]
+    fstp    [edi + Player.Position + Vector3.z]
+
+    lea     ebx, [collision]
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Z_COLLISION
+    cmp     eax, NO_COLLISION
+    je      .SkipUpdatePos
+
+    mov     eax, [edi + Player.prevPosition + Vector3.z]
+    mov     [edi + Player.Position + Vector3.z], eax
+
+    mov     ebx, [deltaPos]
+    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Z_COLLISION, (Player.Position + Vector3.z),\
+                (Player.prevPosition + Vector3.z), [ebx + Vector3.z]
+
+    .SkipUpdatePos:
+
+    mov     eax, [collision]
 
     ret
 endp
@@ -261,157 +425,163 @@ proc Player.UpdatePosY uses edi esi ebx,\
     mov     eax, [edi + Player.prevPosition + Vector3.y]
     mov     [edi + Player.Position + Vector3.y], eax
 
-    lea     ebx, [deltaPos]
+    mov     ebx, [deltaPos]
     stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.y),\
                 (Player.prevPosition + Vector3.y), [ebx + Vector3.y]
 
     .SkipUpdatePos:
 
+    mov     eax, [collision]
+
     ret
 endp
 
-proc Player.EasingMove uses edi esi ebx,\
-    pPlayer, dt, sizeMap, pMap
-
-    locals 
-        deltaPos        Vector3         ?
-        div2            dd              2.0
-        collision       dd              0
-    endl
+proc Player.UpdateVelocity uses edi esi ebx,\
+    pPlayer, sizeMap, pMap
 
     mov     edi, [pPlayer]
 
+    stdcall Player.UpdateAniOrinVecs, edi
+
+    ; Zeroing Velocity
     push    edi
+    add     edi, Player.Velocity
+    stdcall memzero, edi, 3 * 4
+    pop     edi
+
+
+    ret
+endp
+
+proc Player.UpdateAniOrinVecs uses edi esi ebx,\
+    pPlayer
+
+    locals
+        negConst        dd          -1.0
+        fallMul         dd          1.0
+        tmp             Vector3     ?
+    endl
+
+    mov     edi, [pPlayer]    
+
+    ; forwAni 
     mov     esi, edi
-    add     edi, Player.Position
-    add     esi, Player.prevPosition
+    add     esi, (Player.forwAni + Easing.orinVec)
+    push    edi
+    add     edi, Player.Dir
     stdcall Vector3.Copy, esi, edi
     pop     edi
 
-    lea     ebx, [deltaPos]
-        
+    ; backAni 
+    mov     esi, edi
+    add     esi, (Player.backAni + Easing.orinVec)
     push    edi
-    add     edi, Player.Velocity
+    add     edi, Player.Dir
+    stdcall Vector3.Copy, esi, edi
+    stdcall Vector3.MultOnNumber, esi, [negConst]
+    pop     edi
+
+    ; leftAni
+    lea     ebx, [tmp]
+    push    edi
+    add     edi, Player.Dir
     stdcall Vector3.Copy, ebx, edi
     pop     edi
 
-    stdcall Vector3.MultOnNumber, ebx, [dt]
+    push    edi
+    add     edi, (Player.camera + Camera.Up)
+    stdcall Vector3.Copy, upVec, edi
+    pop     edi
 
-    lea     ebx, [deltaPos]
-    fld     [edi + Player.Position + Vector3.y]
-    fadd    [ebx + Vector3.y]
-    fstp    [edi + Player.Position + Vector3.y]
+    mov     esi, edi
+    add     esi, (Player.leftAni + Easing.orinVec)
+    stdcall Vector3.Cross, upVec, ebx, esi
 
-    ; Y collision
-    lea     ebx, [collision]
-    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Y_COLLISION
-    cmp     eax, NO_COLLISION
-    je      .SkipWalkCondition
+    ; rightAni
+    lea     ebx, [tmp]
+    push    edi
+    add     edi, Player.Dir
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
 
-    mov     eax, [edi + Player.prevPosition + Vector3.y]
-    mov     [edi + Player.Position + Vector3.y], eax
+    push    edi
+    add     edi, (Player.camera + Camera.Up)
+    stdcall Vector3.Copy, upVec, edi
+    pop     edi
 
-    lea     ebx, [deltaPos]
-    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.y),\
-                (Player.prevPosition + Vector3.y), [ebx + Vector3.y]
+    mov     esi, edi
+    add     esi, (Player.rightAni + Easing.orinVec)
+    stdcall Vector3.Cross, ebx, upVec, esi
 
-    cmp     [collision], DIR_Y_MAX
-    je      .DownY
+    ; Fall state condition for backing easing
+    cmp     [pPlayer + Player.Condition], FALL_STATE
+    jne     @F
 
-    cmp     [collision], DIR_Y_MIN
-    je      .UpY
+    mov     [fallMul], 100.0
 
-    jmp     .BothY
+    @@:
 
-    .DownY:
+    ; bforwAni 
+    mov     esi, edi
+    add     esi, (Player.bforwAni + Easing.orinVec)
+    push    edi
+    add     edi, Player.Dir
+    stdcall Vector3.Copy, esi, edi
+    stdcall Vector3.MultOnNumber, esi, [fallMul]
+    pop     edi
 
-        mov     [edi + Player.Condition], WALK_STATE
-    
-        mov     [edi + Player.fallAni + Easing.start], false
-        mov     [edi + Player.fallAni + Easing.done], false
+    ; bbackAni 
+    mov     esi, edi
+    add     esi, (Player.bbackAni + Easing.orinVec)
+    push    edi
+    add     edi, Player.Dir
+    stdcall Vector3.Copy, esi, edi
+    stdcall Vector3.MultOnNumber, esi, [negConst]
+    stdcall Vector3.MultOnNumber, esi, [fallMul]
+    pop     edi
 
-        mov     [edi + Player.jumpAni + Easing.start], false
-        mov     [edi + Player.jumpAni + Easing.done], false
+    ; bleftAni
+    lea     ebx, [tmp]
+    push    edi
+    add     edi, Player.Dir
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
 
-        jmp     .SkipY
+    push    edi
+    add     edi, (Player.camera + Camera.Up)
+    stdcall Vector3.Copy, upVec, edi
+    pop     edi
 
-    .UpY:
+    mov     esi, edi
+    add     esi, (Player.bleftAni + Easing.orinVec)
+    stdcall Vector3.Cross, upVec, ebx, esi
+    stdcall Vector3.MultOnNumber, esi, [fallMul]
 
-        mov     [edi + Player.Condition], FALL_STATE
+    ; brightAni
+    lea     ebx, [tmp]
+    push    edi
+    add     edi, Player.Dir
+    stdcall Vector3.Copy, ebx, edi
+    pop     edi
 
-        mov     [edi + Player.fallAni + Easing.start], false
-        mov     [edi + Player.fallAni + Easing.done], false
+    push    edi
+    add     edi, (Player.camera + Camera.Up)
+    stdcall Vector3.Copy, upVec, edi
+    pop     edi
 
-        mov     [edi + Player.jumpAni + Easing.start], false
-        mov     [edi + Player.jumpAni + Easing.done], false
-        
-        jmp     .SkipY
+    mov     esi, edi
+    add     esi, (Player.brightAni + Easing.orinVec)
+    stdcall Vector3.Cross, ebx, upVec, esi
+    stdcall Vector3.MultOnNumber, esi, [fallMul]
 
-    .BothY:
+    ret
+endp
 
-        mov     [edi + Player.Condition], WALK_STATE
+proc Player.UpdateMovingVelocity uses edi esi ebx,\
+    pPlayer, sizeMap, pMap
 
-        mov     [edi + Player.fallAni + Easing.start], false
-        mov     [edi + Player.fallAni + Easing.done], false
 
-        mov     [edi + Player.jumpAni + Easing.start], false
-        mov     [edi + Player.jumpAni + Easing.done], false
 
-        jmp     .SkipY
-
-    .SkipY:
-
-    jmp     .SkipYCollision
-
-    .SkipWalkCondition:
-
-    mov     [edi + Player.Condition], FALL_STATE
-
-    .SkipYCollision:
-
-    lea     ebx, [deltaPos]
-    fld     [edi + Player.Position + Vector3.x]
-    fadd    [ebx + Vector3.x]
-    fstp    [edi + Player.Position + Vector3.x]
-
-    ; X collision
-    lea     ebx, [collision]
-    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
-    cmp     eax, NO_COLLISION
-    je      .SkipXCollision
-
-    mov     eax, [edi + Player.prevPosition + Vector3.x]
-    mov     [edi + Player.Position + Vector3.x], eax
-
-    lea     ebx, [deltaPos]
-    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.x),\
-                (Player.prevPosition + Vector3.x), [ebx + Vector3.x]
-
-    .SkipXCollision:
-
-    lea     ebx, [deltaPos]
-    fld     [edi + Player.Position + Vector3.z]
-    fadd    [ebx + Vector3.z]
-    fstp    [edi + Player.Position + Vector3.z]
-
-    ; Z collision
-    lea     ebx, [collision]
-    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, Z_COLLISION
-    cmp     eax, NO_COLLISION
-    je      .SkipZCollision
-
-    mov     eax, [edi + Player.prevPosition + Vector3.z]
-    mov     [edi + Player.Position + Vector3.z], eax
-
-    lea     ebx, [deltaPos]
-    stdcall Collision.BinSearch, [pPlayer], [sizeMap], [pMap], Y_COLLISION, (Player.Position + Vector3.z),\
-                (Player.prevPosition + Vector3.z), [ebx + Vector3.z]
-
-    .SkipZCollision:
-
-    stdcall Player.EasingMoveCamera, [pPlayer], [dt], [sizeMap], [pMap]
-
-.Ret:
     ret
 endp
 
@@ -428,6 +598,8 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
 
     mov     edi, [pPlayer]
 
+    stdcall Player.UpdateAniOrinVecs, edi
+
     ; Zeroing Velocity
     push    edi
     add     edi, Player.Velocity
@@ -438,11 +610,6 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
 
     ; Calculate Velocity that depends on animations
     ; Forward animation
-    push    edi 
-    add     edi, Player.Dir
-    stdcall Vector3.Copy, orinVec, edi
-    pop     edi
-
     push    edi
     add     edi, Player.forwAni
     movzx   eax, [pl_forward]
@@ -450,13 +617,6 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     pop     edi
 
     ; Backward animation
-    push    edi 
-    add     edi, Player.Dir
-    stdcall Vector3.Copy, orinVec, edi
-    pop     edi
-
-    stdcall Vector3.MultOnNumber, orinVec, [negConst]
-
     push    edi
     add     edi, Player.backAni
     movzx   eax, [pl_backward]
@@ -464,19 +624,6 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     pop     edi
 
     ; Left animation
-    lea     ebx, [tmp]
-    push    edi
-    add     edi, Player.Dir
-    stdcall Vector3.Copy, ebx, edi
-    pop     edi
-
-    push    edi
-    add     edi, (Player.camera + Camera.Up)
-    stdcall Vector3.Copy, upVec, edi
-    pop     edi
-
-    stdcall Vector3.Cross, upVec, ebx, orinVec
-
     push    edi
     add     edi, Player.leftAni
     movzx   eax, [pl_left]
@@ -484,19 +631,6 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     pop     edi
 
     ; right animation
-    lea     ebx, [tmp]
-    push    edi
-    add     edi, Player.Dir
-    stdcall Vector3.Copy, ebx, edi
-    pop     edi
-
-    push    edi
-    add     edi, (Player.camera + Camera.Up)
-    stdcall Vector3.Copy, upVec, edi
-    pop     edi
-
-    stdcall Vector3.Cross, ebx, upVec, orinVec
-
     push    edi
     add     edi, Player.rightAni
     movzx   eax, [pl_right]
@@ -505,11 +639,6 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
 
     ; Slowing animation
     ; Forward animation
-    push    edi 
-    add     edi, Player.Dir
-    stdcall Vector3.Copy, orinVec, edi
-    pop     edi
-
     push    edi
     add     edi, Player.bforwAni
     movzx   eax, [pl_forward]
@@ -518,13 +647,6 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     pop     edi
 
     ; Backward animation
-    push    edi 
-    add     edi, Player.Dir
-    stdcall Vector3.Copy, orinVec, edi
-    pop     edi
-
-    stdcall Vector3.MultOnNumber, orinVec, [negConst]
-
     push    edi
     add     edi, Player.bbackAni
     movzx   eax, [pl_backward]
@@ -533,19 +655,6 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     pop     edi
 
     ; Left animation
-    lea     ebx, [tmp]
-    push    edi
-    add     edi, Player.Dir
-    stdcall Vector3.Copy, ebx, edi
-    pop     edi
-
-    push    edi
-    add     edi, (Player.camera + Camera.Up)
-    stdcall Vector3.Copy, upVec, edi
-    pop     edi
-
-    stdcall Vector3.Cross, upVec, ebx, orinVec
-
     push    edi
     add     edi, Player.bleftAni
     movzx   eax, [pl_left]
@@ -554,19 +663,6 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     pop     edi
 
     ; right animation
-    lea     ebx, [tmp]
-    push    edi
-    add     edi, Player.Dir
-    stdcall Vector3.Copy, ebx, edi
-    pop     edi
-
-    push    edi
-    add     edi, (Player.camera + Camera.Up)
-    stdcall Vector3.Copy, upVec, edi
-    pop     edi
-
-    stdcall Vector3.Cross, ebx, upVec, orinVec
-
     push    edi
     add     edi, Player.brightAni
     movzx   eax, [pl_right]
@@ -632,14 +728,16 @@ proc Player.EasingHandlerBasicMoves uses edi esi,\
     fmul    [velocity]
     fstp    [velocity]
 
+    push    esi
+    add     esi, Easing.orinVec
+    stdcall Vector3.Copy, orinVec, esi
     stdcall Vector3.MultOnNumber, orinVec, [velocity]
+    pop     esi
 
-    fld     [edi + Player.Velocity + Vector3.x]
-    fadd    [orinVec + Vector3.x]
-    fstp    [edi + Player.Velocity + Vector3.x]
-    fld     [edi + Player.Velocity + Vector3.z]
-    fadd    [orinVec + Vector3.z]
-    fstp    [edi + Player.Velocity + Vector3.z]
+    push    edi
+    add     edi, Player.Velocity
+    stdcall Vector3.Add, edi, orinVec
+    pop     edi
 
     jmp     .SkipAni
 
@@ -654,14 +752,16 @@ proc Player.EasingHandlerBasicMoves uses edi esi,\
     fmul    [velocity]
     fstp    [velocity]
 
+    push    esi
+    add     esi, Easing.orinVec
+    stdcall Vector3.Copy, orinVec, esi
     stdcall Vector3.MultOnNumber, orinVec, [velocity]
+    pop     esi
 
-    fld     [edi + Player.Velocity + Vector3.x]
-    fadd    [orinVec + Vector3.x]
-    fstp    [edi + Player.Velocity + Vector3.x]
-    fld     [edi + Player.Velocity + Vector3.z]
-    fadd    [orinVec + Vector3.z]
-    fstp    [edi + Player.Velocity + Vector3.z]
+    push    edi
+    add     edi, Player.Velocity
+    stdcall Vector3.Add, edi, orinVec
+    pop     edi
 
     jmp     .SkipAni
 
@@ -1060,7 +1160,7 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
     ret
 endp
 
-proc Player.EasingMoveCamera uses edi esi ebx,\
+proc Player.UpdateCamera uses edi esi ebx,\
     pPlayer, dt, sizeMap, pMap
 
     locals 

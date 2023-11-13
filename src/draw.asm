@@ -20,7 +20,7 @@ proc Draw.Scene uses esi edi
         fild    [timeBetweenChecking]
         fstp    [timeBetweenChecking]
         stdcall Player.EasingInputsKeys, mainPlayer, [sizeBlocksMapTry], blocksMapTry
-        stdcall Player.EasingMove, mainPlayer, [timeBetweenChecking], [sizeBlocksMapTry], blocksMapTry
+        stdcall Player.Update, mainPlayer, [timeBetweenChecking], [sizeBlocksMapTry], blocksMapTry
 
         mov     eax, [currentFrame]
         mov     [time], eax

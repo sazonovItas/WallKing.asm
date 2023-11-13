@@ -91,9 +91,9 @@ endp
 proc Easing.easeSlow dt
 
     locals 
-        div2        dd      9.0
+        div2        dd      10.0
         div1000     dd      1000.0
-        normDiv     dd      2.5
+        normDiv     dd      2.0
         ans         dd      ?
     endl
 
