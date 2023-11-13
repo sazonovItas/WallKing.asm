@@ -26,6 +26,7 @@ proc Player.Constructor uses edi,\
 
     mov     [edi + Player.Acceleration + Vector3.x], 0.0
     fld     [EARTH_GRAVITY]
+    fchs
     fstp    [edi + Player.Acceleration + Vector3.y]
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
@@ -458,7 +459,6 @@ proc Player.UpdateAniOrinVecs uses edi esi ebx,\
 
     locals
         negConst        dd          -1.0
-        fallMul         dd          1.0
         tmp             Vector3     ?
     endl
 
@@ -513,21 +513,12 @@ proc Player.UpdateAniOrinVecs uses edi esi ebx,\
     add     esi, (Player.rightAni + Easing.orinVec)
     stdcall Vector3.Cross, ebx, upVec, esi
 
-    ; Fall state condition for backing easing
-    cmp     [pPlayer + Player.Condition], FALL_STATE
-    jne     @F
-
-    mov     [fallMul], 100.0
-
-    @@:
-
     ; bforwAni 
     mov     esi, edi
     add     esi, (Player.bforwAni + Easing.orinVec)
     push    edi
     add     edi, Player.Dir
     stdcall Vector3.Copy, esi, edi
-    stdcall Vector3.MultOnNumber, esi, [fallMul]
     pop     edi
 
     ; bbackAni 
@@ -537,7 +528,6 @@ proc Player.UpdateAniOrinVecs uses edi esi ebx,\
     add     edi, Player.Dir
     stdcall Vector3.Copy, esi, edi
     stdcall Vector3.MultOnNumber, esi, [negConst]
-    stdcall Vector3.MultOnNumber, esi, [fallMul]
     pop     edi
 
     ; bleftAni
@@ -555,7 +545,6 @@ proc Player.UpdateAniOrinVecs uses edi esi ebx,\
     mov     esi, edi
     add     esi, (Player.bleftAni + Easing.orinVec)
     stdcall Vector3.Cross, upVec, ebx, esi
-    stdcall Vector3.MultOnNumber, esi, [fallMul]
 
     ; brightAni
     lea     ebx, [tmp]
@@ -572,14 +561,98 @@ proc Player.UpdateAniOrinVecs uses edi esi ebx,\
     mov     esi, edi
     add     esi, (Player.brightAni + Easing.orinVec)
     stdcall Vector3.Cross, ebx, upVec, esi
-    stdcall Vector3.MultOnNumber, esi, [fallMul]
 
     ret
 endp
 
 proc Player.UpdateMovingVelocity uses edi esi ebx,\
-    pPlayer, sizeMap, pMap
+    pPlayer
 
+    mov     edi, [pPlayer]
+
+    ; Calculate Velocity that depends on animations
+    ; Forward animation
+    push    edi
+    mov     esi, edi
+    add     edi, Player.forwAni
+    movzx   eax, [pl_forward]
+    stdcall Player.HandlerContinueAni, [pPlayer], edi, eax, [esi + Player.speed]
+    pop     edi
+
+    ; Backward animation
+    push    edi
+    mov     esi, edi
+    add     edi, Player.backAni
+    movzx   eax, [pl_backward]
+    stdcall Player.HandlerContinueAni, [pPlayer], edi, eax, [esi + Player.speed]
+    pop     edi
+
+    ; Left animation
+    push    edi
+    mov     esi, edi
+    add     edi, Player.leftAni
+    movzx   eax, [pl_left]
+    stdcall Player.HandlerContinueAni, [pPlayer], edi, eax, [esi + Player.speed]
+    pop     edi
+
+    ; right animation
+    push    edi
+    mov     esi, edi
+    add     edi, Player.rightAni
+    movzx   eax, [pl_right]
+    stdcall Player.HandlerContinueAni, [pPlayer], edi, eax, [esi + Player.speed]
+    pop     edi
+
+    ; Slowing animation
+    ; Forward animation
+    push    edi
+    mov     esi, edi
+    add     edi, Player.bforwAni
+    movzx   eax, [pl_forward]
+    xor     eax, 1
+    stdcall Player.HandlerContinueAni, [pPlayer], edi, eax, [esi + Player.speed]
+    pop     edi
+
+    ; Backward animation
+    push    edi
+    mov     esi, edi
+    add     edi, Player.bbackAni
+    movzx   eax, [pl_backward]
+    xor     eax, 1
+    stdcall Player.HandlerContinueAni, [pPlayer], edi, eax, [esi + Player.speed]
+    pop     edi
+
+    ; Left animation
+    push    edi
+    mov     esi, edi
+    add     edi, Player.bleftAni
+    movzx   eax, [pl_left]
+    xor     eax, 1
+    stdcall Player.HandlerContinueAni, [pPlayer], edi, eax, [esi + Player.speed]
+    pop     edi
+
+    ; right animation
+    push    edi
+    mov     esi, edi
+    add     edi, Player.brightAni
+    movzx   eax, [pl_right]
+    xor     eax, 1
+    stdcall Player.HandlerContinueAni, [pPlayer], edi, eax, [esi + Player.speed]
+    pop     edi
+
+    ; Shift -> boost to speed
+    cmp     [pl_run], false
+    je      @F
+    
+    mov     [edi + Player.speed], 0.015
+
+    jmp     .SkipRun
+
+    @@:
+
+    mov    [edi + Player.speed], 0.01
+
+    .SkipRun:
 
 
     ret
@@ -606,83 +679,8 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     stdcall memzero, edi, 3 * 4
     pop     edi
 
-    stdcall Player.EasingHandlerJump, [pPlayer]
-
-    ; Calculate Velocity that depends on animations
-    ; Forward animation
-    push    edi
-    add     edi, Player.forwAni
-    movzx   eax, [pl_forward]
-    stdcall Player.EasingHandlerBasicMoves, [pPlayer], edi, eax
-    pop     edi
-
-    ; Backward animation
-    push    edi
-    add     edi, Player.backAni
-    movzx   eax, [pl_backward]
-    stdcall Player.EasingHandlerBasicMoves, [pPlayer], edi, eax
-    pop     edi
-
-    ; Left animation
-    push    edi
-    add     edi, Player.leftAni
-    movzx   eax, [pl_left]
-    stdcall Player.EasingHandlerBasicMoves, [pPlayer], edi, eax
-    pop     edi
-
-    ; right animation
-    push    edi
-    add     edi, Player.rightAni
-    movzx   eax, [pl_right]
-    stdcall Player.EasingHandlerBasicMoves, [pPlayer], edi, eax
-    pop     edi
-
-    ; Slowing animation
-    ; Forward animation
-    push    edi
-    add     edi, Player.bforwAni
-    movzx   eax, [pl_forward]
-    xor     eax, 1
-    stdcall Player.EasingHandlerBasicMoves, [pPlayer], edi, eax
-    pop     edi
-
-    ; Backward animation
-    push    edi
-    add     edi, Player.bbackAni
-    movzx   eax, [pl_backward]
-    xor     eax, 1
-    stdcall Player.EasingHandlerBasicMoves, [pPlayer], edi, eax
-    pop     edi
-
-    ; Left animation
-    push    edi
-    add     edi, Player.bleftAni
-    movzx   eax, [pl_left]
-    xor     eax, 1
-    stdcall Player.EasingHandlerBasicMoves, [pPlayer], edi, eax
-    pop     edi
-
-    ; right animation
-    push    edi
-    add     edi, Player.brightAni
-    movzx   eax, [pl_right]
-    xor     eax, 1
-    stdcall Player.EasingHandlerBasicMoves, [pPlayer], edi, eax
-    pop     edi
-
-    ; Shift -> boost to speed
-    cmp     [pl_run], false
-    je      @F
-    
-    mov     [edi + Player.speed], 0.015
-
-    jmp     .SkipRun
-
-    @@:
-
-    mov    [edi + Player.speed], 0.01
-
-    .SkipRun:
+    stdcall Player.UpdateFJSVelocity, [pPlayer]
+    stdcall Player.UpdateMovingVelocity, [pPlayer]
 
     stdcall Player.EasingHandlerCamera, [pPlayer], [sizeMap], [pMap]
 
@@ -690,8 +688,8 @@ proc Player.EasingInputsKeys uses edi esi ebx,\
     ret
 endp
 
-proc Player.EasingHandlerBasicMoves uses edi esi,\
-    pPlayer, pAni, trigger
+proc Player.HandlerContinueAni uses edi esi,\
+    pPlayer, pAni, trigger, vel
 
     locals 
         velocity        dd      0.0
@@ -724,7 +722,7 @@ proc Player.EasingHandlerBasicMoves uses edi esi,\
     stdcall [esi + Easing.ptrEasingFun], eax
     mov     [velocity], eax 
 
-    fld     [edi + Player.speed]
+    fld     [vel]
     fmul    [velocity]
     fstp    [velocity]
 
@@ -748,7 +746,7 @@ proc Player.EasingHandlerBasicMoves uses edi esi,\
     stdcall [esi + Easing.ptrEasingFun], [esi + Easing.duration]
     mov     [velocity], eax
 
-    fld     [edi + Player.speed]
+    fld     [vel]
     fmul    [velocity]
     fstp    [velocity]
 
@@ -779,7 +777,7 @@ proc Player.EasingHandlerBasicMoves uses edi esi,\
     ret
 endp
 
-proc Player.EasingHandlerJump uses edi esi ebx,\
+proc Player.UpdateFJSVelocity uses edi esi ebx,\
     pPlayer
 
     locals 
@@ -789,66 +787,19 @@ proc Player.EasingHandlerJump uses edi esi ebx,\
     mov     edi, [pPlayer]
 
     ; Fall animation
-    mov     esi, edi 
+    mov     eax, FALL_STATE
+    or      eax, SLIDE_STATE
+
+    and    eax, [edi + Player.Condition]
+    jz      @F
+
+    mov     eax, true
+
+    @@:
+
+    mov     esi, edi
     add     esi, Player.fallAni
-
-    cmp     [edi + Player.Condition], FALL_STATE
-    jne     .SkipUpdateFallAni
-
-    cmp     [esi + Easing.done], true
-    je     .SkipDoneFallAni
-
-    cmp     [esi + Easing.start], true
-    je      .SkipStartFallAni
-
-    mov     [esi + Easing.start], true
-    invoke  GetTickCount
-    mov     [esi + Easing.startTime], eax
-
-    .SkipStartFallAni:
-
-    invoke  GetTickCount
-    sub     eax, [esi + Easing.startTime]
-    cmp     eax, [esi + Easing.duration]
-    ja      .SkipDoneFallAni
-
-    stdcall [esi + Easing.ptrEasingFun], eax
-    mov     [velocity], eax 
-
-    fld     [edi + Player.Acceleration + Vector3.y]
-    fmul    [velocity]
-    fstp    [velocity]
-
-    fld     [edi + Player.Velocity + Vector3.y]
-    fadd    [velocity]
-    fstp    [edi + Player.Velocity + Vector3.y]
-
-    jmp     .SkipFallAni
-
-    .SkipDoneFallAni:
-
-    stdcall [esi + Easing.ptrEasingFun], [esi + Easing.duration] 
-    mov     [velocity], eax 
-
-    fld     [edi + Player.Acceleration + Vector3.y]
-    fmul    [velocity]
-    fstp    [velocity]
-
-    fld     [edi + Player.Velocity + Vector3.y]
-    fadd    [velocity]
-    fstp    [edi + Player.Velocity + Vector3.y]
-
-    jmp     .SkipFallAni
-
-    .SkipUpdateFallAni:
-
-    cmp     [esi + Easing.start], false
-    je      .SkipFallAni
-
-    mov     [esi + Easing.start], false
-    mov     [esi + Easing.done], false
-
-    .SkipFallAni:
+    stdcall Player.HandlerContinueAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
 
 
     ; Jump animation
@@ -942,6 +893,19 @@ proc Player.EasingHandlerJump uses edi esi ebx,\
 
     .SkipJumpAni:
 
+    ; Slide animation
+    mov      eax, SLIDE_STATE
+
+    and    eax, [edi + Player.Condition]
+    jz     @F
+
+    mov     eax, true
+
+    @@:
+
+    mov     esi, edi
+    add     esi, Player.slideAni
+    stdcall Player.HandlerContinueAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
 
 .Ret:
     ret

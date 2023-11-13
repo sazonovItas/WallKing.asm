@@ -42,9 +42,9 @@ struct Player
 
 ends
 
-    FALL_STATE          =       1
-    SLIDE_STATE         =       2
-    WALK_STATE          =       3
+    FALL_STATE          =       0000_0001b
+    SLIDE_STATE         =       0000_0010b
+    WALK_STATE          =       0000_0100b
 
     ;   Some player const
     WALK_SPEED          =       0.01
