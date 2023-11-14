@@ -186,13 +186,18 @@ proc Player.Constructor uses edi,\
 
     ; Slide ani
     mov     [edi + Player.slideAni + Easing.ptrEasingFun], dword Easing.easeLine
-    mov     [edi + Player.slideAni + Easing.duration], 250
+    mov     [edi + Player.slideAni + Easing.duration], 2500
     mov     [edi + Player.slideAni + Easing.startTime], 0
     mov     [edi + Player.slideAni + Easing.start], false
     mov     [edi + Player.slideAni + Easing.done], false
     mov     [edi + Player.slideAni + Easing.orinVec + Vector3.x], 0.0
-    mov     [edi + Player.slideAni + Easing.orinVec + Vector3.y], 0.6
+    mov     [edi + Player.slideAni + Easing.orinVec + Vector3.y], 0.4
     mov     [edi + Player.slideAni + Easing.orinVec + Vector3.z], 0.0
+
+    ; Slide
+    mov     [edi + Player.slideVec + Vector3.x], 0.0
+    mov     [edi + Player.slideVec + Vector3.y], 1.0
+    mov     [edi + Player.slideVec + Vector3.z], 0.0
 
     ; size of player collision
     mov     [edi + Player.sizeBlockCol], 0.5 
@@ -275,12 +280,13 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
-    pop     [edi + Player.Position + Vector3.x]
 
-    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], 0.5
-    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.slideVec + Vector3.x], -0.32
+    mov     [edi + Player.slideVec + Vector3.y], 1.0
 
     @@:
+
+    pop     [edi + Player.Position + Vector3.x]
 
     ; check negative X collision
     push    [edi + Player.Position + Vector3.x]
@@ -295,12 +301,13 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
-    pop     [edi + Player.Position + Vector3.x]
 
-    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], -0.5
-    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.slideVec + Vector3.x], 0.32
+    mov     [edi + Player.slideVec + Vector3.y], 1.0
 
     @@:
+
+    pop     [edi + Player.Position + Vector3.x]
 
     ; check positive Z collision
     push    [edi + Player.Position + Vector3.z]
@@ -315,12 +322,13 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
-    pop     [edi + Player.Position + Vector3.z]
 
-    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], 0.5
-    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.slideVec + Vector3.z], -0.32
+    mov     [edi + Player.slideVec + Vector3.y], 1.0
 
     @@:
+
+    pop     [edi + Player.Position + Vector3.z]
 
     ; check negative Z collision
     push    [edi + Player.Position + Vector3.z]
@@ -335,12 +343,13 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
-    pop     [edi + Player.Position + Vector3.z]
 
-    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], -0.5
-    mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.slideVec + Vector3.z], 0.32
+    mov     [edi + Player.slideVec + Vector3.y], 1.0
 
     @@:
+
+    pop     [edi + Player.Position + Vector3.z]
 
     ; check Y collision
     cmp     [colY], DIR_Y_MAX
@@ -367,9 +376,9 @@ proc Player.UpdateState uses edi esi ebx,\
         mov     [edi + Player.slideAni + Easing.start], false
         mov     [edi + Player.slideAni + Easing.done], false
 
-        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], 0.0
-        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 1.0
-        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], 0.0
+        mov     [edi + Player.slideVec + Vector3.x], 0.0
+        mov     [edi + Player.slideVec + Vector3.y], 1.0
+        mov     [edi + Player.slideVec + Vector3.z], 0.0
 
         jmp     .SkipY
 
@@ -406,9 +415,9 @@ proc Player.UpdateState uses edi esi ebx,\
         mov     [edi + Player.slideAni + Easing.start], false
         mov     [edi + Player.slideAni + Easing.done], false
 
-        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.x], 0.0
-        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.y], 1.0
-        mov     [edi + Player.jumpAni + Easing.orinVec + Vector3.z], 0.0
+        mov     [edi + Player.slideVec + Vector3.x], 0.0
+        mov     [edi + Player.slideVec + Vector3.y], 1.0
+        mov     [edi + Player.slideVec + Vector3.z], 0.0
 
         jmp     .SkipY
 
@@ -890,31 +899,59 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
 
     @@:
 
+    cmp     [pl_jump], true
+    jne     @F
+
+    cmp     [edi + Player.Condition], SLIDE_STATE
+    jne     @F
+
+    mov     [edi + Player.fallAni + Easing.start], false
+    mov     [edi + Player.fallAni + Easing.done], false
+
+    @@:
+
     mov     esi, edi
     add     esi, Player.fallAni
     stdcall Player.HandlerContinueAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
-
 
     ; Jump animation
     mov     esi, edi 
     add     esi, Player.jumpAni
 
+    cmp     [pl_jump], true
+    jne     @F
+
+    cmp     [edi + Player.Condition], SLIDE_STATE
+    je      .SkipNewJumpAni
+
+    @@:
+
     cmp     [esi + Easing.done], true
-    je     .SkipDoneJumpAni
+    je      .SkipDoneJumpAni
 
     cmp     [esi + Easing.start], true
     je      .SkipStartJumpAni
 
     cmp     [pl_jump], false
-    je     .SkipUpdateJumpAni
+    je      .SkipUpdateJumpAni
 
     cmp     [edi + Player.Condition], FALL_STATE
-    je     .SkipUpdateJumpAni
+    je      .SkipUpdateJumpAni
+
+    .SkipNewJumpAni:
 
     mov     [edi + Player.Condition], FALL_STATE
     mov     [esi + Easing.start], true
     invoke  GetTickCount
     mov     [esi + Easing.startTime], eax
+    
+    push    edi
+    push    esi
+    add     esi, Easing.orinVec
+    add     edi, Player.slideVec
+    stdcall Vector3.Copy, esi, edi
+    pop     esi
+    pop     edi
 
     .SkipStartJumpAni:
 
@@ -1371,14 +1408,6 @@ proc Player.KeyDown\
 
     @@:
 
-    cmp     [wParam], PL_SLIDE_JUMP
-    jne     @F
-
-    mov     [pl_slide_jump], true
-    jmp     .SkipDown
-
-    @@:
-
     cmp     [wParam], PL_NORMAL_GRAV
     jne     @F
 
@@ -1455,14 +1484,6 @@ proc Player.KeyUp\
     jne     @F
 
     mov     [pl_right], false
-    jmp     .SkipUp
-
-    @@:
-
-    cmp     [wParam], PL_SLIDE_JUMP
-    jne     @F
-
-    mov     [pl_slide_jump], false
     jmp     .SkipUp
 
     @@:

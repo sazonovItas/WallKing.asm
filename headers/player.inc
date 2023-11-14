@@ -39,6 +39,7 @@ struct Player
     fallAni         Easing          ?
     jumpAni         Easing          ?
     slideAni        Easing          ?
+    slideVec        Vector3         ?
 
 ends
 
@@ -53,7 +54,6 @@ ends
     ;   Keys define for handlers
     PL_JUMP             =       VK_SPACE
     PL_RUN              =       VK_SHIFT
-    PL_SLIDE_JUMP       =       'T'
     PL_FORWARD          =       'W'
     PL_BACKWARD         =       'S'
     PL_LEFT             =       'A'
@@ -66,7 +66,6 @@ ends
 
     pl_jump             db      false
     pl_run              db      false
-    pl_slide_jump       db      false
     pl_forward          db      false
     pl_backward         db      false
     pl_left             db      false
