@@ -21,11 +21,10 @@ struct Player
     prevPosition    Vector3         ?
     Acceleration    Vector3         ?
     Velocity        Vector3         ?
-    Dir             Vector3         ?
-    Condition       dd              ? 
-
     jumpVeloc       GLfloat         ?
-
+    Dir             Vector3         ?
+    Condition       dd              ?
+  
     forwAni         Easing          ?
     backAni         Easing          ?
     leftAni         Easing          ?
@@ -42,14 +41,19 @@ struct Player
     bslideAni       Easing          ?
     slideJump       Easing          ?
     slideVec        Vector3         ?
-    slideCD         dd              ?
-    slideNewJump    dd              true
+    slideNewJump    dd              ?
+    slideDirJump    dd              ?
 
 ends
 
     FALL_STATE          =       0000_0001b
     SLIDE_STATE         =       0000_0010b
     WALK_STATE          =       0000_0100b
+
+    NO_DIR              =       0000_0000b
+    X_DIR               =       0000_0001b
+    Y_DIR               =       0000_0010b
+    Z_DIR               =       0000_0100b
 
     ;   Some player const
     WALK_SPEED          =       0.01

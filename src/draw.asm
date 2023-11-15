@@ -1,19 +1,20 @@
 proc Draw.Scene uses esi edi
 
         locals 
-                currentFrame            dd     ?
-                testAngle               dd     180.0
-                rotAngle                dd     0.0
-                colDetected             dd     ?
-                timeBetweenChecking     dd     ?
-                tmp                     Vector3 ?
+                currentFrame            dd              ?
+                testAngle               dd              180.0
+                rotAngle                dd              0.0
+                colDetected             dd              ?
+                timeBetweenChecking     dd              ?
+                normDiv                 dd              2.5
+                tmp                     Vector3         ?
         endl
 
         invoke  GetTickCount
         mov     [currentFrame], eax
 
         sub     eax, [time]
-        cmp     eax, 1
+        cmp     eax, 20
         jle     .Skip
 
         mov     [timeBetweenChecking], eax

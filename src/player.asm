@@ -191,7 +191,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.slideAni + Easing.start], false
     mov     [edi + Player.slideAni + Easing.done], false
     mov     [edi + Player.slideAni + Easing.orinVec + Vector3.x], 0.0
-    mov     [edi + Player.slideAni + Easing.orinVec + Vector3.y], 0.5
+    mov     [edi + Player.slideAni + Easing.orinVec + Vector3.y], 0.3
     mov     [edi + Player.slideAni + Easing.orinVec + Vector3.z], 0.0
 
     ; Slide ani
@@ -219,10 +219,11 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.slideVec + Vector3.y], 1.0
     mov     [edi + Player.slideVec + Vector3.z], 0.0
 
-    mov     [edi + Player.slideCD], 0
-
     ; size of player collision
     mov     [edi + Player.sizeBlockCol], 0.5 
+
+    mov     [edi + Player.slideNewJump], true
+    mov     [edi + Player.slideDirJump], NO_DIR
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
@@ -281,6 +282,10 @@ endp
 proc Player.UpdateVelocity uses edi esi ebx,\
     pPlayer, sizeMap, pMap
 
+    locals 
+        null    dd      0.0
+    endl
+
     mov     edi, [pPlayer]
 
     stdcall Player.UpdateAniOrinVecs, edi
@@ -292,6 +297,35 @@ proc Player.UpdateVelocity uses edi esi ebx,\
     pop     edi
 
     stdcall Player.UpdateMovingVelocity, [pPlayer]
+
+    cmp     [edi + Player.slideDirJump], X_DIR
+    jne      @F
+
+    fld     [edi + Player.Velocity + Vector3.x]
+    fabs
+    fcomp   [null]  
+    fstsw   ax
+    sahf
+    ja      @F
+
+    mov     [edi + Player.slideJump + Easing.orinVec + Vector3.x], 0.0
+
+    @@:
+
+    cmp     [edi + Player.slideDirJump], Z_DIR
+    jne      @F
+
+    fld     [edi + Player.Velocity + Vector3.z]
+    fabs
+    fcomp   [null]  
+    fstsw   ax
+    sahf
+    ja      @F
+
+    mov     [edi + Player.slideJump + Easing.orinVec + Vector3.z], 0.0
+
+    @@:
+
     stdcall Player.UpdateFJSVelocity, [pPlayer]
 
     stdcall Player.EasingHandlerCamera, [pPlayer], [sizeMap], [pMap]
@@ -322,6 +356,7 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
+    mov     [edi + Player.slideDirJump], X_DIR
 
     mov     [edi + Player.slideVec + Vector3.x], -0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
@@ -349,6 +384,7 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
+    mov     [edi + Player.slideDirJump], X_DIR
 
     mov     [edi + Player.slideVec + Vector3.x], 0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
@@ -376,6 +412,7 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
+    mov     [edi + Player.slideDirJump], Z_DIR
 
     mov     [edi + Player.slideVec + Vector3.z], -0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
@@ -403,6 +440,7 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
+    mov     [edi + Player.slideDirJump], Z_DIR
 
     mov     [edi + Player.slideVec + Vector3.z], 0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
@@ -813,13 +851,13 @@ proc Player.UpdateMovingVelocity uses edi esi ebx,\
     cmp     [pl_run], false
     je      @F
     
-    mov     [edi + Player.speed], 0.015
+    mov     [edi + Player.speed], 0.012
 
     jmp     .SkipRun
 
     @@:
 
-    mov    [edi + Player.speed], 0.015
+    mov    [edi + Player.speed], 0.012
 
     .SkipRun:
 
@@ -1030,7 +1068,6 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
     mov     [esi + Easing.start], true
     invoke  GetTickCount
     mov     [esi + Easing.startTime], eax
-    mov     [edi + Player.slideCD], eax
 
     mov     [edi + Player.fallAni + Easing.start], false
     mov     [edi + Player.fallAni + Easing.done], false
@@ -1113,10 +1150,10 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
     stdcall Player.HandlerContinueAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
     pop     eax    
 
-    push    eax
-    xor     eax, true
-    stdcall Player.HandlerStopAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
-    pop     eax
+    ; push    eax
+    ; xor     eax, true
+    ; stdcall Player.HandlerStopAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
+    ; pop     eax
 
     ; Slide jump animation
     mov     esi, edi 
@@ -1148,16 +1185,12 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
     jne      .SkipUpdateSlideJumpAni
 
     invoke  GetTickCount
-    sub     eax, [edi + Player.slideCD]
-    cmp     eax, 200
-    jb      .SkipSlideJumpAni
 
     mov     [edi + Player.slideNewJump], false
     mov     [edi + Player.Condition], FALL_STATE
     mov     [esi + Easing.start], true
     invoke  GetTickCount
     mov     [esi + Easing.startTime], eax
-    mov     [edi + Player.slideCD], eax
 
     mov     [edi + Player.fallAni + Easing.start], false
     mov     [edi + Player.fallAni + Easing.done], false
@@ -1247,9 +1280,87 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
         tmp                     Vector3         ?
         tmpVel                  dd              ?
         conNum                  dd              3.0
+        normDiv                 dd              2.0
     endl
 
     mov     edi, [pPlayer]
+
+    ; texture easing
+    mov     [edi + Player.camTextureVel], 0.0
+
+    ; texture radius
+    cmp     [pl_stop_cam_tex], true
+    je      .SkipCamTex
+
+    stdcall Collision.RayDetection, [pPlayer], [sizeMap], [pMap]
+    mov     [edi + Player.curCamRadius], eax
+
+    fld     [edi + Player.curCamRadius]
+    fsub    [edi + Player.camera + Camera.radius]
+    fmul    [normDiv]
+    fstp    [tmpVel]
+
+    mov     esi, edi
+    add     esi, Player.camTexture
+
+    cmp     [esi + Easing.done], true
+    je     .SkipDoneTextureAni
+
+    cmp     [esi + Easing.start], true
+    je      .SkipStartTextureAni
+
+    mov     [esi + Easing.start], true
+    invoke  GetTickCount
+    mov     [esi + Easing.startTime], eax
+
+    .SkipStartTextureAni:
+
+    invoke  GetTickCount
+    sub     eax, [esi + Easing.startTime]
+    cmp     eax, [esi + Easing.duration]
+    ja      .SkipDoneTextureAni
+
+    stdcall [esi + Easing.ptrEasingFun], eax
+    mov     [velocity], eax 
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    fld     [tmpVel]
+    fmul    [velocity]
+    fstp    [edi + Player.camTextureVel]
+
+    jmp     .SkipTextureAni
+
+    .SkipDoneTextureAni:
+
+    mov     [esi + Easing.done], true
+
+    stdcall [esi + Easing.ptrEasingFun], [esi + Easing.duration]
+    mov     [velocity], eax
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    fld     [tmpVel]
+    fmul    [velocity]
+    fstp    [edi + Player.camTextureVel]
+
+    jmp     .SkipTextureAni
+
+    .SkipUpdateTextureAni:
+
+    cmp     [esi + Easing.start], false
+    je      .SkipTextureAni
+
+    mov     [esi + Easing.start], false
+    mov     [esi + Easing.done], false
+
+    .SkipTextureAni:
+
+    .SkipCamTex:
 
     ; Zeroing Velocity
     push    edi
@@ -1368,84 +1479,6 @@ proc Player.EasingHandlerCamera uses edi esi ebx,\
 
     .SkipCamChasing:
 
-
-    ; texture easing
-    mov     [edi + Player.camTextureVel], 0.0
-
-    ; texture radius
-    cmp     [pl_stop_cam_tex], true
-    je      .SkipCamTex
-
-    stdcall Collision.RayDetection, [pPlayer], [sizeMap], [pMap]
-    mov     [edi + Player.curCamRadius], eax
-
-    fld     [edi + Player.curCamRadius]
-    fsub    [edi + Player.camera + Camera.radius]
-    fstp    [tmpVel]
-
-    mov     esi, edi
-    add     esi, Player.camTexture
-
-    cmp     [esi + Easing.done], true
-    je     .SkipDoneTextureAni
-
-    cmp     [esi + Easing.start], true
-    je      .SkipStartTextureAni
-
-    mov     [esi + Easing.start], true
-    invoke  GetTickCount
-    mov     [esi + Easing.startTime], eax
-
-    .SkipStartTextureAni:
-
-    invoke  GetTickCount
-    sub     eax, [esi + Easing.startTime]
-    cmp     eax, [esi + Easing.duration]
-    ja      .SkipDoneTextureAni
-
-    stdcall [esi + Easing.ptrEasingFun], eax
-    mov     [velocity], eax 
-
-    fld     [edi + Player.speed]
-    fmul    [velocity]
-    fstp    [velocity]
-
-    fld     [tmpVel]
-    fmul    [velocity]
-    fstp    [edi + Player.camTextureVel]
-
-    jmp     .SkipTextureAni
-
-    .SkipDoneTextureAni:
-
-    mov     [esi + Easing.done], true
-
-    stdcall [esi + Easing.ptrEasingFun], [esi + Easing.duration]
-    mov     [velocity], eax
-
-    fld     [edi + Player.speed]
-    fmul    [velocity]
-    fstp    [velocity]
-
-    fld     [tmpVel]
-    fmul    [velocity]
-    fstp    [edi + Player.camTextureVel]
-
-    jmp     .SkipTextureAni
-
-    .SkipUpdateTextureAni:
-
-    cmp     [esi + Easing.start], false
-    je      .SkipTextureAni
-
-    mov     [esi + Easing.start], false
-    mov     [esi + Easing.done], false
-
-    .SkipTextureAni:
-
-    .SkipCamTex:
-
-
     ret
 endp
 
@@ -1480,12 +1513,6 @@ proc Player.UpdateCamera uses edi esi ebx,\
     stdcall Vector3.Add, edi, ebx
     pop     edi
 
-    ret
-endp
-
-proc Player.CameraRadiusHandler uses edi esi ebx,\
-
-.Ret:
     ret
 endp
 
