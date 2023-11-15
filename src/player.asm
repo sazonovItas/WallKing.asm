@@ -194,9 +194,19 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.slideAni + Easing.orinVec + Vector3.y], 0.5
     mov     [edi + Player.slideAni + Easing.orinVec + Vector3.z], 0.0
 
+    ; Slide ani
+    mov     [edi + Player.bslideAni + Easing.ptrEasingFun], dword Easing.easeSlow
+    mov     [edi + Player.bslideAni + Easing.duration], 200
+    mov     [edi + Player.bslideAni + Easing.startTime], 0
+    mov     [edi + Player.bslideAni + Easing.start], false
+    mov     [edi + Player.bslideAni + Easing.done], false
+    mov     [edi + Player.bslideAni + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.bslideAni + Easing.orinVec + Vector3.y], 0.5
+    mov     [edi + Player.bslideAni + Easing.orinVec + Vector3.z], 0.0
+
     ; Slide jump ani
-    mov     [edi + Player.slideJump + Easing.ptrEasingFun], dword Easing.easeInCos
-    mov     [edi + Player.slideJump + Easing.duration], 250
+    mov     [edi + Player.slideJump + Easing.ptrEasingFun], dword Easing.easeSlideJump
+    mov     [edi + Player.slideJump + Easing.duration], 200
     mov     [edi + Player.slideJump + Easing.startTime], 0
     mov     [edi + Player.slideJump + Easing.start], false
     mov     [edi + Player.slideJump + Easing.done], false
@@ -268,6 +278,26 @@ proc Player.Update uses edi esi ebx,\
     ret
 endp
 
+proc Player.UpdateVelocity uses edi esi ebx,\
+    pPlayer, sizeMap, pMap
+
+    mov     edi, [pPlayer]
+
+    stdcall Player.UpdateAniOrinVecs, edi
+
+    ; Zeroing Velocity
+    push    edi
+    add     edi, Player.Velocity
+    stdcall memzero, edi, 3 * 4
+    pop     edi
+
+    stdcall Player.UpdateMovingVelocity, [pPlayer]
+    stdcall Player.UpdateFJSVelocity, [pPlayer]
+
+    stdcall Player.EasingHandlerCamera, [pPlayer], [sizeMap], [pMap]
+
+    ret
+endp
 
 proc Player.UpdateState uses edi esi ebx,\
     pPlayer, pMap, sizeMap, colX, colY, colZ
@@ -296,6 +326,7 @@ proc Player.UpdateState uses edi esi ebx,\
     mov     [edi + Player.slideVec + Vector3.x], -0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
     mov     [edi + Player.slideVec + Vector3.z], 0.0
+    mov     [edi + Player.slideJump + Easing.orinVec + Vector3.x], 0.0
 
     pop     [edi + Player.Position + Vector3.x]
 
@@ -322,6 +353,7 @@ proc Player.UpdateState uses edi esi ebx,\
     mov     [edi + Player.slideVec + Vector3.x], 0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
     mov     [edi + Player.slideVec + Vector3.z], 0.0  
+    mov     [edi + Player.slideJump + Easing.orinVec + Vector3.x], 0.0
 
     pop     [edi + Player.Position + Vector3.x]
 
@@ -348,6 +380,7 @@ proc Player.UpdateState uses edi esi ebx,\
     mov     [edi + Player.slideVec + Vector3.z], -0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
     mov     [edi + Player.slideVec + Vector3.x], 0.0
+    mov     [edi + Player.slideJump + Easing.orinVec + Vector3.z], 0.0
 
     pop     [edi + Player.Position + Vector3.z]
 
@@ -374,6 +407,7 @@ proc Player.UpdateState uses edi esi ebx,\
     mov     [edi + Player.slideVec + Vector3.z], 0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
     mov     [edi + Player.slideVec + Vector3.x], 0.0
+    mov     [edi + Player.slideJump + Easing.orinVec + Vector3.z], 0.0
 
     pop     [edi + Player.Position + Vector3.z]
 
@@ -387,6 +421,8 @@ proc Player.UpdateState uses edi esi ebx,\
 
     mov     [edi + Player.slideAni + Easing.start], false
     mov     [edi + Player.slideAni + Easing.done], false
+
+    mov     [edi + Player.slideNewJump], true
 
     .SkipSlideState:
 
@@ -587,23 +623,6 @@ proc Player.UpdatePosY uses edi esi ebx,\
     ret
 endp
 
-proc Player.UpdateVelocity uses edi esi ebx,\
-    pPlayer, sizeMap, pMap
-
-    mov     edi, [pPlayer]
-
-    stdcall Player.UpdateAniOrinVecs, edi
-
-    ; Zeroing Velocity
-    push    edi
-    add     edi, Player.Velocity
-    stdcall memzero, edi, 3 * 4
-    pop     edi
-
-
-    ret
-endp
-
 proc Player.UpdateAniOrinVecs uses edi esi ebx,\
     pPlayer
 
@@ -800,41 +819,11 @@ proc Player.UpdateMovingVelocity uses edi esi ebx,\
 
     @@:
 
-    mov    [edi + Player.speed], 0.01
+    mov    [edi + Player.speed], 0.015
 
     .SkipRun:
 
 
-    ret
-endp
-
-proc Player.EasingInputsKeys uses edi esi ebx,\
-    pPlayer, sizeMap, pMap
-
-    locals 
-        velocity        dd          0.0
-        negConst        dd          -1.0
-        tmp             Vector3     ?
-        ok              db          0
-        boost           dd          1.5
-    endl
-
-    mov     edi, [pPlayer]
-
-    stdcall Player.UpdateAniOrinVecs, edi
-
-    ; Zeroing Velocity
-    push    edi
-    add     edi, Player.Velocity
-    stdcall memzero, edi, 3 * 4
-    pop     edi
-
-    stdcall Player.UpdateFJSVelocity, [pPlayer]
-    stdcall Player.UpdateMovingVelocity, [pPlayer]
-
-    stdcall Player.EasingHandlerCamera, [pPlayer], [sizeMap], [pMap]
-
-.Ret:
     ret
 endp
 
@@ -1118,13 +1107,31 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
 
     @@:
 
+    push    eax
     mov     esi, edi
     add     esi, Player.slideAni
     stdcall Player.HandlerContinueAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
+    pop     eax    
+
+    push    eax
+    xor     eax, true
+    stdcall Player.HandlerStopAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
+    pop     eax
 
     ; Slide jump animation
     mov     esi, edi 
     add     esi, Player.slideJump
+
+    cmp     eax, true
+    jne     @F 
+
+    cmp     [pl_jump], true
+    jne     @F
+
+    cmp     [edi + Player.slideNewJump], true
+    je      .SkipNewSlideJump
+
+    @@:
 
     cmp     [esi + Easing.done], true
     je      .SkipDoneSlideJumpAni
@@ -1135,14 +1142,17 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
     cmp     [pl_jump], false
     je      .SkipUpdateSlideJumpAni
 
+    .SkipNewSlideJump:
+
     cmp     [edi + Player.Condition], SLIDE_STATE
     jne      .SkipUpdateSlideJumpAni
 
     invoke  GetTickCount
     sub     eax, [edi + Player.slideCD]
-    cmp     eax, 250
+    cmp     eax, 200
     jb      .SkipSlideJumpAni
 
+    mov     [edi + Player.slideNewJump], false
     mov     [edi + Player.Condition], FALL_STATE
     mov     [esi + Easing.start], true
     invoke  GetTickCount

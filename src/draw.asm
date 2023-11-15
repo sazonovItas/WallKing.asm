@@ -21,7 +21,7 @@ proc Draw.Scene uses esi edi
         fstp    [timeBetweenChecking]
 
         stdcall Player.Update, mainPlayer, [timeBetweenChecking], [sizeBlocksMapTry], blocksMapTry
-        stdcall Player.EasingInputsKeys, mainPlayer, [sizeBlocksMapTry], blocksMapTry
+        stdcall Player.UpdateVelocity, mainPlayer, [sizeBlocksMapTry], blocksMapTry
 
         mov     eax, [currentFrame]
         mov     [time], eax

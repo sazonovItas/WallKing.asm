@@ -39,9 +39,11 @@ struct Player
     fallAni         Easing          ?
     jumpAni         Easing          ?
     slideAni        Easing          ?
+    bslideAni       Easing          ?
     slideJump       Easing          ?
     slideVec        Vector3         ?
     slideCD         dd              ?
+    slideNewJump    dd              true
 
 ends
 
