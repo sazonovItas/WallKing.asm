@@ -210,7 +210,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.slideVec + Vector3.z], 0.0
 
     ; size of player collision
-    mov     [edi + Player.sizeBlockCol], 0.60
+    mov     [edi + Player.sizeBlockCol], 0.70
 
     ; draw things
     mov     [edi + Player.sizeBlockDraw], 0.4
@@ -1504,15 +1504,27 @@ proc Player.UpdateCamera uses edi esi ebx,\
 endp
 
 proc Player.InputsMouse uses edi esi ebx,\
-    pPlayer, wParam, lParam
+    pPlayer, uMsg, wParam, lParam
 
     locals 
         sensetivity     dd          ?
         xoffset         dd          ?
         yoffset         dd          ?
+        WHEEL_DELTA     dd          0.002
+        tmp             dd          ?
+        tmpw            dw          ?
     endl
 
     mov     edi, [pPlayer]
+
+    mov     eax, [uMsg]
+    JumpIf  WM_MOUSEMOVE,   .MouseMove
+    JumpIf  WM_MOUSEWHEEL,  .MouseWheel
+    JumpIf  WM_RBUTTONDOWN, .MouseRButtonDown
+    JumpIf  WM_RBUTTONUP,   .MouseRButtonUp
+
+    jmp     .Ret
+
 
     .MouseMove:
 
@@ -1573,6 +1585,45 @@ proc Player.InputsMouse uses edi esi ebx,\
         stdcall Camera.Direction, edi
         stdcall Player.Direction, edi
         stdcall Camera.NormalizeCursor, lastCursorPos
+
+        jmp     .Ret
+
+    .MouseWheel:
+
+        mov     eax, [wParam]
+        shr     eax, 16
+
+        mov     [tmpw], ax
+        fild    word [tmpw]
+        fmul    [WHEEL_DELTA]
+        fchs
+        fstp    [tmp]   
+
+        fld     [edi + Player.maxCamRadius]
+        fadd    [tmp]
+        fstp    [edi + Player.maxCamRadius]
+
+        stdcall Number.DoubleMax, [edi + Player.maxCamRadius], [edi + Player.minCamRadius]
+        mov     [edi + Player.maxCamRadius], eax
+        mov     eax, 150.0
+        stdcall Number.DoubleMin, [edi + Player.maxCamRadius], eax
+        mov     [edi + Player.maxCamRadius], eax
+
+        jmp     .Ret
+
+    .MouseRButtonDown:
+
+        mov     [pl_jump], true
+
+        jmp     .Ret
+
+    .MouseRButtonUp:
+
+        mov     [pl_jump], false
+
+        jmp     .Ret
+
+.Ret:
 
     ret
 endp

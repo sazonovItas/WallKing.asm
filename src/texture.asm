@@ -1,9 +1,6 @@
 proc Texture.Constructor uses edi esi,\
     pID, pFileImage, texType, texSlot, format, pixelType
 
-    mov     eax, [texType]
-    mov     dword [esi], eax
-
     mov     esi, [pID]
 
     ; Block textures

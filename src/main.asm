@@ -145,6 +145,9 @@ proc WindowProc uses ebx,\
         JumpIf  WM_KEYDOWN,     .KeysManipulateDown
         JumpIf  WM_KEYUP,       .KeysManipulateUp
         JumpIf  WM_MOUSEMOVE,   .MouseManipulate
+        JumpIf  WM_MOUSEWHEEL,  .MouseManipulate
+        JumpIf  WM_RBUTTONDOWN, .MouseManipulate
+        JumpIf  WM_RBUTTONUP,   .MouseManipulate
 
         invoke  DefWindowProc, [hWnd], [uMsg], [wParam], [lParam]
         jmp     .Return
@@ -173,7 +176,7 @@ proc WindowProc uses ebx,\
 
 .MouseManipulate:
 
-        stdcall Player.InputsMouse, mainPlayer, [wParam], [lParam]
+        stdcall Player.InputsMouse, mainPlayer, [uMsg], [wParam], [lParam]
 
         .SkipMouse:
                 jmp     .ReturnZero
