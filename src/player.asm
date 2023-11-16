@@ -194,16 +194,6 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.slideAni + Easing.orinVec + Vector3.y], 0.3
     mov     [edi + Player.slideAni + Easing.orinVec + Vector3.z], 0.0
 
-    ; Slide ani
-    mov     [edi + Player.bslideAni + Easing.ptrEasingFun], dword Easing.easeSlow
-    mov     [edi + Player.bslideAni + Easing.duration], 200
-    mov     [edi + Player.bslideAni + Easing.startTime], 0
-    mov     [edi + Player.bslideAni + Easing.start], false
-    mov     [edi + Player.bslideAni + Easing.done], false
-    mov     [edi + Player.bslideAni + Easing.orinVec + Vector3.x], 0.0
-    mov     [edi + Player.bslideAni + Easing.orinVec + Vector3.y], 0.5
-    mov     [edi + Player.bslideAni + Easing.orinVec + Vector3.z], 0.0
-
     ; Slide jump ani
     mov     [edi + Player.slideJump + Easing.ptrEasingFun], dword Easing.easeSlideJump
     mov     [edi + Player.slideJump + Easing.duration], 200
@@ -220,7 +210,14 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.slideVec + Vector3.z], 0.0
 
     ; size of player collision
-    mov     [edi + Player.sizeBlockCol], 0.5 
+    mov     [edi + Player.sizeBlockCol], 0.60
+
+    ; draw things
+    mov     [edi + Player.sizeBlockDraw], 0.4
+    mov     [edi + Player.x_angle], 0.0
+    mov     [edi + Player.y_angle], 0.0
+    mov     [edi + Player.z_angle], 0.0
+
 
     mov     [edi + Player.slideNewJump], true
     mov     [edi + Player.slideDirJump], NO_DIR
@@ -268,13 +265,14 @@ proc Player.Update uses edi esi ebx,\
     stdcall Player.UpdatePosZ, [pPlayer], [dt], [sizeMap], [pMap], ebx
     mov     [collisionZ], eax
 
-    ; TODO: Need to add slide condition detection
     ; update state of the player
     stdcall Player.UpdateState, [pPlayer], [pMap], [sizeMap], [collisionX], [collisionY], [collisionZ]
 
-    ; TODO: Need to rewrite to update camera
-    ; BUG: Need to fix bugs, when camera start moving doging textures don't work
+    ; update camera position
     stdcall Player.UpdateCamera, [pPlayer], [dt], [sizeMap], [pMap]
+
+    ; update draw angles
+    stdcall Player.UpdateDrawAngles, [pPlayer], [dt]
 
     ret
 endp
@@ -297,38 +295,8 @@ proc Player.UpdateVelocity uses edi esi ebx,\
     pop     edi
 
     stdcall Player.UpdateMovingVelocity, [pPlayer]
-
-    cmp     [edi + Player.slideDirJump], X_DIR
-    jne      @F
-
-    fld     [edi + Player.Velocity + Vector3.x]
-    fabs
-    fcomp   [null]  
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     [edi + Player.slideJump + Easing.orinVec + Vector3.x], 0.0
-
-    @@:
-
-    cmp     [edi + Player.slideDirJump], Z_DIR
-    jne      @F
-
-    fld     [edi + Player.Velocity + Vector3.z]
-    fabs
-    fcomp   [null]  
-    fstsw   ax
-    sahf
-    ja      @F
-
-    mov     [edi + Player.slideJump + Easing.orinVec + Vector3.z], 0.0
-
-    @@:
-
     stdcall Player.UpdateFJSVelocity, [pPlayer]
-
-    stdcall Player.EasingHandlerCamera, [pPlayer], [sizeMap], [pMap]
+    stdcall Player.UpdateCameraVelocity, [pPlayer], [sizeMap], [pMap]
 
     ret
 endp
@@ -356,7 +324,7 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
-    mov     [edi + Player.slideDirJump], X_DIR
+    mov     [edi + Player.slideDirJump], X_DIR_MINUS
 
     mov     [edi + Player.slideVec + Vector3.x], -0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
@@ -384,7 +352,7 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
-    mov     [edi + Player.slideDirJump], X_DIR
+    mov     [edi + Player.slideDirJump], X_DIR_PLUS
 
     mov     [edi + Player.slideVec + Vector3.x], 0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
@@ -412,7 +380,7 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
-    mov     [edi + Player.slideDirJump], Z_DIR
+    mov     [edi + Player.slideDirJump], Z_DIR_MINUS
 
     mov     [edi + Player.slideVec + Vector3.z], -0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
@@ -440,7 +408,7 @@ proc Player.UpdateState uses edi esi ebx,\
     je      @F
 
     mov     [edi + Player.Condition], SLIDE_STATE
-    mov     [edi + Player.slideDirJump], Z_DIR
+    mov     [edi + Player.slideDirJump], Z_DIR_PLUS
 
     mov     [edi + Player.slideVec + Vector3.z], 0.32
     mov     [edi + Player.slideVec + Vector3.y], 1.0
@@ -524,7 +492,6 @@ proc Player.UpdateState uses edi esi ebx,\
     .BothY:
 
         mov     [edi + Player.Condition], WALK_STATE
-
         
         mov     [edi + Player.fallAni + Easing.done], false
 
@@ -661,6 +628,31 @@ proc Player.UpdatePosY uses edi esi ebx,\
     ret
 endp
 
+proc Player.UpdateDrawAngles uses edi,\
+    pPlayer, dt
+
+    mov     edi, [pPlayer]
+
+    ; X
+    fld     [edi + Player.Velocity + Vector3.x]
+    fmul    [dt]
+    fadd    [edi + Player.x_angle]
+    fstp    [edi + Player.x_angle]
+
+    ; Y
+    fld     [edi + Player.Velocity + Vector3.y]
+    fmul    [dt]
+    fadd    [edi + Player.y_angle]
+    fstp    [edi + Player.y_angle]
+
+    ; Z
+    fld     [edi + Player.Velocity + Vector3.z]
+    fmul    [dt]
+    fadd    [edi + Player.z_angle]
+    fstp    [edi + Player.z_angle]
+
+    ret
+endp
 proc Player.UpdateAniOrinVecs uses edi esi ebx,\
     pPlayer
 
@@ -851,13 +843,13 @@ proc Player.UpdateMovingVelocity uses edi esi ebx,\
     cmp     [pl_run], false
     je      @F
     
-    mov     [edi + Player.speed], 0.012
+    mov     [edi + Player.speed], 0.015
 
     jmp     .SkipRun
 
     @@:
 
-    mov    [edi + Player.speed], 0.012
+    mov    [edi + Player.speed], 0.015
 
     .SkipRun:
 
@@ -1150,11 +1142,6 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
     stdcall Player.HandlerContinueAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
     pop     eax    
 
-    ; push    eax
-    ; xor     eax, true
-    ; stdcall Player.HandlerStopAni, edi, esi, eax, [edi + Player.Acceleration + Vector3.y]
-    ; pop     eax
-
     ; Slide jump animation
     mov     esi, edi 
     add     esi, Player.slideJump
@@ -1269,7 +1256,7 @@ proc Player.UpdateFJSVelocity uses edi esi ebx,\
     ret
 endp
 
-proc Player.EasingHandlerCamera uses edi esi ebx,\
+proc Player.UpdateCameraVelocity uses edi esi ebx,\
     pPlayer, sizeMap, pMap
 
     locals 

@@ -16,6 +16,12 @@ struct Player
 
     sizeBlockCol    GLfloat         ?
 
+    ; Draw 
+    sizeBlockDraw   GLfloat         ?
+    x_angle         GLfloat         ?
+    y_angle         GLfloat         ?
+    z_angle         GLfloat         ?
+
     ; Physics
     Position        Vector3         ?
     prevPosition    Vector3         ?
@@ -38,7 +44,6 @@ struct Player
     fallAni         Easing          ?
     jumpAni         Easing          ?
     slideAni        Easing          ?
-    bslideAni       Easing          ?
     slideJump       Easing          ?
     slideVec        Vector3         ?
     slideNewJump    dd              ?
@@ -51,9 +56,12 @@ ends
     WALK_STATE          =       0000_0100b
 
     NO_DIR              =       0000_0000b
-    X_DIR               =       0000_0001b
-    Y_DIR               =       0000_0010b
-    Z_DIR               =       0000_0100b
+    X_DIR_PLUS          =       0000_0001b
+    X_DIR_MINUS         =       0000_0010b
+    Y_DIR_PLUS          =       0000_0100b
+    Y_DIR_MINUS         =       0000_1000b
+    Z_DIR_PLUS          =       0001_0000b
+    Z_DIR_MINUS         =       0010_0000b
 
     ;   Some player const
     WALK_SPEED          =       0.01
