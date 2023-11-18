@@ -95,9 +95,18 @@ proc Draw.Scene uses esi edi
         invoke  glPushMatrix
                 invoke  glLoadIdentity
                 invoke  glTranslatef, [edi + Player.Position + Vector3.x], [edi + Player.Position + Vector3.y], [edi + Player.Position + Vector3.z]
-                invoke  glRotatef, [edi + Player.x_angle], 1.0, 0.0, 0.0
-                invoke  glRotatef, [edi + Player.y_angle], 0.0, 1.0, 0.0
-                invoke  glRotatef, [edi + Player.z_angle], 0.0, 0.0, 1.0
+                fld     [edi + Player.x_angle]
+                fmul    [radian]
+                fstp    [rotAngle]
+                invoke  glRotatef, dword [rotAngle], 1.0, 0.0, 0.0
+                fld     [edi + Player.y_angle]
+                fmul    [radian]
+                fstp    [rotAngle]
+                invoke  glRotatef, [rotAngle], 0.0, 1.0, 0.0
+                fld     [edi + Player.z_angle]
+                fmul    [radian]
+                fstp    [rotAngle]
+                invoke  glRotatef, [rotAngle], 0.0, 0.0, 1.0
                 invoke  glScalef, [edi + Player.sizeBlockDraw], [edi + Player.sizeBlockDraw], [edi + Player.sizeBlockDraw]
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
@@ -185,9 +194,18 @@ proc Draw.ConPlayer uses edi esi ebx,\
         invoke  glPushMatrix
                 invoke  glLoadIdentity
                 invoke  glTranslatef, dword [edi], dword [edi + 4], dword [edi + 8]
-                invoke  glRotatef, dword [edi], 1.0, 0.0, 0.0
-                invoke  glRotatef, dword [edi + 4], 0.0, 1.0, 0.0
-                invoke  glRotatef, dword [edi + 8], 0.0, 0.0, 1.0
+                fld     dword [edi + 12]
+                fmul    [radian]
+                fstp    [rotAngle]
+                invoke  glRotatef, dword [rotAngle], 1.0, 0.0, 0.0
+                fld     dword [edi + 16]
+                fmul    [radian]
+                fstp    [rotAngle]
+                invoke  glRotatef, [rotAngle], 0.0, 1.0, 0.0
+                fld     dword [edi + 20]
+                fmul    [radian]
+                fstp    [rotAngle]
+                invoke  glRotatef, [rotAngle], 0.0, 0.0, 1.0
                 invoke  glScalef, dword [edi + 24], dword [edi + 28], dword [edi + 32]
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
