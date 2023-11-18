@@ -95,18 +95,9 @@ proc Draw.Scene uses esi edi
         invoke  glPushMatrix
                 invoke  glLoadIdentity
                 invoke  glTranslatef, [edi + Player.Position + Vector3.x], [edi + Player.Position + Vector3.y], [edi + Player.Position + Vector3.z]
-                fld     [edi + Player.x_angle]
-                fmul    [radian]
-                fstp    [rotAngle]
-                invoke  glRotatef, [rotAngle], 1.0, 0.0, 0.0
-                fld     [edi + Player.y_angle]
-                fmul    [radian]
-                fstp    [rotAngle]
-                invoke  glRotatef, [rotAngle], 0.0, 1.0, 0.0
-                fld     [edi + Player.z_angle]
-                fmul    [radian]
-                fstp    [rotAngle]
-                invoke  glRotatef, [rotAngle], 0.0, 0.0, 1.0
+                invoke  glRotatef, [edi + Player.x_angle], 1.0, 0.0, 0.0
+                invoke  glRotatef, [edi + Player.y_angle], 0.0, 1.0, 0.0
+                invoke  glRotatef, [edi + Player.z_angle], 0.0, 0.0, 1.0
                 invoke  glScalef, [edi + Player.sizeBlockDraw], [edi + Player.sizeBlockDraw], [edi + Player.sizeBlockDraw]
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
@@ -127,6 +118,97 @@ proc Draw.Scene uses esi edi
         invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
         stdcall VAO.Unbind
 
+        stdcall Draw.ConPlayers, drawBuf
+
+        ret
+endp
+
+proc Draw.ConPlayers uses edi esi ebx,\
+        buf
+
+        locals
+                bufToDraw               db              256 dup(0)
+        endl
+
+        .waitForMutex:
+
+        invoke WaitForSingleObject, [drawMutex], -1
+        
+        cmp     eax, 0
+        jne     .waitForMutex
+
+        lea     ebx, [bufToDraw]
+        stdcall memcpy, ebx, [buf], 256
+        invoke  ReleaseMutex, [drawMutex]
+        
+
+        mov     edi, ebx
+        add     edi, 16
+
+        mov     ecx, dword [edi]
+        jcxz    .Ret
+
+        add     edi, 4
+
+        .drawCycle:
+
+                push    ecx
+
+                stdcall Draw.ConPlayer, edi
+
+                add     edi, 40
+                pop     ecx
+                loop    .drawCycle
+
+.Ret:
+        ret
+endp
+
+proc Draw.ConPlayer uses edi esi ebx,\
+        offset
+
+        locals 
+                rotAngle                dd              0.0
+                tmp                     dd              0.4
+        endl
+
+        stdcall Shader.Activate, [exampleShader.ID]
+
+        stdcall Camera.UniformBind, mainPlayer, [exampleShader.ID], uniProjName, uniViewName
+        lea     esi, [arrTextures]
+        add     esi, 8
+        stdcall Texture.Bind, GL_TEXTURE_2D, dword [esi], GL_TEXTURE0
+        stdcall Texture.texUnit, [exampleShader.ID], uniTex0Name, GL_TEXTURE0
+
+        mov     edi, [offset]
+
+        invoke  glPushMatrix
+                invoke  glLoadIdentity
+                invoke  glTranslatef, dword [edi], dword [edi + 4], dword [edi + 8]
+                invoke  glRotatef, dword [edi], 1.0, 0.0, 0.0
+                invoke  glRotatef, dword [edi + 4], 0.0, 1.0, 0.0
+                invoke  glRotatef, dword [edi + 8], 0.0, 0.0, 1.0
+                invoke  glScalef, dword [edi + 24], dword [edi + 28], dword [edi + 32]
+                invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
+        invoke  glPopMatrix
+        invoke  glGetUniformLocation, [exampleShader.ID], uniModelName
+        invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
+
+        invoke  glGetUniformLocation, [exampleShader.ID], uniLightColorName
+        invoke  glUniform4f, eax, [lightColor.r], [lightColor.g], [lightColor.b], [lightColor.a]
+
+        invoke  glGetUniformLocation, [exampleShader.ID], uniLightPosName
+        invoke  glUniform3f, eax, [lightPos.x], [lightPos.y], [lightPos.z]
+
+        lea     edi, [mainPlayer]
+        invoke  glGetUniformLocation, [exampleShader.ID], uniCamPosName
+        invoke  glUniform3f, eax, [edi + Camera.camPosition + Vector3.x], [edi + Camera.camPosition + Vector3.y], [edi + Camera.camPosition + Vector3.z]
+
+        stdcall VAO.Bind, [VAO1.ID]       
+        invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
+        stdcall VAO.Unbind
+
+.Ret:
         ret
 endp
 

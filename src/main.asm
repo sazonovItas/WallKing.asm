@@ -11,6 +11,9 @@
         include         "collision.asm"
         include         "player.asm"
 
+        ; Include client
+        include         "client/client.asm"
+
         ; Include some internal functionality
         include         "internal/math/number.asm"
         include         "internal/memory/mem_funcs.asm"
@@ -102,6 +105,9 @@
         uniProj                 GLuint          ?
         uniProjName             db              "proj", 0
 
+        drawBuf                 db              256 dup(0)
+        drawMutex               dd              NULL
+
         freeCamera              Camera 
         mainPlayer              Player 
         lastFrame               dd              ?
@@ -110,7 +116,9 @@
 proc WinMain
 
         locals
-                msg     MSG
+                msg             MSG             ?
+                thread          dd              ? 
+                threadId        dd              ?
         endl
 
         finit
@@ -120,6 +128,12 @@ proc WinMain
         invoke  GetTickCount
         mov     [time], eax 
         mov     [lastFrame], eax
+
+        invoke  CreateMutex, NULL, 0, NULL
+        mov     [drawMutex], eax
+
+        lea     esi, [threadId]
+        invoke  CreateThread, NULL, 0, Client.Start, drawBuf, 0, esi
 
         lea     esi, [msg]
 

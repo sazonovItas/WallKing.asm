@@ -1,9 +1,10 @@
-proc Init uses esi edi
+proc Init uses esi edi ebx
 
     locals
             hMainWindow     dd      ?
+            text            db      "Hi", 0
     endl 
-
+ 
     stdcall memInit
 
     invoke  RegisterClass, wndClass

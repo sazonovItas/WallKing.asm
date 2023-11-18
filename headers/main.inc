@@ -4,6 +4,7 @@ entry   WinMain
         include         "include/win32ax.inc"
 
         include         "include/api/kernel32.inc"
+        include         "include/api/wsock32.inc"
         include         "include/api/user32.inc"
         include         "include/api/gdi32.inc"
         include         "include/api/opengl.inc"
@@ -16,6 +17,7 @@ entry   WinMain
         include         "easing.inc"
         include         "list.inc"
 
+        include         "client.inc"
         include         "mesh.inc"
         include         "matrix.inc"
         include         "color.inc"
@@ -56,10 +58,14 @@ macro JumpIf value, label
 data import
 
         library kernel32,       "KERNEL32.DLL",\
+                wsock32,        "WSOCK32.DLL",\
                 user32,         "USER32.DLL",\
                 gdi32,          "GDI32.DLL",\
                 opengl32,       "OPENGL32.DLL",\
                 glu32,          "GLU32.DLL",\
-                glext32,        "GLEXT32.DLL"
+                glext32,        "GLEXT32.DLL",\
+                msvcrt,         "MSVCRT.DLL"
 
+        ; import msvcrt,  printf, 'printf',\
+        ;                 scanf, 'scanf'
 end data
