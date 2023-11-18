@@ -60,12 +60,6 @@ proc Client.Start uses edi esi ebx,\
     cmp     eax, -1
     je     .Ret
 
-    lea     ebx, [text]
-    add     edi, 4
-    invoke MessageBox, NULL, edi, ebx, MB_OK
-
-
-
     .cycle:
 
         lea     edi, [buf]
