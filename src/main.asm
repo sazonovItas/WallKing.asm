@@ -156,8 +156,12 @@ proc WindowProc uses ebx,\
         mov     eax, [uMsg]
         JumpIf  WM_PAINT,       .Paint
         JumpIf  WM_DESTROY,     .Destroy
+
+        ; Keys
         JumpIf  WM_KEYDOWN,     .KeysManipulateDown
         JumpIf  WM_KEYUP,       .KeysManipulateUp
+
+        ; Mouse
         JumpIf  WM_MOUSEMOVE,   .MouseManipulate
         JumpIf  WM_MOUSEWHEEL,  .MouseManipulate
         JumpIf  WM_RBUTTONDOWN, .MouseManipulate

@@ -4,7 +4,9 @@ proc Client.Start uses edi esi ebx,\
     locals 
         text            db              "WallKing", 0
         name            db              "Alex", 0
-        server_ip       db              "192.168.1.255", 0
+        ; server_ip       db              "192.168.1.255", 0
+        ; server_ip       db              "192.168.115.255", 0
+        server_ip       db              "127.0.0.1", 0
         iResult         dd              ?
         wsaData         WSADATA         ?
         SendSocket      dd              -1
