@@ -141,15 +141,14 @@ proc Draw.ConPlayers uses edi esi ebx,\
 
         .waitForMutex:
 
-        invoke WaitForSingleObject, [drawMutex], -1
-        
+        invoke WaitForSingleObject, [Client.MutexDrawBuf], INFINITY
+
         cmp     eax, 0
         jne     .waitForMutex
 
         lea     ebx, [bufToDraw]
         stdcall memcpy, ebx, [buf], 256
-        invoke  ReleaseMutex, [drawMutex]
-        
+        invoke  ReleaseMutex, [Client.MutexDrawBuf]
 
         mov     edi, ebx
         add     edi, 16

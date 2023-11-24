@@ -4,9 +4,9 @@ proc Client.Start uses edi esi ebx,\
     locals 
         text            db              "WallKing", 0
         name            db              "Alex", 0
-        ; server_ip       db              "192.168.1.255", 0
+        server_ip       db              "192.168.1.255", 0
         ; server_ip       db              "192.168.115.255", 0
-        server_ip       db              "127.0.0.1", 0
+        ; server_ip       db              "127.0.0.1", 0
         iResult         dd              ?
         wsaData         WSADATA         ?
         SendSocket      dd              -1
@@ -19,6 +19,8 @@ proc Client.Start uses edi esi ebx,\
         buf             db              256 dup(0)
         recvBuf         db              256 dup(0)
     endl
+
+    stdcall Client.Init
 
     lea     edi, [buf]
     mov     dword [edi], 256
@@ -34,12 +36,6 @@ proc Client.Start uses edi esi ebx,\
     lea     ebx, [name]
     stdcall memcpy, edi, ebx, 4
 
-    lea     ebx, [wsaData]
-    invoke  WSAStartup, 0x0101, ebx
-
-    invoke  socket, AF_INET, SOCK_DGRAM, IPPROTO_UDP
-    mov     [SendSocket], eax
-
     lea     edi, [RecvAddr]
     mov     [edi + sockaddr_in.sin_family], AF_INET
 
@@ -52,13 +48,13 @@ proc Client.Start uses edi esi ebx,\
 
     lea     edi, [buf]
     lea     ebx, [RecvAddr]
-    invoke  sendto, [SendSocket], edi, 256, 0, ebx, sizeof.sockaddr_in
+    stdcall Client.Broadcast, edi, 256
 
     lea     edi, [recvBuf]
     lea     esi, [ServerAddr]
     lea     ebx, [ServerAddrLen]
     mov     dword [ebx], sizeof.sockaddr_in
-    invoke  recvfrom, [SendSocket], edi, 256, 0, esi, ebx
+    invoke  recvfrom, [Client.Socket], edi, 256, 0, esi, ebx
     cmp     eax, -1
     je     .Ret
 
@@ -102,7 +98,7 @@ proc Client.Start uses edi esi ebx,\
 
         lea     edi, [buf]
         lea     ebx, [ServerAddr]
-        invoke  sendto, [SendSocket], edi, 256, 0, ebx, sizeof.sockaddr_in
+        invoke  sendto, [Client.Socket], edi, 256, 0, ebx, sizeof.sockaddr_in
         cmp     eax, -1
         je      .cycle
 
@@ -111,22 +107,132 @@ proc Client.Start uses edi esi ebx,\
         lea     esi, [ServerAddr]
         lea     ebx, [ServerAddrLen]
         mov     dword [ebx], sizeof.sockaddr_in
-        invoke  recvfrom, [SendSocket], edi, 256, 0, esi, ebx
+        invoke  recvfrom, [Client.Socket], edi, 256, 0, esi, ebx
         cmp     eax, -1
         je     .cycle
 
         .waitForMutex:
 
-        invoke  WaitForSingleObject, [drawMutex], -1
+        invoke  WaitForSingleObject, [Client.MutexDrawBuf], INFINITY
 
         cmp     eax, 0
         jne     .waitForMutex
 
         stdcall memcpy, [data], edi, 256
-        invoke  ReleaseMutex, [drawMutex]
+        invoke  ReleaseMutex, [Client.MutexDrawBuf]
 
         jmp     .cycle
     
 .Ret:
+    ret
+endp
+
+proc Client.Broadcast uses edi esi ebx,\
+    pMsg, msgSz
+
+    mov     ecx, dword [Client.IPAddrTableBuf + MIB_IPADDRTABLE.dwNumEntries]
+    xor     esi, esi
+
+.loopBroadcast:
+
+    push    ecx
+
+    mov     eax, dword [Client.IPAddrTableBuf + MIB_IPADDRTABLE.table + esi + MIB_IPADDRROW.dwAddr]
+    mov     edx, dword [Client.IPAddrTableBuf + MIB_IPADDRTABLE.table + esi + MIB_IPADDRROW.dwMask]
+    not     edx
+    or      eax, edx
+
+    ; Broadcast address
+    mov     [Client.Broadcast_addr + sockaddr_in.sin_addr], eax
+    mov     ebx, [pMsg]
+    mov     edi, [msgSz]
+
+    ; Send message to address
+    invoke  sendto, [Client.Socket], ebx, edi, 0, Client.Broadcast_addr, sizeof.sockaddr_in
+
+    ; Add esi to get new address
+    add     esi, sizeof.MIB_IPADDRROW
+
+    pop     ecx
+    loop    .loopBroadcast
+
+.Ret:
+    ret
+endp
+
+proc Client.Init uses ebx edi esi 
+
+    mov     [Client.State], CLIENT_STATE_ONLINE
+
+    ; Init Wsa data
+    invoke WSAStartup, 0x0202, Client.wsaData
+    test    eax, eax
+    jnz     .Error
+
+    ; create socket
+    invoke socket, AF_INET, SOCK_DGRAM, IPPROTO_UDP
+    cmp     eax, INVALID_SOCKET
+    je      .Error
+
+    ; Safe handle in eax just for optimization
+    mov     [Client.Socket], eax
+    xchg    eax, ebx
+
+    ; Get server port to ax
+    mov     ax, SERVER_PORT
+    xchg    ah, al
+
+    ;       
+    mov     [Client.Broadcast_addr + sockaddr_in.sin_family], AF_INET
+    mov     [Client.Broadcast_addr + sockaddr_in.sin_port], ax
+
+    ; Get table of addresses
+    invoke  GetIpAddrTable, Client.IPAddrTableBuf, Client.dIPAddrTableSz, NULL
+    test    eax, eax
+    jnz     .Error
+
+    jmp     .Exit
+
+.Error:
+    mov     [Client.State], CLIENT_STATE_OFFLINE
+    invoke  closesocket, ebx
+    invoke  WSACleanup
+    xor     eax, eax
+    jmp     .Ret
+
+.Exit:
+    mov     [Client.State], CLIENT_STATE_ONLINE
+    jmp     .Ret
+
+.Ret:
+    ret
+endp
+
+proc Client.ThSend 
+
+.Ret:
+    ret
+endp
+
+proc Client.ThRecv
+
+.Ret:
+    ret
+endp
+
+proc Client.Destroy
+
+    cmp     [Client.State], CLIENT_STATE_OFFLINE
+    je      @F
+
+    mov     [Client.State], CLIENT_STATE_OFFLINE
+
+    mov     [Client.ThStopSd], true
+    mov     [Client.ThStopRv], true
+
+    invoke  closesocket, [Client.Socket]
+    invoke  WSACleanup
+
+@@:
     ret
 endp

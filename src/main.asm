@@ -61,7 +61,7 @@
         stringOut               db              "Hello, World!", 0
 
         fileBoxTexture          db              "resources/textures/container2.bmp", 0
-        filePlayerTex           db              "resources/textures/test1.bmp", 0
+        filePlayerTex           db              "resources/textures/wall_player.bmp", 0
         fileLightTexture        db              "resources/textures/test.bmp", 0
         blockTexture            Texture         ?
         lightTexture            Texture         ?        
@@ -106,7 +106,6 @@
         uniProjName             db              "proj", 0
 
         drawBuf                 db              256 dup(0)
-        drawMutex               dd              NULL
 
         freeCamera              Camera 
         mainPlayer              Player 
@@ -130,7 +129,7 @@ proc WinMain
         mov     [lastFrame], eax
 
         invoke  CreateMutex, NULL, 0, NULL
-        mov     [drawMutex], eax
+        mov     [Client.MutexDrawBuf], eax
 
         lea     esi, [threadId]
         invoke  CreateThread, NULL, 0, Client.Start, drawBuf, 0, esi

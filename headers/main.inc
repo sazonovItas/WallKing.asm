@@ -1,4 +1,7 @@
 format  PE GUI 5.0
+
+stack   0x100000
+
 entry   WinMain
 
         include         "include/win32ax.inc"
@@ -43,6 +46,8 @@ macro JumpIf value, label
         true            =       1
         false           =       0
 
+        INFINITY        =       -1
+
         COLOR_DEPTH     =       24
         PFD_FLAGS       =       PFD_SUPPORT_OPENGL or PFD_DOUBLEBUFFER or PFD_DRAW_TO_WINDOW
         WINDOW_STYLE    =       WS_VISIBLE or WS_MAXIMIZE or WS_POPUP
@@ -62,10 +67,27 @@ data import
                 user32,         "USER32.DLL",\
                 gdi32,          "GDI32.DLL",\
                 opengl32,       "OPENGL32.DLL",\
-                glu32,          "GLU32.DLL",\
-                glext32,        "GLEXT32.DLL",\
-                msvcrt,         "MSVCRT.DLL"
+                ws2_32,         "ws2_32.DLL",\
+                AdvApi32,       "AdvApi32.DLL",\
+                iphlpapi,       "iphlpapi.DLL"
 
-        ; import msvcrt,  printf, 'printf',\
-        ;                 scanf, 'scanf'
+        import iphlpapi,\
+                GetIpAddrTable , 'GetIpAddrTable'
+                ; THIS STRUCTURES GOT FROM INTERNET. THEY MAY BE CHANGED!
+
+        struct MIB_IPADDRROW
+               dwAddr           dd              ?
+               dwIndex          dd              ?
+               dwMask           dd              ?
+               dwBCastAddr      dd              ?
+               dwReasmSize      dd              ?
+               unused1          dw              ?
+               wType            dw              ?
+        ends
+
+        struct MIB_IPADDRTABLE
+               dwNumEntries     dd              ?
+               table            MIB_IPADDRROW   ?
+        ends
+
 end data
