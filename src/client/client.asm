@@ -102,10 +102,9 @@ proc Client.Start uses edi esi ebx,\
         cmp     eax, -1
         je      .cycle
 
-
         lea     edi, [recvBuf]
-        lea     esi, [ServerAddr]
-        lea     ebx, [ServerAddrLen]
+        lea     esi, [RecvAddr]
+        lea     ebx, [RecvAddrLen]
         mov     dword [ebx], sizeof.sockaddr_in
         invoke  recvfrom, [Client.Socket], edi, 256, 0, esi, ebx
         cmp     eax, -1
@@ -162,8 +161,6 @@ endp
 
 proc Client.Init uses ebx edi esi 
 
-    mov     [Client.State], CLIENT_STATE_ONLINE
-
     ; Init Wsa data
     invoke WSAStartup, 0x0202, Client.wsaData
     test    eax, eax
@@ -202,7 +199,6 @@ proc Client.Init uses ebx edi esi
 
 .Exit:
     mov     [Client.State], CLIENT_STATE_ONLINE
-    jmp     .Ret
 
 .Ret:
     ret

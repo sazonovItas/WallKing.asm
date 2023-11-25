@@ -22,7 +22,7 @@
     CLIENT_ADAPTERS_BUF_MAX     =                   1024
 
     ; client data
-    Client.State                dd                  ?
+    Client.State                dd                  CLIENT_STATE_OFFLINE
     Client.BufferSend           dd                  ?
     Client.BufferRecv           dd                  ?
 
