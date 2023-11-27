@@ -23,6 +23,31 @@ proc Init uses esi edi ebx
 
     invoke  wglCreateContext, [hdc]
     invoke  wglMakeCurrent, [hdc], eax 
+ 
+    ; Init opengl
+    stdcall Init.OpenGL
+    
+    ; Init game data
+    stdcall Init.GameData
+
+	; Init client for multiplaying
+    stdcall Client.Init
+
+    ret
+endp
+
+proc Init.GameData
+
+    stdcall Camera.Constructor, freeCamera, [clientRect.right], [clientRect.bottom], cameraPosition
+
+    stdcall malloc, sizeof.Player
+    mov  	[mainPlayer], eax
+    stdcall Player.Constructor, eax, [clientRect.right], [clientRect.bottom], cameraPosition
+
+    ret
+endp
+
+proc Init.OpenGL 
 
     invoke  glEnable, GL_DEPTH_TEST
     invoke  glEnable, GL_LIGHTING
@@ -120,12 +145,8 @@ proc Init uses esi edi ebx
     stdcall VAO.Unbind
     stdcall EBO.Unbind
 
-    stdcall Camera.Constructor, freeCamera, [clientRect.right], [clientRect.bottom], cameraPosition
-    stdcall Player.Constructor, mainPlayer, [clientRect.right], [clientRect.bottom], cameraPosition
-
     ret
 endp
-
 
         lightFragmentFile       db              "resources/shaders/light.frag", 0
         lightVertexFile         db              "resources/shaders/light.vert", 0

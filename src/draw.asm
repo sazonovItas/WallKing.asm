@@ -21,17 +21,18 @@ proc Draw.Scene uses esi edi
         fild    [timeBetweenChecking]
         fstp    [timeBetweenChecking]
 
-        stdcall Player.Update, mainPlayer, [timeBetweenChecking], [sizeBlocksMapTry], blocksMapTry
-        stdcall Player.UpdateVelocity, mainPlayer, [sizeBlocksMapTry], blocksMapTry
+        stdcall Player.Update, [mainPlayer], [timeBetweenChecking], [sizeBlocksMapTry], blocksMapTry
+        stdcall Player.UpdateVelocity, [mainPlayer], [sizeBlocksMapTry], blocksMapTry
 
         mov     eax, [currentFrame]
         mov     [time], eax
 
 .Skip: 
 
-        stdcall Camera.Matrix, mainPlayer
+        stdcall Camera.Matrix, [mainPlayer]
 
-        invoke  glViewport, 0, 0, [mainPlayer.camera + Camera.width], [mainPlayer.camera + Camera.height]
+        mov     edi, [mainPlayer]
+        invoke  glViewport, 0, 0, [edi + Player.camera + Camera.width], [edi + Player.camera + Camera.height]
         invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
         invoke  glClearColor, 0.22, 0.22, 0.22
 
@@ -40,7 +41,7 @@ proc Draw.Scene uses esi edi
         ; light draw
         stdcall Shader.Activate, [lightShader.ID]
 
-        stdcall Camera.UniformBind, mainPlayer, [lightShader.ID], uniProjName, uniViewName
+        stdcall Camera.UniformBind, [mainPlayer], [lightShader.ID], uniProjName, uniViewName
 
         invoke  glPushMatrix
                 invoke  glLoadIdentity
@@ -48,7 +49,6 @@ proc Draw.Scene uses esi edi
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
         invoke  glGetUniformLocation, [lightShader.ID], uniModelName
-        ; mov     [uniModel], eax
         invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
 
         invoke  glGetUniformLocation, [lightShader.ID], uniLightColorName
@@ -58,74 +58,11 @@ proc Draw.Scene uses esi edi
         invoke  glDrawElements, GL_TRIANGLES, countLightIndices, GL_UNSIGNED_INT, 0
         stdcall VAO.Unbind
 
-        ; ; camera draw
-        ; mov     edi, mainPlayer
-        ; stdcall Shader.Activate, [lightShader.ID]
 
-        ; stdcall Camera.UniformBind, mainPlayer, [lightShader.ID], uniProjName, uniViewName
-
-        ; invoke  glPushMatrix
-        ;         invoke  glLoadIdentity
-        ;         invoke  glTranslatef, [edi + Player.camera + Camera.camPosition + Vector3.x],\
-        ;                          [edi + Player.camera + Camera.camPosition + Vector3.y], [edi + Player.camera + Camera.camPosition + Vector3.z]
-        ;         invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
-        ; invoke  glPopMatrix
-        ; invoke  glGetUniformLocation, [lightShader.ID], uniModelName
-        ; ; mov     [uniModel], eax
-        ; invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
-
-        ; invoke  glGetUniformLocation, [lightShader.ID], uniLightColorName
-        ; invoke  glUniform4f, eax, [lightColor.r], [lightColor.g], [lightColor.b], [lightColor.a]
-
-        ; stdcall VAO.Bind, [lightVAO.ID]
-        ; invoke  glDrawElements, GL_TRIANGLES, countLightIndices, GL_UNSIGNED_INT, 0
-        ; stdcall VAO.Unbind
-
-        ; draw player
-        stdcall Shader.Activate, [exampleShader.ID]
-
-        stdcall Camera.UniformBind, mainPlayer, [exampleShader.ID], uniProjName, uniViewName
-        lea     esi, [arrTextures]
-        add     esi, 8
-        stdcall Texture.Bind, GL_TEXTURE_2D, dword [esi], GL_TEXTURE0
-        stdcall Texture.texUnit, [exampleShader.ID], uniTex0Name, GL_TEXTURE0
-
-        lea     edi, [mainPlayer]
-
-        invoke  glPushMatrix
-                invoke  glLoadIdentity
-                invoke  glTranslatef, [edi + Player.Position + Vector3.x], [edi + Player.Position + Vector3.y], [edi + Player.Position + Vector3.z]
-                fld     [edi + Player.x_angle]
-                fmul    [radian]
-                fstp    [rotAngle]
-                invoke  glRotatef, dword [rotAngle], 1.0, 0.0, 0.0
-                fld     [edi + Player.y_angle]
-                fmul    [radian]
-                fstp    [rotAngle]
-                invoke  glRotatef, [rotAngle], 0.0, 1.0, 0.0
-                fld     [edi + Player.z_angle]
-                fmul    [radian]
-                fstp    [rotAngle]
-                invoke  glRotatef, [rotAngle], 0.0, 0.0, 1.0
-                invoke  glScalef, [edi + Player.sizeBlockDraw], [edi + Player.sizeBlockDraw], [edi + Player.sizeBlockDraw]
-                invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
-        invoke  glPopMatrix
-        invoke  glGetUniformLocation, [exampleShader.ID], uniModelName
-        invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
-
-        invoke  glGetUniformLocation, [exampleShader.ID], uniLightColorName
-        invoke  glUniform4f, eax, [lightColor.r], [lightColor.g], [lightColor.b], [lightColor.a]
-
-        invoke  glGetUniformLocation, [exampleShader.ID], uniLightPosName
-        invoke  glUniform3f, eax, [lightPos.x], [lightPos.y], [lightPos.z]
-
-        lea     edi, [mainPlayer]
-        invoke  glGetUniformLocation, [exampleShader.ID], uniCamPosName
-        invoke  glUniform3f, eax, [edi + Camera.camPosition + Vector3.x], [edi + Camera.camPosition + Vector3.y], [edi + Camera.camPosition + Vector3.z]
-
-        stdcall VAO.Bind, [VAO1.ID]       
-        invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
-        stdcall VAO.Unbind
+        mov     edi, [mainPlayer]
+        mov     esi, edi 
+        add     esi, Player.DrawPlayer
+        stdcall Player.Draw, edi, esi, [exampleShader.ID]
 
         stdcall Draw.ConPlayers, drawBuf
 
@@ -136,23 +73,17 @@ proc Draw.ConPlayers uses edi esi ebx,\
         buf
 
         locals
-                bufToDraw               db              256 dup(0)
+                bufToDraw               db              MESSAGE_SIZE dup(0)
         endl
 
-        .waitForMutex:
-
+        ; Lock mutex go draw players
         invoke WaitForSingleObject, [Client.MutexDrawBuf], INFINITY
-
-        cmp     eax, 0
-        jne     .waitForMutex
-
         lea     ebx, [bufToDraw]
-        stdcall memcpy, ebx, [buf], 256
+        stdcall memcpy, ebx, [buf], MESSAGE_SIZE
         invoke  ReleaseMutex, [Client.MutexDrawBuf]
 
         mov     edi, ebx
-        add     edi, 16
-
+        add     edi, 14
         mov     ecx, dword [edi]
         jcxz    .Ret
 
@@ -182,7 +113,7 @@ proc Draw.ConPlayer uses edi esi ebx,\
 
         stdcall Shader.Activate, [exampleShader.ID]
 
-        stdcall Camera.UniformBind, mainPlayer, [exampleShader.ID], uniProjName, uniViewName
+        stdcall Camera.UniformBind, [mainPlayer], [exampleShader.ID], uniProjName, uniViewName
         lea     esi, [arrTextures]
         add     esi, 8
         stdcall Texture.Bind, GL_TEXTURE_2D, dword [esi], GL_TEXTURE0
@@ -217,7 +148,7 @@ proc Draw.ConPlayer uses edi esi ebx,\
         invoke  glGetUniformLocation, [exampleShader.ID], uniLightPosName
         invoke  glUniform3f, eax, [lightPos.x], [lightPos.y], [lightPos.z]
 
-        lea     edi, [mainPlayer]
+        mov     edi, [mainPlayer]
         invoke  glGetUniformLocation, [exampleShader.ID], uniCamPosName
         invoke  glUniform3f, eax, [edi + Camera.camPosition + Vector3.x], [edi + Camera.camPosition + Vector3.y], [edi + Camera.camPosition + Vector3.z]
 
@@ -260,7 +191,7 @@ proc Draw.Block uses edi esi,\
         ; block drawing
         stdcall Shader.Activate, [exampleShader.ID]
 
-        stdcall Camera.UniformBind, mainPlayer, [exampleShader.ID], uniProjName, uniViewName
+        stdcall Camera.UniformBind, [mainPlayer], [exampleShader.ID], uniProjName, uniViewName
 
         lea     esi, [arrTextures]
         add     esi, [edi + texOffset]

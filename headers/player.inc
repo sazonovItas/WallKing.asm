@@ -1,3 +1,11 @@
+struct DrawData
+    lock        dd          ?
+    Position    Vector3     ?
+    Angles      Vector3     ?
+    Scale       Vector3     ?
+    TexId       dd          ?
+ends
+
 struct Player
 
     ; Camera
@@ -6,21 +14,25 @@ struct Player
     ; Different types movement velocity 
     speed           GLfloat         ?
 
+    ; radius for dodging textures by camera
     chasingRadius   GLfloat         ?
     maxCamRadius    GLfloat         ?
     minCamRadius    GLfloat         ?
     curCamRadius    GLfloat         ?
 
+    ; camera velocity
     camTexture      Easing          ?
     camTextureVel   GLfloat         ?
 
+    ; collision size
     sizeBlockCol    GLfloat         ?
 
-    ; Draw 
+    ; Size for draws
     sizeBlockDraw   GLfloat         ?
-    x_angle         GLfloat         ?
-    y_angle         GLfloat         ?
-    z_angle         GLfloat         ?
+    XYZangles       Vector3         ?
+
+    ; Draw 
+    DrawPlayer      DrawData        ?
 
     ; Physics
     Position        Vector3         ?

@@ -108,7 +108,9 @@
         drawBuf                 db              256 dup(0)
 
         freeCamera              Camera 
-        mainPlayer              Player 
+
+        mainPlayer              dd              ? 
+
         lastFrame               dd              ?
         deltaTime               dd              ?
 
@@ -127,12 +129,6 @@ proc WinMain
         invoke  GetTickCount
         mov     [time], eax 
         mov     [lastFrame], eax
-
-        invoke  CreateMutex, NULL, 0, NULL
-        mov     [Client.MutexDrawBuf], eax
-
-        lea     esi, [threadId]
-        invoke  CreateThread, NULL, 0, Client.Start, drawBuf, 0, esi
 
         lea     esi, [msg]
 
@@ -188,12 +184,13 @@ proc WindowProc uses ebx,\
 .KeysManipulateUp:
 
         stdcall Player.KeyUp, [wParam], [lParam]
+        stdcall Client.KeyUp, [wParam], [lParam]
 
         jmp     .ReturnZero
 
 .MouseManipulate:
 
-        stdcall Player.InputsMouse, mainPlayer, [uMsg], [wParam], [lParam]
+        stdcall Player.InputsMouse, [mainPlayer], [uMsg], [wParam], [lParam]
 
         .SkipMouse:
                 jmp     .ReturnZero

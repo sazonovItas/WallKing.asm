@@ -214,13 +214,40 @@ proc Player.Constructor uses edi,\
 
     ; draw things
     mov     [edi + Player.sizeBlockDraw], 0.4
-    mov     [edi + Player.x_angle], 0.0
-    mov     [edi + Player.y_angle], 0.0
-    mov     [edi + Player.z_angle], 0.0
-
+    mov     [edi + Player.XYZangles + Vector3.x], 0.0
+    mov     [edi + Player.XYZangles + Vector3.y], 0.0
+    mov     [edi + Player.XYZangles + Vector3.z], 0.0
 
     mov     [edi + Player.slideNewJump], true
     mov     [edi + Player.slideDirJump], NO_DIR
+
+    ; draw Player structure
+    ; create mutex for other thread
+    invoke  CreateMutex, NULL, 0, NULL
+    mov     [edi + Player.DrawPlayer + DrawData.lock], eax
+
+    ; copy position to draw position
+    push    edi
+    add     edi, (Player.DrawPlayer + DrawData.Position)
+    stdcall Vector3.Copy, edi, [pPosition] 
+    pop     edi
+
+    ; angles to zero
+    push    edi
+    add     edi, (Player.DrawPlayer + DrawData.Angles)
+    stdcall memzero, edi, sizeof.Vector3
+    pop     edi
+
+    ; draw scale
+    mov     eax, [edi + Player.sizeBlockDraw]
+    mov     [edi + Player.DrawPlayer + DrawData.Scale + Vector3.x], eax
+    mov     [edi + Player.DrawPlayer + DrawData.Scale + Vector3.y], eax
+    mov     [edi + Player.DrawPlayer + DrawData.Scale + Vector3.z], eax
+
+    ; draw tex id
+    lea     esi, [arrTextures]
+    mov     eax, 8
+    mov     [edi + Player.DrawPlayer + DrawData.TexId], eax
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
@@ -273,6 +300,95 @@ proc Player.Update uses edi esi ebx,\
 
     ; update draw angles
     stdcall Player.UpdateDrawAngles, [pPlayer], [dt]
+
+    stdcall Player.UpdateDrawData, [pPlayer]
+
+    ret
+endp
+
+proc Player.UpdateDrawData uses edi esi,\
+    pPlayer
+
+    mov     edi, [pPlayer]
+    mov     esi, edi
+    add     esi, Player.DrawPlayer
+
+    invoke  WaitForSingleObject, [esi + DrawData.lock], INFINITY
+
+    push    edi
+    push    esi
+    add     edi, Player.Position
+    add     esi, DrawData.Position
+    stdcall Vector3.Copy, esi, edi
+    pop     esi
+    pop     edi
+
+    push    edi
+    push    esi
+    add     edi, Player.XYZangles
+    add     esi, DrawData.Angles
+    stdcall Vector3.Copy, esi, edi
+    pop     esi
+    pop     edi
+
+    invoke  ReleaseMutex, [esi + DrawData.lock]
+
+    ret
+endp
+
+proc Player.Draw uses edi esi,\
+    pPlayer, pDrawData, ShaderId
+
+    locals
+        rotAngle        dd          0.0
+    endl
+
+    stdcall Shader.Activate, [ShaderId]
+
+    stdcall Camera.UniformBind, [pPlayer], [ShaderId], uniProjName, uniViewName
+
+    mov     edi, [pDrawData]
+
+    lea     esi, [arrTextures]
+    add     esi, [edi + DrawData.TexId]
+    stdcall Texture.Bind, GL_TEXTURE_2D, dword [esi], GL_TEXTURE0
+    stdcall Texture.texUnit, [ShaderId], uniTex0Name, GL_TEXTURE0
+
+    invoke  glPushMatrix
+            invoke  glLoadIdentity
+            invoke  glTranslatef, [edi + DrawData.Position + Vector3.x], [edi + DrawData.Position + Vector3.y], [edi + DrawData.Position + Vector3.z]
+            fld     [edi + DrawData.Angles + Vector3.x]
+            fmul    [radian]
+            fstp    [rotAngle]
+            invoke  glRotatef, dword [rotAngle], 1.0, 0.0, 0.0
+            fld     [edi + DrawData.Angles + Vector3.y]
+            fmul    [radian]
+            fstp    [rotAngle]
+            invoke  glRotatef, [rotAngle], 0.0, 1.0, 0.0
+            fld     [edi + DrawData.Angles + Vector3.z]
+            fmul    [radian]
+            fstp    [rotAngle]
+            invoke  glRotatef, [rotAngle], 0.0, 0.0, 1.0
+            invoke  glScalef, [edi + DrawData.Scale + Vector3.x], [edi + DrawData.Scale + Vector3.y], [edi + DrawData.Scale + Vector3.z]
+            invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
+    invoke  glPopMatrix
+    invoke  glGetUniformLocation, [ShaderId], uniModelName
+    invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
+
+    invoke  glGetUniformLocation, [ShaderId], uniLightColorName
+    invoke  glUniform4f, eax, [lightColor.r], [lightColor.g], [lightColor.b], [lightColor.a]
+
+    invoke  glGetUniformLocation, [ShaderId], uniLightPosName
+    invoke  glUniform3f, eax, [lightPos.x], [lightPos.y], [lightPos.z]
+
+    mov     edi, [pPlayer]
+    invoke  glGetUniformLocation, [ShaderId], uniCamPosName
+    invoke  glUniform3f, eax, [edi + Camera.camPosition + Vector3.x], [edi + Camera.camPosition + Vector3.y], [edi + Camera.camPosition + Vector3.z]
+
+    stdcall VAO.Bind, [VAO1.ID]       
+    invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
+    stdcall VAO.Unbind
+
 
     ret
 endp
@@ -631,28 +747,97 @@ endp
 proc Player.UpdateDrawAngles uses edi,\
     pPlayer, dt
 
+    locals
+        minAngle        dd      -6.28
+        maxAngle        dd      6.28
+    endl
+
     mov     edi, [pPlayer]
 
     ; X
     fld     [edi + Player.Velocity + Vector3.x]
     fmul    [dt]
-    fadd    [edi + Player.x_angle]
-    fstp    [edi + Player.x_angle]
+    fadd    [edi + Player.XYZangles + Vector3.x]
+
+    fcom    [minAngle]
+    fstsw   ax
+    sahf
+    ja      @F
+
+    fadd    [maxAngle]
+
+    @@:
+
+    fcom    [maxAngle]
+    fstsw   ax
+    sahf
+    jb      @F
+
+    fadd    [minAngle]
+
+    @@:
+
+    fstp    [edi + Player.XYZangles + Vector3.x]
 
     ; Y
     fld     [edi + Player.Velocity + Vector3.y]
     fmul    [dt]
-    fadd    [edi + Player.y_angle]
-    fstp    [edi + Player.y_angle]
+    fadd    [edi + Player.XYZangles + Vector3.y]
+
+    fcom    [minAngle]
+    fstsw   ax
+    sahf
+    ja      @F
+
+    fadd    [maxAngle]
+
+    @@:
+
+    fcom    [maxAngle]
+    fstsw   ax
+    sahf
+    jb      @F
+
+    fadd    [minAngle]
+
+    @@:
+
+    fstp    [edi + Player.XYZangles + Vector3.y]
 
     ; Z
     fld     [edi + Player.Velocity + Vector3.z]
     fmul    [dt]
-    fadd    [edi + Player.z_angle]
-    fstp    [edi + Player.z_angle]
+    fadd    [edi + Player.XYZangles + Vector3.z]
+
+    fcom    [minAngle]
+    fstsw   ax
+    sahf
+    ja      @F
+
+    fadd    [maxAngle]
+
+    @@:
+
+    fcom    [maxAngle]
+    fstsw   ax
+    sahf
+    jb      @F
+
+    fadd    [minAngle]
+
+    @@:
+
+    fstp    [edi + Player.XYZangles + Vector3.z]
 
     ret
 endp
+
+proc Player.NormAngles 
+
+.Ret
+    ret
+endp
+
 proc Player.UpdateAniOrinVecs uses edi esi ebx,\
     pPlayer
 

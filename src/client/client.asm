@@ -1,131 +1,3 @@
-proc Client.Start uses edi esi ebx,\
-    data
-
-    locals 
-        text            db              "WallKing", 0
-        name            db              "Alex", 0
-        server_ip       db              "192.168.1.255", 0
-        ; server_ip       db              "192.168.115.255", 0
-        ; server_ip       db              "127.0.0.1", 0
-        iResult         dd              ?
-        wsaData         WSADATA         ?
-        SendSocket      dd              -1
-        SendAddr        sockaddr_in     ?
-        SendAddrLen     dd              ?
-        RecvAddr        sockaddr_in     ?
-        RecvAddrLen     dd              ?
-        ServerAddr      sockaddr_in     ?
-        ServerAddrLen   dd              ?
-        buf             db              256 dup(0)
-        recvBuf         db              256 dup(0)
-    endl
-
-    stdcall Client.Init
-
-    lea     edi, [buf]
-    mov     dword [edi], 256
-    add     edi, 4
-
-    lea     ebx, [text]
-    stdcall memcpy, edi, ebx, 8
-    add     edi, 8
-
-    mov     dword [edi], 1
-    add     edi, 4
-
-    lea     ebx, [name]
-    stdcall memcpy, edi, ebx, 4
-
-    lea     edi, [RecvAddr]
-    mov     [edi + sockaddr_in.sin_family], AF_INET
-
-    invoke  htons, 8829
-    mov     [edi + sockaddr_in.sin_port], ax
-
-    lea     ebx, [server_ip]
-    invoke  inet_addr, ebx
-    mov     [edi + sockaddr_in.sin_addr], eax
-
-    lea     edi, [buf]
-    lea     ebx, [RecvAddr]
-    stdcall Client.Broadcast, edi, 256
-
-    lea     edi, [recvBuf]
-    lea     esi, [ServerAddr]
-    lea     ebx, [ServerAddrLen]
-    mov     dword [ebx], sizeof.sockaddr_in
-    invoke  recvfrom, [Client.Socket], edi, 256, 0, esi, ebx
-    cmp     eax, -1
-    je     .Ret
-
-    .cycle:
-
-        lea     edi, [buf]
-        add     edi, 12
-        mov     dword [edi], 0
-        add     edi, 4
-        mov     dword [edi], 1000
-        add     edi, 4
-
-        lea     edi, [buf]
-        add     edi, 20
-        mov     esi, mainPlayer
-
-        ; Copy Position
-        push    esi
-        add     esi, Player.Position
-        stdcall Vector3.Copy, edi, esi
-        pop     esi
-        add     edi, sizeof.Vector3
-
-        ; Copy angles
-        push    esi
-        add     esi, Player.x_angle
-        stdcall Vector3.Copy, edi, esi
-        pop     esi
-        add     edi, sizeof.Vector3
-
-        push    esi
-        add     esi, Player.sizeBlockDraw
-        mov     edx, dword [esi]
-        mov     dword [edi], edx
-        mov     dword [edi + 4], edx
-        mov     dword [edi + 8], edx
-        pop     esi
-        add     edi, sizeof.Vector3
-
-        mov     dword [edi], 8
-
-        lea     edi, [buf]
-        lea     ebx, [ServerAddr]
-        invoke  sendto, [Client.Socket], edi, 256, 0, ebx, sizeof.sockaddr_in
-        cmp     eax, -1
-        je      .cycle
-
-        lea     edi, [recvBuf]
-        lea     esi, [RecvAddr]
-        lea     ebx, [RecvAddrLen]
-        mov     dword [ebx], sizeof.sockaddr_in
-        invoke  recvfrom, [Client.Socket], edi, 256, 0, esi, ebx
-        cmp     eax, -1
-        je     .cycle
-
-        .waitForMutex:
-
-        invoke  WaitForSingleObject, [Client.MutexDrawBuf], INFINITY
-
-        cmp     eax, 0
-        jne     .waitForMutex
-
-        stdcall memcpy, [data], edi, 256
-        invoke  ReleaseMutex, [Client.MutexDrawBuf]
-
-        jmp     .cycle
-    
-.Ret:
-    ret
-endp
-
 proc Client.Broadcast uses edi esi ebx,\
     pMsg, msgSz
 
@@ -179,14 +51,34 @@ proc Client.Init uses ebx edi esi
     mov     ax, SERVER_PORT
     xchg    ah, al
 
-    ;       
+    ; Setup broadcast socket
     mov     [Client.Broadcast_addr + sockaddr_in.sin_family], AF_INET
     mov     [Client.Broadcast_addr + sockaddr_in.sin_port], ax
+    mov     dword [Client.Broadcast_addr + sockaddr_in.sin_addr], not 0
+
+    ; Recv Addr
+    mov     [Client.Recv_addr + sockaddr_in.sin_family], AF_INET
+    mov     [Client.Recv_addr + sockaddr_in.sin_port], ax
+    mov     dword [Client.Recv_addr + sockaddr_in.sin_addr], 0
 
     ; Get table of addresses
     invoke  GetIpAddrTable, Client.IPAddrTableBuf, Client.dIPAddrTableSz, NULL
     test    eax, eax
     jnz     .Error
+
+    ; create mutex for recv data
+    invoke  CreateMutex, NULL, 0, NULL
+    mov     [Client.MutexDrawBuf], eax
+
+    ; Create thread for send message
+    invoke  CreateThread, NULL, 0, Client.ThSend, NULL, 0, Client.ThSendId
+    test    eax, eax
+    jz      .Error
+
+    ; Create thread for recv message
+    invoke  CreateThread, NULL, 0, Client.ThRecv, NULL, 0, Client.ThRecvId
+    test    eax, eax
+    jz      .Error
 
     jmp     .Exit
 
@@ -194,7 +86,8 @@ proc Client.Init uses ebx edi esi
     mov     [Client.State], CLIENT_STATE_OFFLINE
     invoke  closesocket, ebx
     invoke  WSACleanup
-    xor     eax, eax
+    mov     [Client.ThStopSd], true
+    mov     [Client.ThStopRv], true
     jmp     .Ret
 
 .Exit:
@@ -204,13 +97,239 @@ proc Client.Init uses ebx edi esi
     ret
 endp
 
-proc Client.ThSend 
+
+proc Client.ThSend,\
+    data
+
+.HandleState:
+
+    cmp     [Client.ThStopSd], true
+    je      .Ret
+
+    mov     eax, [Client.State]
+    JumpIf  CLIENT_STATE_ONLINE,    .OnlineState
+    JumpIf  CLIENT_STATE_REQUEST,   .RequestState
+    JumpIf  CLIENT_STATE_ACCEPT,    .AcceptState
+
+    jmp     .HandleState
+
+    .OnlineState:
+
+
+        jmp     .HandleState
+
+    .RequestState:
+
+        stdcall Client.RequestMessage, Client.BufferSend
+        stdcall Client.Broadcast, Client.BufferSend, MESSAGE_SIZE
+
+        invoke  Sleep, Client.RequestTimeout
+
+        jmp     .HandleState 
+
+    .AcceptState:
+
+        stdcall Client.AcceptMessage, Client.BufferSend
+        invoke sendto, [Client.Socket], Client.BufferSend, MESSAGE_SIZE, 0,\
+                Client.Server_addr, sizeof.sockaddr_in
+
+        invoke Sleep, Client.AcceptSendTimeout 
+
+        cmp     eax, SOCKET_ERROR
+        je      .ErrorMsg
+
+        jmp     .HandleState
+
+    .ErrorMsg:
+
+        jmp     .HandleState
+
 
 .Ret:
     ret
 endp
 
-proc Client.ThRecv
+proc Client.RequestMessage uses edi,\
+    pBuf
+
+    mov     edi, [pBuf]
+
+    stdcall memzero, edi, MESSAGE_SIZE
+
+    ; Check sum
+    mov     word [edi], MESSAGE_SIZE
+    add     edi, 2
+
+    stdcall memcpy, edi, Client.CheckMsgTitle, 8
+    add     edi, 8
+
+    mov     byte [edi], CLIENT_PL_JOIN
+
+    ret
+endp
+
+proc Client.AcceptMessage uses edi,\
+    pBuf
+
+    mov     edi, [pBuf]
+
+    stdcall memzero, edi, MESSAGE_SIZE
+
+    ; Check sum
+    mov     word [edi], MESSAGE_SIZE
+    add     edi, 2
+
+    ; Standart title
+    stdcall memcpy, edi, Client.CheckMsgTitle, 8
+    add     edi, 8
+
+    ; State of the player
+    mov     byte [edi], CLIENT_PL_UPDATE
+    add     edi, 1
+
+    ; Send player uptime
+    mov     eax, [Client.Uptime]
+    mov     dword [edi], eax
+    add     edi, 4
+
+    ; Copy draw Data
+    mov     esi, [mainPlayer]
+    add     esi, Player.DrawPlayer
+
+    invoke WaitForSingleObject, [esi + DrawData.lock], INFINITY
+    ; Copy Position
+    push    esi
+    add     esi, DrawData.Position
+    stdcall memcpy, edi, esi, sizeof.Vector3
+    pop     esi
+
+    ; Copy Angles
+    add     edi, sizeof.Vector3
+    push    esi
+    add     esi, DrawData.Angles
+    stdcall memcpy, edi, esi, sizeof.Vector3
+    pop     esi
+    add     edi, sizeof.Vector3
+
+    ; Copy scales
+    push    esi
+    add     esi, DrawData.Scale
+    stdcall memcpy, edi, esi, sizeof.Vector3
+    pop     esi
+    add     edi, sizeof.Vector3
+
+    ; Copy Textures
+    push    esi
+    add     esi, DrawData.TexId
+    mov     eax, dword [esi]
+    mov     dword [edi], eax
+    pop     esi
+    invoke ReleaseMutex, [esi + DrawData.lock]
+
+    ret
+endp
+
+proc Client.ThRecv uses edi,\
+    data
+
+    locals
+        len         dd      sizeof.sockaddr_in
+    endl
+
+.HandleState:
+
+    cmp     [Client.ThStopRv], true
+    je      .Ret
+
+    mov     eax, [Client.State]
+    JumpIf  CLIENT_STATE_ONLINE,    .OnlineState
+    JumpIf  CLIENT_STATE_REQUEST,   .RequestState
+    JumpIf  CLIENT_STATE_ACCEPT,    .AcceptState
+
+    jmp     .HandleState
+
+    .OnlineState:
+
+        jmp     .HandleState
+
+    .RequestState:
+
+        lea     edi, [len]
+        invoke  recvfrom, [Client.Socket], Client.BufferRecv, MESSAGE_SIZE, 0x0,\ 
+                Client.Recv_addr, edi
+
+        cmp     eax, SOCKET_ERROR
+        je      .ErrorMsg
+
+        cmp     eax, MESSAGE_SIZE
+        jne     .ErrorMsg
+
+        ; TODO: add normal checking message
+
+        stdcall Client.CheckRequestMessage, Client.BufferRecv
+
+        stdcall memcpy, Client.Server_addr, Client.Recv_addr, sizeof.sockaddr_in
+        mov     [Client.State], CLIENT_STATE_ACCEPT
+
+        jmp     .HandleState
+
+    .AcceptState:
+
+        lea     edi, [len]
+
+        lea     edi, [len]
+        invoke  recvfrom, [Client.Socket], Client.BufferRecv, MESSAGE_SIZE, 0x0,\ 
+                Client.Recv_addr, edi
+
+        cmp     eax, SOCKET_ERROR
+        je      .ErrorMsg
+
+        cmp     eax, MESSAGE_SIZE
+        jne     .ErrorMsg
+
+        mov     eax, [Client.Recv_addr + sockaddr_in.sin_addr]
+        cmp     eax, [Client.Server_addr + sockaddr_in.sin_addr]
+        jne     .ErrorMsg
+
+        mov     ax, [Client.Recv_addr + sockaddr_in.sin_port]
+        cmp     ax, [Client.Server_addr + sockaddr_in.sin_port]
+        jne     .ErrorMsg
+
+        ; TODO: add normal checking message
+
+        invoke  WaitForSingleObject, [Client.MutexDrawBuf], INFINITY
+        stdcall memcpy, drawBuf, Client.BufferRecv, MESSAGE_SIZE
+        invoke  ReleaseMutex, [Client.MutexDrawBuf]
+
+        jmp     .HandleState
+
+    .ErrorMsg:
+
+        jmp     .HandleState
+
+.Ret:
+    ret
+endp
+
+proc Client.CheckRequestMessage uses edi,\
+    pBuf
+    
+    mov     edi, [pBuf]    
+
+    cmp     word [edi], 512
+    jne     .Error
+
+    add     edi, 10
+    mov     ax, word [edi]
+    cmp     ax, 200
+    jne     .Error
+
+.Error:
+    mov     eax, false
+    jmp     .Ret
+
+.Exit:
+    mov     eax, true
 
 .Ret:
     ret
@@ -230,5 +349,27 @@ proc Client.Destroy
     invoke  WSACleanup
 
 @@:
+    ret
+endp
+
+proc Client.KeyDown\
+    wParam, lParam
+
+    ret
+endp
+
+proc Client.KeyUp\
+    wParam, lParam
+
+    cmp     [wParam] , CLIENT_RECONNECT_KEY
+    jne     @F
+
+    mov     [Client.State], CLIENT_STATE_REQUEST
+    jmp     .SkipUp
+
+    @@:
+
+    .SkipUp:
+
     ret
 endp
