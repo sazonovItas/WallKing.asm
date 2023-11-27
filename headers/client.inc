@@ -19,7 +19,8 @@
     CLIENT_STATE_REQUEST        =                   0000_0100b
     CLIENT_STATE_ACCEPT         =                   0000_1000b
 
-    CLIENT_RECONNECT_KEY        =                   'R'
+    ; Keys for client
+    CLIENT_RECONNECT_KEY        =                   'C'
 
     CLIENT_ADAPTERS_BUF_MAX     =                   1024
 
@@ -56,7 +57,7 @@
     Client.RequestOk            =                   200
     Client.RequestError         =                   0  
 
-    Client.AcceptSendTimeout    =                   15
+    Client.AcceptSendTimeout    =                   8
 
     ; Checking message
     Client.CheckMsgTitle        db              "WallKing", 0
