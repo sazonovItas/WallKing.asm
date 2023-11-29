@@ -27,8 +27,8 @@
     ; client data
     Client.State                dd                  CLIENT_STATE_OFFLINE
 
-    Client.BufferSend           db                  MESSAGE_SIZE dup(0)
-    Client.BufferRecv           db                  MESSAGE_SIZE dup(0)
+    Client.BufferSend           dd                  NULL
+    Client.BufferRecv           dd                  NULL
 
     Client.Uptime               dd                  0
     Client.CntPlayers           dd                  0

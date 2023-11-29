@@ -66,6 +66,19 @@ proc Client.Init uses ebx edi esi
     test    eax, eax
     jnz     .Error
 
+    ; Create buffer for recieving and sending messages
+    stdcall malloc, MESSAGE_SIZE
+    cmp     eax, NULL
+    je      .Error
+
+    mov     [Client.BufferSend], eax
+
+    stdcall malloc, MESSAGE_SIZE
+    cmp     eax, NULL
+    je      .Error
+
+    mov     [Client.BufferRecv], eax
+
     ; create mutex for recv data
     invoke  CreateMutex, NULL, 0, NULL
     mov     [Client.MutexDrawBuf], eax
@@ -120,8 +133,8 @@ proc Client.ThSend,\
 
     .RequestState:
 
-        stdcall Client.RequestMessage, Client.BufferSend
-        stdcall Client.Broadcast, Client.BufferSend, MESSAGE_SIZE
+        stdcall Client.RequestMessage, [Client.BufferSend]
+        stdcall Client.Broadcast, [Client.BufferSend], MESSAGE_SIZE
 
         invoke  Sleep, Client.RequestTimeout
 
@@ -129,8 +142,8 @@ proc Client.ThSend,\
 
     .AcceptState:
 
-        stdcall Client.AcceptMessage, Client.BufferSend
-        invoke sendto, [Client.Socket], Client.BufferSend, MESSAGE_SIZE, 0,\
+        stdcall Client.AcceptMessage, [Client.BufferSend]
+        invoke sendto, [Client.Socket], [Client.BufferSend], MESSAGE_SIZE, 0,\
                 Client.Server_addr, sizeof.sockaddr_in
 
         invoke Sleep, Client.AcceptSendTimeout 
@@ -255,7 +268,7 @@ proc Client.ThRecv uses edi,\
     .RequestState:
 
         lea     edi, [len]
-        invoke  recvfrom, [Client.Socket], Client.BufferRecv, MESSAGE_SIZE, 0x0,\ 
+        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, 0x0,\ 
                 Client.Recv_addr, edi
 
         cmp     eax, SOCKET_ERROR
@@ -264,9 +277,10 @@ proc Client.ThRecv uses edi,\
         cmp     eax, MESSAGE_SIZE
         jne     .ErrorMsg
 
-        ; TODO: add normal checking message
+        stdcall Client.CheckRequestMessage, [Client.BufferRecv]
 
-        stdcall Client.CheckRequestMessage, Client.BufferRecv
+        cmp     eax, true
+        jne     .ErrorMsg
 
         stdcall memcpy, Client.Server_addr, Client.Recv_addr, sizeof.sockaddr_in
         mov     [Client.State], CLIENT_STATE_ACCEPT
@@ -278,7 +292,7 @@ proc Client.ThRecv uses edi,\
         lea     edi, [len]
 
         lea     edi, [len]
-        invoke  recvfrom, [Client.Socket], Client.BufferRecv, MESSAGE_SIZE, 0x0,\ 
+        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, 0x0,\ 
                 Client.Recv_addr, edi
 
         cmp     eax, SOCKET_ERROR
@@ -295,10 +309,14 @@ proc Client.ThRecv uses edi,\
         cmp     ax, [Client.Server_addr + sockaddr_in.sin_port]
         jne     .ErrorMsg
 
-        ; TODO: add normal checking message
+        ; check message for correctness
+        stdcall Client.CheckAcceptMessage, [Client.BufferRecv]
+
+        cmp     eax, true
+        jne     .ErrorMsg
 
         invoke  WaitForSingleObject, [Client.MutexDrawBuf], INFINITY
-        stdcall memcpy, drawBuf, Client.BufferRecv, MESSAGE_SIZE
+        stdcall memcpy, drawBuf, [Client.BufferRecv], MESSAGE_SIZE
         invoke  ReleaseMutex, [Client.MutexDrawBuf]
 
         jmp     .HandleState
@@ -316,13 +334,79 @@ proc Client.CheckRequestMessage uses edi,\
     
     mov     edi, [pBuf]    
 
-    cmp     word [edi], 512
+    cmp     word [edi], MESSAGE_SIZE
+    jne     .Error
+
+    cmp     byte [edi + 2], 'W'
+    jne     .Error
+    cmp     byte [edi + 3], 'a'
+    jne     .Error
+    cmp     byte [edi + 4], 'l'
+    jne     .Error
+    cmp     byte [edi + 5], 'l'
+    jne     .Error
+    cmp     byte [edi + 6], 'K'
+    jne     .Error
+    cmp     byte [edi + 7], 'i'
+    jne     .Error
+    cmp     byte [edi + 8], 'n'
+    jne     .Error
+    cmp     byte [edi + 9], 'g'
     jne     .Error
 
     add     edi, 10
     mov     ax, word [edi]
-    cmp     ax, 200
+    cmp     ax, Client.RequestOk
     jne     .Error
+
+    mov     eax, dword [edi + 2]
+    mov     [Client.Uptime], eax
+
+    jmp     .Exit
+
+.Error:
+    mov     eax, false
+    jmp     .Ret
+
+.Exit:
+    mov     eax, true
+
+.Ret:
+    ret
+endp
+
+proc Client.CheckAcceptMessage uses edi,\
+    pBuf
+    
+    mov     edi, [pBuf]    
+
+    cmp     word [edi], MESSAGE_SIZE
+    jne     .Error
+
+    cmp     byte [edi + 2], 'W'
+    jne     .Error
+    cmp     byte [edi + 3], 'a'
+    jne     .Error
+    cmp     byte [edi + 4], 'l'
+    jne     .Error
+    cmp     byte [edi + 5], 'l'
+    jne     .Error
+    cmp     byte [edi + 6], 'K'
+    jne     .Error
+    cmp     byte [edi + 7], 'i'
+    jne     .Error
+    cmp     byte [edi + 8], 'n'
+    jne     .Error
+    cmp     byte [edi + 9], 'g'
+    jne     .Error
+
+    mov     eax, dword [edi + 10]
+    cmp     eax, [Client.Uptime]
+    jb      .Error
+
+    mov     [Client.Uptime], eax
+
+    jmp     .Exit
 
 .Error:
     mov     eax, false
