@@ -37,11 +37,21 @@ entry   WinMain
 
         include         "objects.inc"
 
+        ; Opengl data and useful variables
+        include         "opengl/uni.inc"
+        include         "opengl/buffers.inc"
+        include         "opengl/data.inc"
+
+
 macro JumpIf value, label
 {
         cmp     eax, value
         je      label
 }
+
+        className       db      "WallKing", 0
+        clientRect      RECT
+        hdc             dd      ?
 
         true            =       1
         false           =       0
@@ -73,7 +83,6 @@ data import
 
         import iphlpapi,\
                 GetIpAddrTable , 'GetIpAddrTable'
-                ; THIS STRUCTURES GOT FROM INTERNET. THEY MAY BE CHANGED!
 
         struct MIB_IPADDRROW
                dwAddr           dd              ?

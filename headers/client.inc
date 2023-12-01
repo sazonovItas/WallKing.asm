@@ -20,7 +20,7 @@
     CLIENT_STATE_ACCEPT         =                   0000_1000b
 
     ; Keys for client
-    CLIENT_RECONNECT_KEY        =                   'C'
+    CLIENT_CONNECT_KEY          =                   'C'
 
     CLIENT_ADAPTERS_BUF_MAX     =                   1024
 
@@ -29,6 +29,7 @@
 
     Client.BufferSend           dd                  NULL
     Client.BufferRecv           dd                  NULL
+    Client.BufferDraw           dd                  NULL
 
     Client.Uptime               dd                  0
     Client.CntPlayers           dd                  0
@@ -52,7 +53,7 @@
     Client.ThStopRv             db                  false
 
     
-    ; Useful data for client
+    ; Useful constants for client
     Client.RequestTimeout       =                   500
     Client.RequestOk            =                   200
     Client.RequestError         =                   0  
@@ -60,11 +61,12 @@
     Client.AcceptSendTimeout    =                   8
 
     ; Checking message
-    Client.CheckMsgTitle        db              "WallKing", 0
-    Client.SendMsgError         db              "Send Error", 0
-    Client.RecvMsgError         db              "Recv Error", 0
-    Client.Text                 db              20 dup(0)
+    Client.CheckMsgTitle        db                  "WallKing", 0
+    Client.SendMsgError         db                  "Send Error", 0
+    Client.RecvMsgError         db                  "Recv Error", 0
+    Client.Text                 db                  32 dup(0)
     
-    CLIENT_PL_JOIN               =               1
-    CLIENT_PL_UPDATE             =               0
-    CLIENT_PL_EXIT               =              -1
+    CLIENT_PL_MESSAGE           =                   2
+    CLIENT_PL_JOIN              =                   1
+    CLIENT_PL_UPDATE            =                   0
+    CLIENT_PL_EXIT              =                  -1

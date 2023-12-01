@@ -79,6 +79,12 @@ proc Client.Init uses ebx edi esi
 
     mov     [Client.BufferRecv], eax
 
+    stdcall malloc, MESSAGE_SIZE
+    cmp     eax, NULL
+    je      .Error
+
+    mov     [Client.BufferDraw], eax
+
     ; create mutex for recv data
     invoke  CreateMutex, NULL, 0, NULL
     mov     [Client.MutexDrawBuf], eax
@@ -316,7 +322,7 @@ proc Client.ThRecv uses edi,\
         jne     .ErrorMsg
 
         invoke  WaitForSingleObject, [Client.MutexDrawBuf], INFINITY
-        stdcall memcpy, drawBuf, [Client.BufferRecv], MESSAGE_SIZE
+        stdcall memcpy, [Client.BufferDraw], [Client.BufferRecv], MESSAGE_SIZE
         invoke  ReleaseMutex, [Client.MutexDrawBuf]
 
         jmp     .HandleState
@@ -445,7 +451,7 @@ endp
 proc Client.KeyUp\
     wParam, lParam
 
-    cmp     [wParam] , CLIENT_RECONNECT_KEY
+    cmp     [wParam] , CLIENT_CONNECT_KEY
     jne     @F
 
     mov     [Client.State], CLIENT_STATE_REQUEST

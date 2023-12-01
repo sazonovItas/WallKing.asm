@@ -255,8 +255,51 @@ proc Player.Constructor uses edi,\
     ret
 endp
 
-; New player functions
+
 proc Player.Update uses edi esi ebx,\
+    pPlayer, dt, sizeMap, pMap
+
+    locals 
+        deltaTime           dd          ?
+        minTimeUpdatePlayer dd          10
+        tmp                 dd          ?
+    endl
+
+    fild    [dt]
+    fstp    [deltaTime]
+
+    mov     ecx, 1
+
+    mov     eax, [dt]
+    cmp     eax, [minTimeUpdatePlayer]
+    jb      @F
+
+    xor     edx, edx
+    div     [dt]
+    inc     eax
+    mov     ecx, eax
+    mov     [tmp], eax
+
+    fld     [deltaTime]
+    fidiv   [tmp]
+    fstp    [deltaTime]
+
+    @@:
+
+    .UpdatePlayer:
+
+        push    ecx
+        stdcall Player.UpdatePosition, [pPlayer], [deltaTime], [sizeMap], [pMap]
+        stdcall Player.UpdateVelocity, [pPlayer], [sizeMap], [pMap]
+        pop     ecx
+
+    loop    .UpdatePlayer
+
+    ret
+endp
+
+; New player functions
+proc Player.UpdatePosition uses edi esi ebx,\
     pPlayer, dt, sizeMap, pMap
 
     locals 
@@ -385,7 +428,7 @@ proc Player.Draw uses edi esi,\
     invoke  glGetUniformLocation, [ShaderId], uniCamPosName
     invoke  glUniform3f, eax, [edi + Camera.camPosition + Vector3.x], [edi + Camera.camPosition + Vector3.y], [edi + Camera.camPosition + Vector3.z]
 
-    stdcall VAO.Bind, [VAO1.ID]       
+    stdcall VAO.Bind, [blockVAO.ID]       
     invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
     stdcall VAO.Unbind
 
@@ -748,15 +791,24 @@ proc Player.UpdateDrawAngles uses edi,\
     pPlayer, dt
 
     locals
-        minAngle        dd      -6.28
-        maxAngle        dd      6.28
+        minAngle        dd      ?
+        maxAngle        dd      ?
+        testAngle       dd      0.3
     endl
 
     mov     edi, [pPlayer]
 
+    fldpi
+    fldpi
+    faddp
+    fst     [maxAngle]
+    fchs
+    fstp    [minAngle]
+
     ; X
     fld     [edi + Player.Velocity + Vector3.x]
     fmul    [dt]
+    fmul    [testAngle]
     fadd    [edi + Player.XYZangles + Vector3.x]
 
     fcom    [minAngle]
@@ -782,6 +834,7 @@ proc Player.UpdateDrawAngles uses edi,\
     ; Y
     fld     [edi + Player.Velocity + Vector3.y]
     fmul    [dt]
+    fmul    [testAngle]
     fadd    [edi + Player.XYZangles + Vector3.y]
 
     fcom    [minAngle]
@@ -807,6 +860,7 @@ proc Player.UpdateDrawAngles uses edi,\
     ; Z
     fld     [edi + Player.Velocity + Vector3.z]
     fmul    [dt]
+    fmul    [testAngle]
     fadd    [edi + Player.XYZangles + Vector3.z]
 
     fcom    [minAngle]
@@ -829,12 +883,6 @@ proc Player.UpdateDrawAngles uses edi,\
 
     fstp    [edi + Player.XYZangles + Vector3.z]
 
-    ret
-endp
-
-proc Player.NormAngles 
-
-.Ret
     ret
 endp
 

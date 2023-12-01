@@ -6,12 +6,10 @@ layout (location = 2) in vec2 aTex;
 layout (location = 3) in vec3 aNormal;
 
 out vec3 color;
-out vec2 texCoord;
+out vec2 TexCoords;
 
 out vec3 Normal;
-out vec3 crntPos;
-
-uniform float scale;
+out vec3 fragPos;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -19,11 +17,11 @@ uniform mat4 proj;
 
 void main() 
 {
-    crntPos = vec3(model * vec4(aPos, 1.0f));
+    fragPos = vec3(model * vec4(aPos, 1.0f));
 
-    gl_Position = proj * view  * vec4(crntPos, 1.0);
+    gl_Position = proj * view  * vec4(fragPos, 1.0);
     color = aColor;
-    texCoord = aTex;
+    TexCoords = aTex;
     Normal = vec3(model * vec4(aNormal, 0.0f));
 }
 

@@ -23,22 +23,8 @@
         include         "internal/math/vector.asm"
         include         "internal/math/matrix.asm"
         include         "internal/math/easing_funcs.asm"
-        include         "internal/list/list.asm"
+        include         "internal/debug.asm"
         
-        className       db      "WallKing", 0
-        clientRect      RECT
-        time            dd      ?
-        hdc             dd      ?
-        angle           dd      0.0
-        step            dd      1.0
-        cameraStep      dd      0.2
-        radian          dd      57.32
-        pi4             dd      90.0
-
-        fovY            dd      90.0 
-        zNear           dd      0.001
-        zFar            dd      1000.0
-
         cameraPosition  Vector3         2.0, 10.0, 0.0
         targetPosition  Vector3         0.0, 0.0, 2.0
         upVector        Vector3         0.0, 1.0, 0.0
@@ -55,10 +41,6 @@
 
         uniLightColorName       db      "lightColor", 0
         uniLightPosName         db      "lightPos", 0
-        uniCamPosName           db      "camPos", 0
-
-
-        stringOut               db              "Hello, World!", 0
 
         fileBoxTexture          db              "resources/textures/container2.bmp", 0
         filePlayerTex           db              "resources/textures/wall_player.bmp", 0
@@ -67,47 +49,6 @@
         lightTexture            Texture         ?        
         m_shadowMap             dd              ?
         m_fbo                   dd              ?
-
-        fragmentShader          GLuint          0
-        program                 GLint           0
-
-        timeLocation            GLint           0
-        sizeLocation            GLint           0
-
-        fragmentShaderFile      db              "resources/shaders/default.frag", 0
-        vertexShaderFile        db              "resources/shaders/default.vert", 0
-        timeName                db              "time", 0
-        sizeName                db              "size", 0
-
-        VAO1                    VAO             
-        VBO1                    VBO             
-        EBO1                    EBO             
-
-        exampleShader           Shader          ?
-        lightShader             Shader          ?
-        ProjectionMatrix        Matrix4x4       ?
-        ViewMatrix              Matrix4x4       ?
-        ModelMatrix             Matrix4x4       ?
-
-        uniScale.ID             GLuint          ?
-        uniScaleName            db              "scale", 0
-        scale                   GLfloat         1.0 
-
-        uniTex0.ID              GLuint          ?
-        uniTex0Name             db              "tex0", 0
-
-        uniModel                GLuint          ?
-        uniModelName            db              "model", 0
-
-        uniView                 GLuint          ?
-        uniViewName             db              "view", 0
-
-        uniProj                 GLuint          ?
-        uniProjName             db              "proj", 0
-
-        drawBuf                 db              256 dup(0)
-
-        freeCamera              Camera 
 
         mainPlayer              dd              ? 
 
@@ -128,6 +69,7 @@ proc WinMain
 
         invoke  GetTickCount
         mov     [time], eax 
+        mov     [debugTime], eax
         mov     [lastFrame], eax
 
         lea     esi, [msg]

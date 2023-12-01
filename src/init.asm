@@ -38,8 +38,6 @@ endp
 
 proc Init.GameData
 
-    stdcall Camera.Constructor, freeCamera, [clientRect.right], [clientRect.bottom], cameraPosition
-
     stdcall malloc, sizeof.Player
     mov  	[mainPlayer], eax
     stdcall Player.Constructor, eax, [clientRect.right], [clientRect.bottom], cameraPosition
@@ -57,15 +55,7 @@ proc Init.OpenGL
 
     stdcall Glext.LoadFunctions
 
-    lea     edi, [arrTextures + 16]
-    stdcall Texture.Constructor, edi, filePlayerTex,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
-
     lea     edi, [arrTextures + 8]
-    stdcall Texture.Constructor, edi, filePlayerTex,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
-
-    lea     edi, [arrTextures + 12]
     stdcall Texture.Constructor, edi, filePlayerTex,\
                             GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
 
@@ -76,8 +66,6 @@ proc Init.OpenGL
     lea     edi, [arrTextures]
     stdcall Texture.Constructor, edi, fileBoxTexture,\
                             GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
-
-
 
     ; Shadow texture settings
     ; Create the FBO
@@ -102,32 +90,28 @@ proc Init.OpenGL
 
     invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
 
-    invoke  glEnable, GL_LIGHT0
-    ;invoke  glEnable, GL_LIGHT1
-    invoke  glLightfv, GL_LIGHT0, GL_AMBIENT, light0Ambient
-    ;invoke  glLightfv, GL_LIGHT1, GL_DIFFUSE, light1Diffuse
+    ; ----------- BLOCK SHADER -----------------
+    ; Block shader
+    stdcall Shader.Constructor, blockShader.ID, blockVertexFile, blockFragmentFile
 
-    ; TEST Shaders block
-    stdcall Shader.Constructor, exampleShader.ID, vertexShaderFile, fragmentShaderFile
-
-    ;TEST EBO, VBO, VAO
     ;Generate the VAO, EBO and VBO with only 1 object each
-    stdcall VAO.Constructor, VAO1.ID
-    stdcall VAO.Bind, [VAO1.ID]
-    stdcall VBO.Constructor, VBO1.ID, sizeVertice * countVertices, vertices 
-    stdcall EBO.Constructor, EBO1.ID, sizeIndex * countIndices, indices
+    stdcall VAO.Constructor, blockVAO.ID
+    stdcall VAO.Bind, [blockVAO.ID]
+    stdcall VBO.Constructor, blockVBO.ID, sizeVertice * countVertices, vertices 
+    stdcall EBO.Constructor, blockEBO.ID, sizeIndex * countIndices, indices
 
     ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
-    stdcall VAO.LinkAttribVBO, [VBO1.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
-    stdcall VAO.LinkAttribVBO, [VBO1.ID], 1, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetColor
-    stdcall VAO.LinkAttribVBO, [VBO1.ID], 2, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
-    stdcall VAO.LinkAttribVBO, [VBO1.ID], 3, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetNormal
+    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
+    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 1, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetColor
+    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 2, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
+    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 3, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetNormal
 
     ; Unbind VAO, VBO and EBO so that accidentlly to change it
     stdcall VBO.Unbind
     stdcall VAO.Unbind
     stdcall EBO.Unbind
-    
+
+    ; ---------- LIGHT SHADER ----------------------------- 
     ; Light shader
     stdcall Shader.Constructor, lightShader.ID, lightVertexFile, lightFragmentFile
 
@@ -148,8 +132,3 @@ proc Init.OpenGL
     ret
 endp
 
-        lightFragmentFile       db              "resources/shaders/light.frag", 0
-        lightVertexFile         db              "resources/shaders/light.vert", 0
-        lightVAO                VAO             
-        lightVBO                VBO 
-        lightEBO                EBO
