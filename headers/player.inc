@@ -1,9 +1,13 @@
 struct DrawData
-    lock        dd          ?
-    Position    Vector3     ?
-    Angles      Vector3     ?
-    Scale       Vector3     ?
-    TexId       dd          ?
+    lock            dd          ?
+    Position        Vector3     ?
+    Angles          Vector3     ?
+    Scale           Vector3     ?
+    TexId           dd          ?
+    AmbientTexId    dd          ?
+    DiffuseTexId    dd          ?
+    SpecularTexId   dd          ?
+    Shininess       dd          ?
 ends
 
 struct Player

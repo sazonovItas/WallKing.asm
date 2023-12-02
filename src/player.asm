@@ -245,9 +245,11 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.DrawPlayer + DrawData.Scale + Vector3.z], eax
 
     ; draw tex id
-    lea     esi, [arrTextures]
-    mov     eax, 8
-    mov     [edi + Player.DrawPlayer + DrawData.TexId], eax
+    mov     [edi + Player.DrawPlayer + DrawData.TexId], 8
+    mov     [edi + Player.DrawPlayer + DrawData.AmbientTexId], 8
+    mov     [edi + Player.DrawPlayer + DrawData.DiffuseTexId], 8
+    mov     [edi + Player.DrawPlayer + DrawData.SpecularTexId], 8
+    mov     [edi + Player.DrawPlayer + DrawData.Shininess], 12.0
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos

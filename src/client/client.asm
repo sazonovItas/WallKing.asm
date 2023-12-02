@@ -243,6 +243,38 @@ proc Client.AcceptMessage uses edi,\
     mov     eax, dword [esi]
     mov     dword [edi], eax
     pop     esi
+    add     edi, 4
+
+    ; Copy Textures
+    push    esi
+    add     esi, DrawData.AmbientTexId
+    mov     eax, dword [esi]
+    mov     dword [edi], eax
+    pop     esi
+    add     edi, 4
+
+    ; Copy Textures
+    push    esi
+    add     esi, DrawData.DiffuseTexId
+    mov     eax, dword [esi]
+    mov     dword [edi], eax
+    pop     esi
+    add     edi, 4
+
+    ; Copy Textures
+    push    esi
+    add     esi, DrawData.SpecularTexId
+    mov     eax, dword [esi]
+    mov     dword [edi], eax
+    pop     esi
+    add     edi, 4
+
+    push    esi
+    add     esi, DrawData.Shininess
+    mov     eax, dword [esi]
+    mov     dword [edi], eax
+    pop     esi
+
     invoke ReleaseMutex, [esi + DrawData.lock]
 
     ret

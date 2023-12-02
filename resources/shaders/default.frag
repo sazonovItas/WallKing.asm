@@ -1,4 +1,5 @@
 #version 330 core
+#define NR_POINT_LIGHTS 8  
 
 struct PointLight {    
     vec3 position;
@@ -13,7 +14,6 @@ struct PointLight {
     vec3 specular;
 };  
 uniform int CntPointLights;
-#define NR_POINT_LIGHTS 4  
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 
 struct Material {
@@ -50,7 +50,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     float distance    = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + 
   			     light.quadratic * (distance * distance));    
-    combine results
+    // combine results
     vec3 ambient  = light.ambient  * vec3(texture(material.diffuse, TexCoords));
     vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.diffuse, TexCoords));
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));

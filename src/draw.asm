@@ -90,7 +90,7 @@ proc Draw.ConPlayers uses edi esi ebx,\
 
                 stdcall Draw.ConPlayer, edi
 
-                add     edi, 40
+                add     edi, sizeof.DrawData
                 pop     ecx
                 loop    .drawCycle
 
@@ -179,9 +179,6 @@ proc Draw.Block uses edi esi,\
         offsetBlock
 
         mov     edi, [offsetBlock]
-
-        cmp     dword [edi + colisionOffset], 1
-        je      .Ret
 
         ; block drawing
         stdcall Shader.Activate, [blockShader.ID]
