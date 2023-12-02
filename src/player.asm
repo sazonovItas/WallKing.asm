@@ -385,6 +385,7 @@ proc Player.Draw uses edi esi,\
 
     locals
         rotAngle        dd          0.0
+        tmp             Vector3     ?
     endl
 
     stdcall Shader.Activate, [shaderId]
@@ -433,17 +434,16 @@ proc Player.Draw uses edi esi,\
     invoke  glGetUniformLocation, [shaderId], uniModelName
     invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
 
-    invoke  glGetUniformLocation, [shaderId], uniLightColorName
-    invoke  glUniform4f, eax, [lightColor.r], [lightColor.g], [lightColor.b], [lightColor.a]
-
-    invoke  glGetUniformLocation, [shaderId], uniLightPosName
-    invoke  glUniform3f, eax, [lightPos.x], [lightPos.y], [lightPos.z]
-
     stdcall Draw.BindLightsForShader, [shaderId], lightsMapTry, [sizeLightsMapTry]
 
+    lea     ebx, [tmp]
     mov     edi, [pPlayer]
+    add     edi, Player.camera + Camera.camPosition
+    stdcall Vector3.Copy, ebx, edi
+    add     edi, (Camera.translate - Camera.camPosition)
+    stdcall Vector3.Sub, ebx, edi
     invoke  glGetUniformLocation, [shaderId], uniCamPosName
-    invoke  glUniform3f, eax, [edi + Camera.camPosition + Vector3.x], [edi + Camera.camPosition + Vector3.y], [edi + Camera.camPosition + Vector3.z]
+    invoke  glUniform3f, eax, [ebx + Vector3.x], [ebx + Vector3.y], [ebx + Vector3.z]
 
     stdcall VAO.Bind, [blockVAO.ID]       
     invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0

@@ -31,6 +31,15 @@
     Client.BufferRecv           dd                  NULL
     Client.BufferDraw           dd                  NULL
 
+    ; Structure of reciving message
+    Client.plPositioin          =                   0
+    Client.plAngles             =                   12
+    Client.plScale              =                   24
+    Client.plAmbientTex         =                   36
+    Client.plDiffuseTex         =                   40
+    Client.plSpecularTex        =                   44
+    Client.plShininess          =                   48
+
     Client.Uptime               dd                  0
     Client.CntPlayers           dd                  0
 

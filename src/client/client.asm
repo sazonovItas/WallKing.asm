@@ -72,18 +72,21 @@ proc Client.Init uses ebx edi esi
     je      .Error
 
     mov     [Client.BufferSend], eax
+    stdcall memzero, eax, MESSAGE_SIZE
 
     stdcall malloc, MESSAGE_SIZE
     cmp     eax, NULL
     je      .Error
 
     mov     [Client.BufferRecv], eax
+    stdcall memzero, eax, MESSAGE_SIZE
 
     stdcall malloc, MESSAGE_SIZE
     cmp     eax, NULL
     je      .Error
 
     mov     [Client.BufferDraw], eax
+    stdcall memzero, eax, MESSAGE_SIZE
 
     ; create mutex for recv data
     invoke  CreateMutex, NULL, 0, NULL
