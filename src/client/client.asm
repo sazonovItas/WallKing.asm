@@ -239,14 +239,6 @@ proc Client.AcceptMessage uses edi,\
 
     ; Copy Textures
     push    esi
-    add     esi, DrawData.TexId
-    mov     eax, dword [esi]
-    mov     dword [edi], eax
-    pop     esi
-    add     edi, 4
-
-    ; Copy Textures
-    push    esi
     add     esi, DrawData.AmbientTexId
     mov     eax, dword [esi]
     mov     dword [edi], eax

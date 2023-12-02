@@ -55,17 +55,45 @@ proc Init.OpenGL
 
     stdcall Glext.LoadFunctions
 
-    lea     edi, [arrTextures + 8]
-    stdcall Texture.Constructor, edi, filePlayerTex,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
+    ; Ambient
+    lea     edi, [ambientTexs]
+    stdcall Texture.Constructor, edi, fileContainerAmbientTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    lea     edi, [arrTextures + 4]
-    stdcall Texture.Constructor, edi, fileLightTexture,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
+    lea     edi, [ambientTexs + 4]
+    stdcall Texture.Constructor, edi, fileGemBlueAmbientTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    lea     edi, [arrTextures]
-    stdcall Texture.Constructor, edi, fileBoxTexture,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
+    lea     edi, [ambientTexs + 8]
+    stdcall Texture.Constructor, edi, fileGemRainbowAmbientTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+    ; Diffuse
+    lea     edi, [diffuseTexs]
+    stdcall Texture.Constructor, edi, fileContainerDiffuseTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+    lea     edi, [diffuseTexs + 4]
+    stdcall Texture.Constructor, edi, fileGemBlueDiffuseTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+    lea     edi, [diffuseTexs + 8]
+    stdcall Texture.Constructor, edi, fileGemRainbowDiffuseTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+    ; Specular
+    lea     edi, [specularTexs]
+    stdcall Texture.Constructor, edi, fileContainerSpecularTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+    lea     edi, [specularTexs + 4]
+    stdcall Texture.Constructor, edi, fileGemBlueSpecularTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+    lea     edi, [specularTexs + 8]
+    stdcall Texture.Constructor, edi, fileGemRainbowSpecularTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
 
     ; Shadow texture settings
     ; Create the FBO
@@ -113,7 +141,7 @@ proc Init.OpenGL
 
     ; ---------- LIGHT SHADER ----------------------------- 
     ; Light shader
-    stdcall Shader.Constructor, lightShader.ID, lightVertexFile, lightFragmentFile
+    stdcall Shader.Constructor, ligthShader.ID, lightVertexFile, lightFragmentFile
 
     ; Generate light VAO, VBO and EBO 
     stdcall VAO.Constructor, lightVAO.ID

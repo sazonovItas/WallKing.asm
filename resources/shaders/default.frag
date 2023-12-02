@@ -16,6 +16,15 @@ struct PointLight {
 uniform int CntPointLights;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 
+out vec4 FragColor;
+
+in vec3 color;
+in vec2 TexCoords;
+
+in vec3 Normal;
+in vec3 FragPos;
+
+uniform sampler2D tex0;
 struct Material {
     sampler2D ambient;
     sampler2D diffuse;
@@ -23,16 +32,6 @@ struct Material {
     float shininess;
 }; 
 uniform Material material;
-
-out vec4 FragColor;
-
-in vec3 color;
-in vec2 TexCoords;
-
-in vec3 Normal;
-in vec3 fragPos;
-
-uniform sampler2D tex0;
 
 uniform vec4 lightColor;
 uniform vec3 lightPos;
@@ -65,14 +64,26 @@ void main()
     float ambient = 0.35f;
 
     vec3 normal = normalize(Normal);
-    vec3 lightDirection = normalize(lightPos - fragPos);
+    vec3 lightDirection = normalize(lightPos - FragPos);
     float diffuse = max(dot(normal, lightDirection), 0.0f);
 
     float specularLight = 0.5f;
-    vec3 viewDirection = normalize(camPos - fragPos);
+    vec3 viewDir = normalize(camPos - FragPos);
     vec3 reflectionDirection = reflect(-lightDirection, normal);
-    float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
+    float specAmount = pow(max(dot(viewDir, reflectionDirection), 0.0f), 8);
     float specular = specAmount * specularLight;
 
-    FragColor = texture(tex0, TexCoords) * lightColor * (diffuse + ambient + specular);
+    FragColor = texture(material.ambient, TexCoords) * lightColor * (diffuse + ambient + specular);
+
+    // ===== Don't work
+    // vec3 norm = normalize(Normal);
+    // vec3 viewDir = normalize(camPos - FragPos);
+
+    // vec3 result = vec3(0.0);
+
+    // for(int i = 0; i < CntPointLights; i++) {
+    //     result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+    // }
+
+    // FragColor = vec4(result, 1.0);
 }

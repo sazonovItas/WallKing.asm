@@ -1,5 +1,5 @@
 proc Texture.Constructor uses edi esi,\
-    pID, pFileImage, texType, texSlot, format, pixelType
+    pID, pFileImage, texType, texSlot, internalFormat, border, format, pixelType
 
     mov     esi, [pID]
 
@@ -18,7 +18,7 @@ proc Texture.Constructor uses edi esi,\
     mov     edi, eax 
     add     edi, dword [eax + 10]
     invoke  glTexImage2D, [texType], ebx,\ 
-                    GL_RGB8, dword [eax + 18], dword [eax + 22], ebx,\ 
+                    [internalFormat], dword [eax + 18], dword [eax + 22], [border],\ 
                     [format], [pixelType], edi
     invoke  HeapFree, [hHeap], ebx, eax
     invoke  glGenerateMipmap, [texType]

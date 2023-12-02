@@ -39,12 +39,6 @@
         lightColor      ColorRGBA       1.0, 1.0, 1.0, 1.0
         lightPos        Vector3         1.0, 1.0, 1.0
 
-        uniLightColorName       db      "lightColor", 0
-        uniLightPosName         db      "lightPos", 0
-
-        fileBoxTexture          db              "resources/textures/container2.bmp", 0
-        filePlayerTex           db              "resources/textures/wall_player.bmp", 0
-        fileLightTexture        db              "resources/textures/test.bmp", 0
         blockTexture            Texture         ?
         lightTexture            Texture         ?        
         m_shadowMap             dd              ?

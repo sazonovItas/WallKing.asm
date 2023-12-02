@@ -5,7 +5,7 @@ ends
         ; light shaders
         lightFragmentFile       db              "resources/shaders/light.frag", 0
         lightVertexFile         db              "resources/shaders/light.vert", 0
-        lightShader             Shader          ?
+        ligthShader             Shader          ?
 
 
         ; block shaders

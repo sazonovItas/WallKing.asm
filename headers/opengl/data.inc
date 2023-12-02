@@ -103,3 +103,30 @@ lightIndices    GLuint          0, 1, 2,\
                                 1, 4, 0,\
                                 4, 5, 6,\
                                 4, 6, 7
+
+        arrTextures             dd              20 dup(?)
+        ambientTexs             dd              20 dup(?)
+        diffuseTexs             dd              20 dup(?)
+        specularTexs            dd              20 dup(?)
+
+
+        fileBoxTex                      db              "resources/textures/container2.bmp", 0
+        filePlayerTex                   db              "resources/textures/wall_player.bmp", 0
+        fileLightTex                    db              "resources/textures/test.bmp", 0
+        fileWhitePixelsTex              db              "resources/textures/WhitePixels.bmp", 0
+
+        fileGemBlackAmbientTex          db              "resources/textures/blocks/gemBlackAmbient.bmp", 0
+        fileGemBlackDiffuseTex          db              "resources/textures/blocks/gemBlackDiffuse.bmp", 0
+        fileGemBlackSpecularTex         db              "resources/textures/blocks/gemBlackSpec.bmp", 0
+
+        fileGemBlueAmbientTex           db              "resources/textures/blocks/gemBlueAmbient.bmp", 0
+        fileGemBlueDiffuseTex           db              "resources/textures/blocks/gemBlueDiffuse.bmp", 0
+        fileGemBlueSpecularTex          db              "resources/textures/blocks/gemBlueSpec.bmp", 0
+
+        fileGemRainbowAmbientTex        db              "resources/textures/blocks/gemRainbowAmbient.bmp", 0
+        fileGemRainbowDiffuseTex        db              "resources/textures/blocks/gemRainbowDiffuse.bmp", 0
+        fileGemRainbowSpecularTex       db              "resources/textures/blocks/gemRainbowSpec.bmp", 0
+
+        fileContainerAmbientTex         db              "resources/textures/blocks/containerAmbient.bmp", 0
+        fileContainerDiffuseTex         db              "resources/textures/blocks/containerDiffuse.bmp", 0
+        fileContainerSpecularTex        db              "resources/textures/blocks/containerSpec.bmp", 0
