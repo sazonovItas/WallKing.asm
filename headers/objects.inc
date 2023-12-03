@@ -55,5 +55,5 @@ blocksMapTry:
 
 ;                               // position          // constant, linear, quadric    // ambient              // diffuse              // specular
 lightsMapTry:
-               GLfloat          1.0, 3.0, 1.0,         1.0, 0.09, 0.032,                0.2, 0.2, 0.2,       0.5, 0.5, 0.5,         0.9, 0.9, 0.9  
+               GLfloat          1.0, 3.0, 1.0,         1.0, 0.09, 0.032,                0.2, 0.2, 0.2,       1.0, 1.0, 1.0,         0.9, 0.9, 0.9  
                GLfloat          -10.0, 8.0, 1.0,        1.0, 0.09, 0.032,               0.4, 0.2, 0.5,       0.5, 0.5, 0.5,         0.6, 0.6, 0.6  
