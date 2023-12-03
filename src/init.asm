@@ -95,29 +95,6 @@ proc Init.OpenGL
                             GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
 
-    ; Shadow texture settings
-    ; Create the FBO
-    invoke  glGenFramebuffers, 1, m_fbo
-
-    ; Create the depth buffer
-    invoke  glGenTextures, 1, m_shadowMap
-    invoke  glBindTexture, GL_TEXTURE_2D, [m_shadowMap]
-    invoke  glTexImage2D, GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0,\ 
-                    GL_DEPTH_COMPONENT, GL_FLOAT, NULL
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
-
-    invoke  glBindFramebuffer, GL_FRAMEBUFFER, [m_fbo]
-    invoke  glFramebufferTexture2D, GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, [m_shadowMap], 0
-    
-    ; Disable writes to the color buffer
-    invoke  glDrawBuffer, GL_NONE
-    invoke  glReadBuffer, GL_NONE
-
-    invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
-
     ; ----------- BLOCK SHADER -----------------
     ; Block shader
     stdcall Shader.Constructor, blockShader.ID, blockVertexFile, blockFragmentFile

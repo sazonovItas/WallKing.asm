@@ -23,6 +23,7 @@
         pointLightIndexOffset   =               12
         uniPLCnt                db              "CntPointLights", 0
         uniPLPositionName       db              "pointLights[0].position", 0
+        uniPLColorName          db              "pointLights[0].color", 0
         uniPLConstantName       db              "pointLights[0].constant", 0
         uniPLLinearName         db              "pointLights[0].linear", 0
         uniPLQuadraticName      db              "pointLights[0].quadratic", 0

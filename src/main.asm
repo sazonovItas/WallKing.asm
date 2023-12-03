@@ -10,6 +10,7 @@
         include         "camera.asm"
         include         "collision.asm"
         include         "player.asm"
+        include         "game.asm"
 
         ; Include client
         include         "client/client.asm"
@@ -26,23 +27,6 @@
         include         "internal/debug.asm"
         
         cameraPosition  Vector3         2.0, 10.0, 0.0
-        targetPosition  Vector3         0.0, 0.0, 2.0
-        upVector        Vector3         0.0, 1.0, 0.0
-
-        light0Diffuse   ColorRGBA       1.0, 1.0, 1.0, 1.0
-        light0Ambient   ColorRGBA       1.0, 0.0, 0.0, 1.0
-        light0Position  Vector4         2.0, 3.0, 1.0, 1.0
-
-        light1Diffuse   ColorRGBA       1.0, 0.8, 0.2, 1.0
-        light1Position  Vector4         1.0, 1.0, 1.0, 0.0
-
-        lightColor      ColorRGBA       1.0, 1.0, 1.0, 1.0
-        lightPos        Vector3         1.0, 1.0, 1.0
-
-        blockTexture            Texture         ?
-        lightTexture            Texture         ?        
-        m_shadowMap             dd              ?
-        m_fbo                   dd              ?
 
         mainPlayer              dd              ? 
 
@@ -103,7 +87,7 @@ proc WindowProc uses ebx,\
 
 .Paint:
 
-        stdcall Draw.Scene
+        stdcall Game.Game, [mainPlayer]
 
         invoke  SwapBuffers, [hdc]
         

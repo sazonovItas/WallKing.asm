@@ -1,45 +1,22 @@
-proc Draw.Scene uses esi edi
+proc Draw.Scene uses esi edi,\
+        pPlayer, pBlocksMap, sizeBlocksMap, pLightsMap, sizeLightsMap
 
-        locals 
-                currentFrame            dd              ?
-                testAngle               dd              180.0
-                rotAngle                dd              0.0
-                colDetected             dd              ?
-                timeBetweenChecking     dd              ?
-                normDiv                 dd              2.5
-                tmp                     Vector3         ?
-        endl
+        stdcall Camera.Matrix, [pPlayer]
 
-        invoke  GetTickCount
-        mov     [currentFrame], eax
-
-        sub     eax, [time]
-        cmp     eax, 1
-        jb      .Skip
-
-        stdcall Player.Update, [mainPlayer], eax, [sizeBlocksMapTry], blocksMapTry
-
-        mov     eax, [currentFrame]
-        mov     [time], eax
-
-.Skip: 
-
-        stdcall Camera.Matrix, [mainPlayer]
-
-        mov     edi, [mainPlayer]
+        mov     edi, [pPlayer]
         invoke  glViewport, 0, 0, [edi + Player.camera + Camera.width], [edi + Player.camera + Camera.height]
         invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
         invoke  glClearColor, 0.22, 0.22, 0.22
 
-        stdcall Draw.BlocksMap, [blockShader.ID], [mainPlayer], blocksMapTry, [sizeBlocksMapTry]
-        stdcall Draw.LightsMap, [ligthShader.ID], [mainPlayer], lightsMapTry, [sizeLightsMapTry]
+        stdcall Draw.BlocksMap, [blockShader.ID], [pPlayer], [pBlocksMap], [sizeBlocksMap]
+        stdcall Draw.LightsMap, [ligthShader.ID], [pPlayer], [pLightsMap], [sizeLightsMap]
 
-        mov     edi, [mainPlayer]
+        mov     edi, [pPlayer]
         mov     esi, edi 
         add     esi, Player.DrawPlayer
         stdcall Player.Draw, [blockShader.ID], edi, esi
 
-        stdcall Draw.ConPlayers, [mainPlayer], [blockShader.ID], [Client.BufferDraw]
+        stdcall Draw.ConPlayers, [pPlayer], [blockShader.ID], [Client.BufferDraw]
 
         ret
 endp
@@ -259,6 +236,8 @@ proc Draw.BindLightsForShader uses edi esi ebx,\
                 add     eax, '0'    
                 lea     esi, [uniPLPositionName + pointLightIndexOffset]
                 mov     byte [esi], al
+                lea     esi, [uniPLColorName + pointLightIndexOffset]
+                mov     byte [esi], al
                 lea     esi, [uniPLConstantName + pointLightIndexOffset]
                 mov     byte [esi], al
                 lea     esi, [uniPLLinearName + pointLightIndexOffset]
@@ -292,6 +271,9 @@ proc Draw.BindLightForShader uses edi esi ebx,\
         ; Postion of light
         invoke  glGetUniformLocation, [shaderId], uniPLPositionName
         invoke  glUniform3f, eax, dword [edi + posLightOffset], dword [edi + posLightOffset + 4], dword [edi + posLightOffset + 8]
+        ; Color of light
+        invoke  glGetUniformLocation, [shaderId], uniPLColorName
+        invoke  glUniform3f, eax, dword [edi + colorLightOffset], dword [edi + colorLightOffset + 4], dword [edi + colorLightOffset + 8]
         ; Constant
         invoke  glGetUniformLocation, [shaderId], uniPLConstantName
         invoke  glUniform1f, eax, dword [edi + constantLightOffset]
@@ -353,7 +335,7 @@ proc Draw.Light uses edi esi ebx,\
         invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
 
         invoke  glGetUniformLocation, [shaderId], uniLightColorName
-        invoke  glUniform3f, eax, dword [edi + ambientLightOffset], dword [edi + ambientLightOffset + 4], dword [edi + ambientLightOffset + 8]
+        invoke  glUniform3f, eax, dword [edi + colorLightOffset], dword [edi + colorLightOffset + 4], dword [edi + colorLightOffset + 8]
 
         stdcall VAO.Bind, [lightVAO.ID]
         invoke  glDrawElements, GL_TRIANGLES, countLightIndices, GL_UNSIGNED_INT, 0

@@ -42,18 +42,21 @@ blocksMapTry:
                 GLfloat         8.0, 8.0, 1.0,          0.0, 0.0, 0.0,          4.0, 12.0, 2.0,       0,                      0,                     0,                0,                    32.0 
 
 
-        sizeLight                       =       60
+        sizeLight                       =       72
         posLightOffset                  =       0   
-        constantLightOffset             =       12            
-        linearLightOffset               =       16            
-        quadraticLightOffset            =       20            
-        ambientLightOffset              =       24
-        diffuseLightOffset              =       36
-        specularLightOffset             =       48
+        colorLightOffset                =       12
+        constantLightOffset             =       24            
+        linearLightOffset               =       28            
+        quadraticLightOffset            =       32            
+        ambientLightOffset              =       36
+        diffuseLightOffset              =       48
+        specularLightOffset             =       60
 
-        sizeLightsMapTry        dd      2
+        sizeLightsMapTry        dd      4
 
-;                               // position          // constant, linear, quadric    // ambient              // diffuse              // specular
+;                               // position             // Color                // constant, linear, quadric    // ambient              // diffuse              // specular
 lightsMapTry:
-               GLfloat          1.0, 3.0, 1.0,         1.0, 0.09, 0.032,                0.2, 0.2, 0.2,       1.0, 1.0, 1.0,         0.9, 0.9, 0.9  
-               GLfloat          -10.0, 8.0, 1.0,        1.0, 0.09, 0.032,               0.4, 0.2, 0.5,       0.5, 0.5, 0.5,         0.6, 0.6, 0.6  
+               GLfloat          1.0, 3.0, 1.0,          1.0, 1.0, 1.0,          1.0, 0.09, 0.032,               0.2, 0.2, 0.2,       1.0, 1.0, 1.0,         0.9, 0.9, 0.9  
+               GLfloat          -10.0, 8.0, 1.0,        1.0, 1.0, 1.0,          1.0, 0.09, 0.032,               0.4, 0.2, 0.5,       0.5, 0.5, 0.5,         0.6, 0.6, 0.6  
+               GLfloat          10.0, 20.0, 1.0,        0.8, 1.6, 1.2,          1.0, 0.09, 0.032,               0.2, 0.2, 0.2,       1.0, 1.0, 1.0,         0.9, 0.9, 0.9  
+               GLfloat          0.0, 30.0, -12.0,       10.0, 0.1, 0.1,         1.0, 0.09, 0.032,               0.4, 0.2, 0.5,       0.5, 0.5, 0.5,         0.6, 0.6, 0.6  
