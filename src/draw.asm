@@ -4,9 +4,6 @@ proc Draw.Scene uses esi edi,\
         stdcall Camera.Matrix, [pPlayer]
 
         mov     edi, [pPlayer]
-        invoke  glViewport, 0, 0, [edi + Player.camera + Camera.width], [edi + Player.camera + Camera.height]
-        invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
-        invoke  glClearColor, 0.22, 0.22, 0.22
 
         stdcall Draw.BlocksMap, [blockShader.ID], [pPlayer], [pBlocksMap], [sizeBlocksMap]
         stdcall Draw.LightsMap, [ligthShader.ID], [pPlayer], [pLightsMap], [sizeLightsMap]

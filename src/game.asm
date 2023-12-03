@@ -1,7 +1,12 @@
-proc Game.Game\ 
+proc Game.Game uses edi,\ 
     pPlayer
 
     stdcall Game.MoveObject, [pPlayer]
+
+    mov     edi, [pPlayer]
+
+    invoke  glViewport, 0, 0, [edi + Player.camera + Camera.width], [edi + Player.camera + Camera.height]
+    invoke  glClear, GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
     stdcall Draw.Scene, [pPlayer], blocksMapTry, [sizeBlocksMapTry], lightsMapTry, [sizeLightsMapTry]
 
 .Ret:

@@ -104,7 +104,6 @@ lightIndices    GLuint          0, 1, 2,\
                                 4, 5, 6,\
                                 4, 6, 7
 
-        arrTextures             dd              20 dup(?)
         ambientTexs             dd              20 dup(?)
         diffuseTexs             dd              20 dup(?)
         specularTexs            dd              20 dup(?)
