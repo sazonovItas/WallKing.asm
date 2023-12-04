@@ -68,7 +68,7 @@
     Client.RequestOk            =                   200
     Client.RequestError         =                   0  
 
-    Client.AcceptSendTimeout    =                   8
+    Client.AcceptSendTimeout    =                   15
 
     ; Checking message
     Client.CheckMsgTitle        db                  "WallKing", 0
