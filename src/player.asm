@@ -258,7 +258,7 @@ endp
 
 
 proc Player.Update uses edi esi ebx,\
-    pPlayer, dt, sizeMap, pMap
+    pPlayer, dt, sizeMap, pMap, sizeLightMap, pLightMap
 
     locals 
         deltaTime           dd          ?
@@ -495,7 +495,7 @@ proc Player.UpdateState uses edi esi ebx,\
 
     ; check collision
     lea     ebx, [collision]
-    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
+    ; stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
     cmp     eax, NO_COLLISION
     je      @F
 

@@ -26,7 +26,7 @@ proc Game.MoveObject\
     cmp     eax, 1
     jb      .Skip
 
-    stdcall Player.Update, [pPlayer], eax, [sizeBlocksMapTry], blocksMapTry
+    stdcall Player.Update, [pPlayer], eax, [sizeBlocksMapTry], blocksMapTry, [sizeLightsMapTry], lightsMapTry
 
     mov     eax, [currentFrame]
     mov     [time], eax

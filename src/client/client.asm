@@ -137,6 +137,7 @@ proc Client.ThSend,\
 
     .OnlineState:
 
+        invoke  Sleep, Client.WaitOnlineTimeOut
 
         jmp     .HandleState
 
@@ -295,6 +296,8 @@ proc Client.ThRecv uses edi,\
     jmp     .HandleState
 
     .OnlineState:
+
+        invoke  Sleep, Client.WaitOnlineTimeOut
 
         jmp     .HandleState
 

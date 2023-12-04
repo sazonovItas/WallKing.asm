@@ -63,6 +63,7 @@
 
     
     ; Useful constants for client
+    Client.WaitOnlineTimeOut    =                   1000
     Client.RequestTimeout       =                   500
     Client.RequestOk            =                   200
     Client.RequestError         =                   0  
