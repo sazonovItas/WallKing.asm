@@ -332,10 +332,14 @@ proc Player.UpdateChasingLight uses edi esi ebx,\
         trigger                 dd          false
         velocity                dd          0.0
         deltaPos                Vector3     ?
-        div2                    dd          2.0
+        divNorm                 dd          0.1
     endl
 
     mov     edi, [pPlayer]
+
+    mov     eax, [edi + Player.maxLights]
+    cmp     [edi + Player.offsetChasingLight], eax
+    je      .SkipLightChasing
 
     ; Get pointer to position light
     xor     edx, edx
@@ -358,33 +362,15 @@ proc Player.UpdateChasingLight uses edi esi ebx,\
     stdcall Vector3.Distance, edi, ebx
     pop     edi
 
-    mov     [lightChasingRadius], eax
-    fld     [lightChasingRadius]
-    fcomp   [edi + Player.chasingLightRadius]
-    fstsw   ax
-    sahf
-    jb      @F
-
-    mov     [trigger], true
-
-    @@: 
-
-    mov     eax, [edi + Player.maxLights]
-    cmp     [edi + Player.chasingLight], eax
-    je      .SkipLightChasing
-
     push    edi
     add     edi, Player.Position
     stdcall Vector3.Copy, orinVec, edi
     stdcall Vector3.Sub, orinVec, ebx
+    stdcall Vector3.MultOnNumber, orinVec, [divNorm]
     pop     edi
 
     mov     esi, edi
     add     esi, Player.chasingLight
-
-    ; Cam animation
-    cmp     [trigger], false
-    je      .SkipUpdateChasingAni
 
     cmp     [esi + Easing.done], true
     je     .SkipDoneChasingAni
@@ -459,8 +445,6 @@ proc Player.UpdateChasingLight uses edi esi ebx,\
 
     .SkipChasingAni:
 
-    .SkipLightChasing:
-
     ; EBX - position of light
     lea     esi, [deltaPos]
     push    edi
@@ -469,8 +453,9 @@ proc Player.UpdateChasingLight uses edi esi ebx,\
     pop     edi
 
     stdcall Vector3.MultOnNumber, esi, [dt]
-    stdcall Vector3.MultOnNumber, esi, [div2]
     stdcall Vector3.Add, ebx, esi
+
+    .SkipLightChasing:
 
 .Ret:
     ret
@@ -480,15 +465,17 @@ proc Player.ChangeLight uses edi esi ebx,\
     pPlayer
 
     mov     edi, [pPlayer]
-    inc     [edi + Player.offsetChasingLight]
 
     mov     eax, [edi + Player.maxLights]
     cmp     [edi + Player.offsetChasingLight], eax
-    jbe     @F
+    jb     @F
 
     mov     [edi + Player.offsetChasingLight], 0
+    jmp     .Ret
 
     @@:
+
+    inc     [edi + Player.offsetChasingLight]
 
 .Ret:
     ret
@@ -690,7 +677,7 @@ proc Player.UpdateState uses edi esi ebx,\
 
     ; check collision
     lea     ebx, [collision]
-    ; stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
+    stdcall Collision.MapDetection, [pPlayer], [sizeMap], [pMap], ebx, X_COLLISION
     cmp     eax, NO_COLLISION
     je      @F
 
