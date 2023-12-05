@@ -8,6 +8,8 @@
         ViewMatrix              Matrix4x4       ?
         ModelMatrix             Matrix4x4       ?
 
+        MAX_CNT_LIGHTS          =       10
+
         ; Do not touch this 
         time            dd      ?
         debugTime       dd      ?

@@ -60,8 +60,9 @@ proc Draw.ConPlayer uses edi esi ebx,\
                 tmp                     Vector3         ? 
         endl
 
+        mov     edi, [pPlayer]
         stdcall Shader.Activate, [shaderId]
-        stdcall Camera.UniformBind, [pPlayer], [shaderId], uniProjName, uniViewName
+        stdcall Camera.UniformBind, dword [edi + Player.camera], [shaderId], uniProjName, uniViewName
 
         mov     edi, [offset]
 
@@ -225,9 +226,15 @@ proc Draw.BindLightsForShader uses edi esi ebx,\
         mov     ecx, [sizeLightsMap]
         jcxz    .Ret
 
+        cmp     ecx, MAX_CNT_LIGHTS
+        jbe     @F
+
+        mov     ecx, MAX_CNT_LIGHTS
+
+        @@:
+
         .BindLight:
         push    ecx
-
                 
                 mov     eax, ecx
                 dec     eax

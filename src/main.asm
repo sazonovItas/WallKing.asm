@@ -97,14 +97,14 @@ proc WindowProc uses ebx,\
         cmp     [wParam], VK_ESCAPE
         je      .Destroy
 
-        stdcall Player.KeyDown, [wParam], [lParam]
+        stdcall Player.KeyDown, [mainPlayer], [wParam], [lParam]
 
         jmp     .ReturnZero
 
 .KeysManipulateUp:
 
-        stdcall Player.KeyUp, [wParam], [lParam]
-        stdcall Client.KeyUp, [wParam], [lParam]
+        stdcall Player.KeyUp, [mainPlayer], [wParam], [lParam]
+        stdcall Client.KeyUp, [mainPlayer], [wParam], [lParam]
 
         jmp     .ReturnZero
 

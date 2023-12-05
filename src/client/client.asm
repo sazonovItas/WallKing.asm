@@ -464,6 +464,9 @@ proc Client.Destroy
 
     mov     [Client.ThStopSd], true
     mov     [Client.ThStopRv], true
+    stdcall free, [Client.BufferDraw]
+    stdcall free, [Client.BufferSend]
+    stdcall free, [Client.BufferRecv]
 
     invoke  closesocket, [Client.Socket]
     invoke  WSACleanup

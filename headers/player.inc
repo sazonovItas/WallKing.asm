@@ -35,7 +35,11 @@ struct Player
     XYZangles       Vector3         ?
 
     ; Chasing light
-    
+    chasingLightRadius  GLfloat         ?
+    offsetChasingLight  dd              ?
+    chasingLight        Easing          ?
+    lightVelocity       Vector3         ?
+    maxLights           dd              ?
 
     ; Draw 
     DrawPlayer      DrawData        ?
@@ -97,6 +101,7 @@ ends
     PL_WEAK_GRAV        =       VK_DOWN
     PL_STOP_CAM_TEX     =       'O'
     PL_STOP_CAM_CHASING =       'P'
+    PL_CHANGE_LIGHT     =       'N'
 
     pl_jump             db      false
     pl_run              db      false

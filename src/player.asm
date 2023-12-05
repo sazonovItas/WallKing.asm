@@ -248,7 +248,26 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.DrawPlayer + DrawData.AmbientTexId], 8
     mov     [edi + Player.DrawPlayer + DrawData.DiffuseTexId], 8
     mov     [edi + Player.DrawPlayer + DrawData.SpecularTexId], 8
-    mov     [edi + Player.DrawPlayer + DrawData.Shininess], 12.0
+    mov     [edi + Player.DrawPlayer + DrawData.Shininess], 20.0
+
+    ; Chasing light
+    ; Constants
+    mov     [edi + Player.chasingLightRadius], 3.0
+    mov     [edi + Player.offsetChasingLight], 0
+    mov     [edi + Player.maxLights], 0
+    mov     [edi + Player.lightVelocity + Vector3.x], 0.0
+    mov     [edi + Player.lightVelocity + Vector3.y], 0.0
+    mov     [edi + Player.lightVelocity + Vector3.z], 0.0
+    
+    ; Easing for camera
+    mov     [edi + Player.chasingLight + Easing.ptrEasingFun], dword Easing.easeOutQuort
+    mov     [edi + Player.chasingLight + Easing.duration], 200 
+    mov     [edi + Player.chasingLight + Easing.startTime], 0
+    mov     [edi + Player.chasingLight + Easing.start], false
+    mov     [edi + Player.chasingLight + Easing.done], false
+    mov     [edi + Player.chasingLight + Easing.orinVec + Vector3.x], 0.0
+    mov     [edi + Player.chasingLight + Easing.orinVec + Vector3.y], 0.0
+    mov     [edi + Player.chasingLight + Easing.orinVec + Vector3.z], 0.0
 
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
@@ -262,9 +281,13 @@ proc Player.Update uses edi esi ebx,\
 
     locals 
         deltaTime           dd          ?
-        minTimeUpdatePlayer dd          10
+        minTimeUpdatePlayer dd          15
         tmp                 dd          ?
     endl
+
+    mov     edi, [pPlayer]
+    mov     eax, [sizeLightMap]
+    mov     [edi + Player.maxLights], eax
 
     fild    [dt]
     fstp    [deltaTime]
@@ -287,15 +310,187 @@ proc Player.Update uses edi esi ebx,\
 
     @@:
 
+        
     .UpdatePlayer:
 
         push    ecx
-        stdcall Player.UpdatePosition, [pPlayer], [deltaTime], [sizeMap], [pMap]
-        stdcall Player.UpdateVelocity, [pPlayer], [sizeMap], [pMap]
+        stdcall Player.UpdateVelocity, edi, [sizeMap], [pMap]
+        stdcall Player.UpdatePosition, edi, [deltaTime], [sizeMap], [pMap]
+        stdcall Player.UpdateChasingLight, edi, [deltaTime], [sizeLightMap], [pLightMap]
         pop     ecx
 
     loop    .UpdatePlayer
 
+    ret
+endp
+
+proc Player.UpdateChasingLight uses edi esi ebx,\
+    pPlayer, dt, sizeLightMap, pLigthMap
+
+    locals
+        lightChasingRadius      dd          ?
+        trigger                 dd          false
+        velocity                dd          0.0
+        deltaPos                Vector3     ?
+        div2                    dd          2.0
+    endl
+
+    mov     edi, [pPlayer]
+
+    ; Get pointer to position light
+    xor     edx, edx
+    mov     eax, [edi + Player.offsetChasingLight]
+    mov     ecx, sizeLight
+
+    mul     ecx
+    add     eax, [pLigthMap]
+    mov     ebx, eax
+
+    ; EBX, EDI are using
+    ; Zeroing Velocity
+    push    edi
+    add     edi, Player.lightVelocity
+    stdcall memzero, edi, 3 * 4
+    pop     edi
+
+    push    edi
+    add     edi, Player.Position
+    stdcall Vector3.Distance, edi, ebx
+    pop     edi
+
+    mov     [lightChasingRadius], eax
+    fld     [lightChasingRadius]
+    fcomp   [edi + Player.chasingLightRadius]
+    fstsw   ax
+    sahf
+    jb      @F
+
+    mov     [trigger], true
+
+    @@: 
+
+    mov     eax, [edi + Player.maxLights]
+    cmp     [edi + Player.chasingLight], eax
+    je      .SkipLightChasing
+
+    push    edi
+    add     edi, Player.Position
+    stdcall Vector3.Copy, orinVec, edi
+    stdcall Vector3.Sub, orinVec, ebx
+    pop     edi
+
+    mov     esi, edi
+    add     esi, Player.chasingLight
+
+    ; Cam animation
+    cmp     [trigger], false
+    je      .SkipUpdateChasingAni
+
+    cmp     [esi + Easing.done], true
+    je     .SkipDoneChasingAni
+
+    cmp     [esi + Easing.start], true
+    je      .SkipStartChasingAni
+
+    mov     [esi + Easing.start], true
+    invoke  GetTickCount
+    mov     [esi + Easing.startTime], eax
+
+    .SkipStartChasingAni:
+
+    invoke  GetTickCount
+    sub     eax, [esi + Easing.startTime]
+    cmp     eax, [esi + Easing.duration]
+    ja      .SkipDoneChasingAni
+
+    stdcall [esi + Easing.ptrEasingFun], eax
+    mov     [velocity], eax 
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    stdcall Vector3.MultOnNumber, orinVec, [velocity]
+
+    fld     [edi + Player.lightVelocity + Vector3.x]
+    fadd    [orinVec + Vector3.x]
+    fstp    [edi + Player.lightVelocity + Vector3.x]
+    fld     [edi + Player.lightVelocity + Vector3.y]
+    fadd    [orinVec + Vector3.y]
+    fstp    [edi + Player.lightVelocity + Vector3.y]
+    fld     [edi + Player.lightVelocity + Vector3.z]
+    fadd    [orinVec + Vector3.z]
+    fstp    [edi + Player.lightVelocity + Vector3.z]
+
+    jmp     .SkipChasingAni
+
+    .SkipDoneChasingAni:
+
+    mov     [esi + Easing.done], true
+
+    stdcall [esi + Easing.ptrEasingFun], [esi + Easing.duration]
+    mov     [velocity], eax
+
+    fld     [edi + Player.speed]
+    fmul    [velocity]
+    fstp    [velocity]
+
+    stdcall Vector3.MultOnNumber, orinVec, [velocity]
+
+    fld     [edi + Player.lightVelocity + Vector3.x]
+    fadd    [orinVec + Vector3.x]
+    fstp    [edi + Player.lightVelocity + Vector3.x]
+    fld     [edi + Player.lightVelocity + Vector3.y]
+    fadd    [orinVec + Vector3.y]
+    fstp    [edi + Player.lightVelocity + Vector3.y]
+    fld     [edi + Player.lightVelocity + Vector3.z]
+    fadd    [orinVec + Vector3.z]
+    fstp    [edi + Player.lightVelocity + Vector3.z]
+
+    jmp     .SkipChasingAni
+
+    .SkipUpdateChasingAni:
+
+    cmp     [esi + Easing.start], false
+    je      .SkipChasingAni
+
+    mov     [esi + Easing.start], false
+    mov     [esi + Easing.done], false
+
+    .SkipChasingAni:
+
+    .SkipLightChasing:
+
+    ; EBX - position of light
+    lea     esi, [deltaPos]
+    push    edi
+    add     edi, Player.lightVelocity
+    stdcall Vector3.Copy, esi, edi
+    pop     edi
+
+    stdcall Vector3.MultOnNumber, esi, [dt]
+    stdcall Vector3.MultOnNumber, esi, [div2]
+    stdcall Vector3.Add, ebx, esi
+
+.Ret:
+    ret
+endp
+
+proc Player.ChangeLight uses edi esi ebx,\
+    pPlayer
+
+    mov     edi, [pPlayer]
+    inc     [edi + Player.offsetChasingLight]
+
+    mov     eax, [edi + Player.maxLights]
+    cmp     [edi + Player.offsetChasingLight], eax
+    jbe     @F
+
+    mov     [edi + Player.offsetChasingLight], 0
+
+    @@:
+
+.Ret:
     ret
 endp
 
@@ -350,7 +545,7 @@ proc Player.UpdatePosition uses edi esi ebx,\
     ret
 endp
 
-proc Player.UpdateDrawData uses edi esi,\
+proc Player.UpdateDrawData uses edi esi ebx,\
     pPlayer
 
     mov     edi, [pPlayer]
@@ -380,7 +575,7 @@ proc Player.UpdateDrawData uses edi esi,\
     ret
 endp
 
-proc Player.Draw uses edi esi,\
+proc Player.Draw uses edi esi ebx,\
     shaderId, pPlayer, pDrawData
 
     locals
@@ -1879,7 +2074,7 @@ proc Player.InputsMouse uses edi esi ebx,\
 endp
 
 proc Player.KeyDown\
-    wParam, lParam
+    pPlayer, wParam, lParam
 
     cmp     [wParam], PL_JUMP
     jne     @F
@@ -1959,7 +2154,7 @@ proc Player.KeyDown\
 endp
 
 proc Player.KeyUp\
-    wParam, lParam
+    pPlayer, wParam, lParam
 
     cmp     [wParam], PL_JUMP
     jne     @F
@@ -2045,6 +2240,14 @@ proc Player.KeyUp\
     jne     @F
 
     xor     [pl_stop_cam_tex], true
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_CHANGE_LIGHT
+    jne     @F
+
+    stdcall Player.ChangeLight, [pPlayer]
     jmp     .SkipUp
 
     @@:
