@@ -63,11 +63,15 @@
 
     
     ; Useful constants for client
+    ; Online state
     Client.WaitOnlineTimeOut    =                   1000
+
+    ; Request state
     Client.RequestTimeout       =                   500
     Client.RequestOk            =                   200
     Client.RequestError         =                   0  
 
+    ; Accept state
     Client.AcceptSendTimeout    =                   15
 
     ; Checking message
