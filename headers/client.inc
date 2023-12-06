@@ -32,6 +32,7 @@
     Client.BufferDraw           dd                  NULL
 
     ; Structure of reciving message
+    Client.SizeofPlayer         =                   52
     Client.plPositioin          =                   0
     Client.plAngles             =                   12
     Client.plScale              =                   24

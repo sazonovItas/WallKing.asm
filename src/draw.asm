@@ -44,7 +44,7 @@ proc Draw.ConPlayers uses edi esi ebx,\
 
                 stdcall Draw.ConPlayer, [pPlayer], [shaderId], edi
 
-                add     edi, sizeof.DrawData
+                add     edi, Client.SizeofPlayer
                 pop     ecx
                 loop    .drawCycle
 
