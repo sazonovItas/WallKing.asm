@@ -42,7 +42,7 @@ proc Draw.ConPlayers uses edi esi ebx,\
         .drawCycle:
                 push    ecx
 
-                stdcall Draw.ConPlayer, [shaderId], [pPlayer], edi
+                stdcall Draw.ConPlayer, [pPlayer], [shaderId], edi
 
                 add     edi, sizeof.DrawData
                 pop     ecx
@@ -53,16 +53,15 @@ proc Draw.ConPlayers uses edi esi ebx,\
 endp
 
 proc Draw.ConPlayer uses edi esi ebx,\
-        shaderId, pPlayer, offset
+        pPlayer, shaderId, offset
 
         locals 
                 rotAngle                dd              0.0
                 tmp                     Vector3         ? 
         endl
 
-        mov     edi, [pPlayer]
         stdcall Shader.Activate, [shaderId]
-        stdcall Camera.UniformBind, dword [edi + Player.camera], [shaderId], uniProjName, uniViewName
+        stdcall Camera.UniformBind, [pPlayer], [shaderId], uniProjName, uniViewName
 
         mov     edi, [offset]
 
@@ -108,6 +107,8 @@ proc Draw.ConPlayer uses edi esi ebx,\
         invoke  glGetUniformLocation, [shaderId], uniModelName
         invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
 
+        stdcall Draw.BindLightsForShader, [shaderId], lightsMapTry, [sizeLightsMapTry]
+
         lea     ebx, [tmp]
         mov     edi, [pPlayer]
         add     edi, Player.camera + Camera.camPosition
@@ -126,7 +127,7 @@ proc Draw.ConPlayer uses edi esi ebx,\
 endp
 
 ;       offsets         scale = 12, rotate = 12, traslate = 12, texture = 4, material = 4, collision = 4
-proc Draw.BlocksMap uses esi edi,\
+proc Draw.BlocksMap uses esi edi ebx,\
         shaderId, pPlayer, blocksMap, sizeBlocksMap
 
         mov     edi, [blocksMap]
@@ -146,7 +147,7 @@ proc Draw.BlocksMap uses esi edi,\
         ret
 endp
 
-proc Draw.Block uses edi esi,\
+proc Draw.Block uses edi esi ebx,\
         shaderId, pPlayer, offsetBlock
 
         locals
@@ -255,7 +256,6 @@ proc Draw.BindLightsForShader uses edi esi ebx,\
                 mov     byte [esi], al
                 lea     esi, [uniPLSpecularName + pointLightIndexOffset]
                 mov     byte [esi], al
-                nop
 
                 stdcall Draw.BindLightForShader, [shaderId], edi
 

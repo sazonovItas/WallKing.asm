@@ -20,7 +20,7 @@
     CLIENT_STATE_ACCEPT         =                   0000_1000b
 
     ; Keys for client
-    CLIENT_CONNECT_KEY          =                   'C'
+    CLIENT_CONNECT_KEY          =                   'Q'
 
     CLIENT_ADAPTERS_BUF_MAX     =                   1024
 

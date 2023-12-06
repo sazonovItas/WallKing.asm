@@ -35,7 +35,6 @@ struct Player
     XYZangles       Vector3         ?
 
     ; Chasing light
-    chasingLightRadius  GLfloat         ?
     offsetChasingLight  dd              ?
     chasingLight        Easing          ?
     lightVelocity       Vector3         ?

@@ -252,7 +252,6 @@ proc Player.Constructor uses edi,\
 
     ; Chasing light
     ; Constants
-    mov     [edi + Player.chasingLightRadius], 3.0
     mov     [edi + Player.offsetChasingLight], 0
     mov     [edi + Player.maxLights], 0
     mov     [edi + Player.lightVelocity + Vector3.x], 0.0
@@ -261,7 +260,7 @@ proc Player.Constructor uses edi,\
     
     ; Easing for camera
     mov     [edi + Player.chasingLight + Easing.ptrEasingFun], dword Easing.easeOutQuort
-    mov     [edi + Player.chasingLight + Easing.duration], 200 
+    mov     [edi + Player.chasingLight + Easing.duration], 500 
     mov     [edi + Player.chasingLight + Easing.startTime], 0
     mov     [edi + Player.chasingLight + Easing.start], false
     mov     [edi + Player.chasingLight + Easing.done], false
@@ -594,6 +593,8 @@ proc Player.Draw uses edi esi ebx,\
         stdcall Texture.Bind, GL_TEXTURE_2D, dword [esi], GL_TEXTURE2
         stdcall Texture.texUnit, [shaderId], uniMatSpecularName, 2
 
+        invoke  glGetUniformLocation, [shaderId], uniMatShininessName
+        invoke  glUniform1f, eax, dword [edi + DrawData.Shininess]
 
     invoke  glPushMatrix
             invoke  glLoadIdentity

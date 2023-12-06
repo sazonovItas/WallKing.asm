@@ -108,8 +108,6 @@ proc Client.Init uses ebx edi esi
     mov     [Client.State], CLIENT_STATE_OFFLINE
     invoke  closesocket, ebx
     invoke  WSACleanup
-    mov     [Client.ThStopSd], true
-    mov     [Client.ThStopRv], true
     jmp     .Ret
 
 .Exit:
@@ -191,7 +189,7 @@ proc Client.RequestMessage uses edi,\
     ret
 endp
 
-proc Client.AcceptMessage uses edi,\
+proc Client.AcceptMessage uses edi esi,\
     pBuf
 
     mov     edi, [pBuf]

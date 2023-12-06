@@ -104,7 +104,7 @@ proc WindowProc uses ebx,\
 .KeysManipulateUp:
 
         stdcall Player.KeyUp, [mainPlayer], [wParam], [lParam]
-        stdcall Client.KeyUp, [mainPlayer], [wParam], [lParam]
+        stdcall Client.KeyUp, [wParam], [lParam]
 
         jmp     .ReturnZero
 
