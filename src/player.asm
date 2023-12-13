@@ -37,9 +37,7 @@ proc Player.Constructor uses edi,\
     pop     edi
 
     mov     [edi + Player.Acceleration + Vector3.x], 0.0
-    fld     [EARTH_GRAVITY]
-    fchs
-    fstp    [edi + Player.Acceleration + Vector3.y]
+    mov     [edi + Player.Acceleration + Vector3.y], 0.0098
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
     mov     [edi + Player.camera + Camera.pitch], -1.57
@@ -273,6 +271,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.lightVelocity + Vector3.x], 0.0
     mov     [edi + Player.lightVelocity + Vector3.y], 0.0
     mov     [edi + Player.lightVelocity + Vector3.z], 0.0
+    mov     [edi + Player.offsetColorLight], 0
     
     ; Easing for camera
     mov     [edi + Player.chasingLight + Easing.ptrEasingFun], dword Easing.easeOutQuort
@@ -492,7 +491,7 @@ proc Player.UpdateChasingLight uses edi esi ebx,\
     ret
 endp
 
-proc Player.ChangeLight uses edi esi ebx,\
+proc Player.ChangeNextLight uses edi esi ebx,\
     pPlayer
 
     mov     edi, [pPlayer]
@@ -508,6 +507,26 @@ proc Player.ChangeLight uses edi esi ebx,\
     @@:
 
     inc     [edi + Player.offsetChasingLight]
+
+.Ret:
+    ret
+endp
+proc Player.ChangePrevLight uses edi esi ebx,\
+    pPlayer
+
+    mov     edi, [pPlayer]
+    mov     esi, [edi + Player.pLevel]
+
+    cmp     [edi + Player.offsetChasingLight], 0
+    ja      @F
+
+    mov     eax, [esi + Level.sizeLightsMap]
+    mov     [edi + Player.offsetChasingLight], eax
+    jmp     .Ret
+
+    @@:
+
+    dec     [edi + Player.offsetChasingLight]
 
 .Ret:
     ret
@@ -2107,14 +2126,6 @@ proc Player.KeyDown\
 
     @@:
 
-    cmp     [wParam], PL_RUN
-    jne     @F
-
-    mov     [pl_run], true
-    jmp     .SkipDown
-
-    @@:
-
     cmp     [wParam], PL_FORWARD
     jne     @F
 
@@ -2147,32 +2158,83 @@ proc Player.KeyDown\
 
     @@:
 
-    cmp     [wParam], PL_NORMAL_GRAV
+    cmp     [wParam], PL_WEAK_COLOR
     jne     @F
 
-    mov     [pl_normal_grav], true
-    jmp     .SkipDown
-
-    @@:
-
-    cmp     [wParam], PL_ENHANCE_GRAV
-    jne     @F
-
-    mov     [pl_enhance_grav], true
-    jmp     .SkipDown
-
-    @@:
-
-    cmp     [wParam], PL_WEAK_GRAV
-    jne     @F
-
-    mov     [pl_weak_grav], true
     jmp     .SkipDown
 
     @@:
 
     .SkipDown:
 
+    ret
+endp
+
+proc Player.ChangeColorLight uses edi,\
+    pPlayer, offsetColorLight
+
+    mov     edi, [pPlayer]
+
+    mov     eax, [offsetColorLight]    
+    mov     [edi + Player.offsetColorLight], eax
+
+    ret
+endp
+
+proc Player.EnhanceLightIntensity uses edi esi ebx,\
+    pPlayer
+
+    mov     edi, [pPlayer]
+
+    mov     eax, [edi + Player.offsetChasingLight]
+    mov     esi, eax
+    mov     ecx, sizeLight
+    mul     ecx
+
+    mov     ebx, [edi + Player.pLevel]
+
+    cmp     esi, [ebx + Level.sizeLightsMap]
+    je      .Ret
+
+    mov     esi, eax
+    add     esi, [ebx + Level.pLightsMap]
+    add     esi, colorLightOffset
+    add     esi, [edi + Player.offsetColorLight]
+
+
+    fld     dword [esi]
+    fadd    [colorStep]
+    fstp    dword [esi]
+
+.Ret:
+    ret
+endp
+
+proc Player.DecreaseLightIntensity uses edi esi ebx,\
+    pPlayer
+
+    mov     edi, [pPlayer]
+
+    mov     eax, [edi + Player.offsetChasingLight]
+    mov     esi, eax
+    mov     ecx, sizeLight
+    mul     ecx
+
+    mov     ebx, [edi + Player.pLevel]
+
+    cmp     esi, [ebx + Level.sizeLightsMap]
+    je      .Ret
+
+    mov     esi, eax
+    add     esi, [ebx + Level.pLightsMap]
+    add     esi, colorLightOffset
+    add     esi, [edi + Player.offsetColorLight]
+
+    fld     dword [esi]
+    fsub    [colorStep]
+    fstp    dword [esi]
+
+.Ret:
     ret
 endp
 
@@ -2183,14 +2245,6 @@ proc Player.KeyUp\
     jne     @F
 
     mov     [pl_jump], false
-    jmp     .SkipUp
-
-    @@:
-
-    cmp     [wParam], PL_RUN
-    jne     @F
-
-    mov     [pl_run], false
     jmp     .SkipUp
 
     @@:
@@ -2227,26 +2281,18 @@ proc Player.KeyUp\
 
     @@:
 
-    cmp     [wParam], PL_NORMAL_GRAV
+    cmp     [wParam], PL_ENHANCE_COLOR
     jne     @F
 
-    mov     [pl_normal_grav], false
+    stdcall Player.EnhanceLightIntensity, [pPlayer]
     jmp     .SkipUp
 
     @@:
 
-    cmp     [wParam], PL_ENHANCE_GRAV
+    cmp     [wParam], PL_WEAK_COLOR
     jne     @F
 
-    mov     [pl_enhance_grav], false
-    jmp     .SkipUp
-
-    @@:
-
-    cmp     [wParam], PL_WEAK_GRAV
-    jne     @F
-
-    mov     [pl_weak_grav], false
+    stdcall Player.DecreaseLightIntensity, [pPlayer]
     jmp     .SkipUp
 
     @@:
@@ -2267,10 +2313,18 @@ proc Player.KeyUp\
 
     @@:
 
-    cmp     [wParam], PL_CHANGE_LIGHT
+    cmp     [wParam], PL_NEXT_LIGHT
     jne     @F
 
-    stdcall Player.ChangeLight, [pPlayer]
+    stdcall Player.ChangeNextLight, [pPlayer]
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_PREV_LIGHT
+    jne     @F
+
+    stdcall Player.ChangePrevLight, [pPlayer]
     jmp     .SkipUp
 
     @@:
@@ -2279,6 +2333,30 @@ proc Player.KeyUp\
     jne     @F
 
     stdcall Player.Respawn, [pPlayer]
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_LIGHT_R 
+    jne     @F
+
+    stdcall Player.ChangeColorLight, [pPlayer], 0
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_LIGHT_G 
+    jne     @F
+
+    stdcall Player.ChangeColorLight, [pPlayer], 4
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_LIGHT_B 
+    jne     @F
+
+    stdcall Player.ChangeColorLight, [pPlayer], 8
     jmp     .SkipUp
 
     @@:
