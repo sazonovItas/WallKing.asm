@@ -31,8 +31,8 @@
         uniPLDiffuseName        db              "pointLights[0].diffuse", 0
         uniPLSpecularName       db              "pointLights[0].specular", 0
 
-        ; TODO: DELETE THIS STUFF
-        uniLightPosName         db      "lightPos", 0
-
         ; LIGHT SHADER
-        uniLightColorName       db      "lightColor", 0
+        uniLightPosName         db              "lightPos", 0
+        uniLightColorName       db              "lightColor", 0
+
+        ; SHADOW SHADER

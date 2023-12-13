@@ -17,8 +17,3 @@ ends
         shadowFragmentFile      db              "resources/shaders/shadow.frag", 0
         shadowVertexFile        db              "resources/shaders/shadow.vert", 0
         shadowShader            Shader          ?
-
-        depthMap                dd              ?
-        depthMapFBO             dd              ?
-        SHADOW_WIDTH            =               1024
-        SHADOW_HEIGHT           =               1024

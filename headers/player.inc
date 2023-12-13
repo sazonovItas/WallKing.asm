@@ -35,10 +35,12 @@ struct Player
     XYZangles       Vector3         ?
 
     ; Chasing light
-    offsetChasingLight  dd              ?
-    chasingLight        Easing          ?
-    lightVelocity       Vector3         ?
-    maxLights           dd              ?
+    offsetChasingLight  dd          ?
+    chasingLight        Easing      ?
+    lightVelocity       Vector3     ?
+
+    ; Level  
+    pLevel              dd          ?
 
     ; Draw 
     DrawPlayer      DrawData        ?
@@ -101,6 +103,7 @@ ends
     PL_STOP_CAM_TEX     =       'O'
     PL_STOP_CAM_CHASING =       'P'
     PL_CHANGE_LIGHT     =       'N'
+    PL_RESPAWN          =       'R'
 
     pl_jump             db      false
     pl_run              db      false

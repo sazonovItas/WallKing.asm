@@ -134,6 +134,43 @@ proc Camera.Matrix uses edi esi ebx,\
     ret
 endp
 
+proc Shadow.Matrix uses edi esi ebx,\ 
+    pLightPos, pViewMat, pProjMat
+
+    locals 
+        tmp         Vector3     0.0, 0.0, 0.0
+        vecUp       Vector3     0.0, 1.0, 0.0
+        div2        dd          4.0
+    endl
+
+    lea     edx, [tmp]
+    lea     edi, [vecUp]
+    stdcall Matrix.LookAt, [pLightPos], edx, edi, [pViewMat]
+
+    invoke  glMatrixMode, GL_PROJECTION
+    invoke  glPushMatrix
+        invoke  glLoadIdentity
+        invoke  glOrtho, double SHADOW_LEFT_PLANE, double SHADOW_RIGHT_PLANE,\
+                double SHADOW_BOTTOM_PLANE, double SHADOW_TOP_PLANE,\ 
+                double SHADOW_NEAR_PLANE, double SHADOW_FAR_PLANE 
+        invoke  glGetFloatv, GL_PROJECTION_MATRIX, [pProjMat]
+    invoke  glPopMatrix
+
+.Ret:
+    ret
+endp
+
+proc Shadow.UniformBind\
+    ShaderID, pStrUniView, pStrUniProj, pView, pProj
+
+    invoke  glGetUniformLocation, [ShaderID], [pStrUniView]
+    invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, [pView] 
+
+    invoke  glGetUniformLocation, [ShaderID], [pStrUniProj]
+    invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, [pProj]
+
+    ret
+endp
 proc Camera.ViewPosition uses edi,\
     pCamera
 

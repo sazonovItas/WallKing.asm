@@ -35,7 +35,7 @@ entry   WinMain
         include         "player.inc"
         include         "collision.inc"
 
-        include         "objects.inc"
+        include         "level.inc"
 
         ; Opengl data and useful variables
         include         "opengl/uni.inc"

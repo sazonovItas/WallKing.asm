@@ -7,3 +7,7 @@
         lightVAO                VAO             
         lightVBO                VBO 
         lightEBO                EBO
+
+        shadowVAO               VAO             
+        shadowVBO               VBO 
+        shadowEBO               EBO

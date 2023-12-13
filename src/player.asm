@@ -1,5 +1,5 @@
 proc Player.Constructor uses edi,\
-    pPlayer, width, height, pPosition
+    pPlayer, width, height, pLevel
 
     mov     edi, [pPlayer]
 
@@ -8,20 +8,32 @@ proc Player.Constructor uses edi,\
     mov     eax, [height]
     mov     [edi + Player.camera + Camera.height], eax
 
+    mov     esi, [pLevel]
+    mov     [edi + Player.pLevel], esi
+
     push    edi
+    push    esi
     add     edi, Player.Position
-    stdcall Vector3.Copy, edi, [pPosition] 
+    add     esi, Level.spawnPosition
+    stdcall Vector3.Copy, edi, esi 
+    pop     esi
     pop     edi
 
     push    edi
     add     edi, Player.camera
     add     edi, Camera.camPosition
-    stdcall Vector3.Copy, edi, [pPosition] 
+    push    esi
+    add     esi, Level.spawnPosition
+    stdcall Vector3.Copy, edi, esi 
+    pop     esi
     pop     edi
 
     push    edi
+    push    esi
     add     edi, Player.prevPosition
-    stdcall Vector3.Copy, edi, [pPosition] 
+    add     esi, Level.spawnPosition
+    stdcall Vector3.Copy, edi, esi
+    pop     esi
     pop     edi
 
     mov     [edi + Player.Acceleration + Vector3.x], 0.0
@@ -30,7 +42,7 @@ proc Player.Constructor uses edi,\
     fstp    [edi + Player.Acceleration + Vector3.y]
     mov     [edi + Player.Acceleration + Vector3.z], 0.0
 
-    mov     [edi + Player.camera + Camera.pitch], 0.0
+    mov     [edi + Player.camera + Camera.pitch], -1.57
     mov     [edi + Player.camera + Camera.yaw], -1.57
 
     stdcall Camera.Direction, edi
@@ -228,8 +240,11 @@ proc Player.Constructor uses edi,\
 
     ; copy position to draw position
     push    edi
+    push    esi
+    add     esi, Level.spawnPosition
     add     edi, (Player.DrawPlayer + DrawData.Position)
-    stdcall Vector3.Copy, edi, [pPosition] 
+    stdcall Vector3.Copy, edi, esi
+    pop     esi
     pop     edi
 
     ; angles to zero
@@ -252,8 +267,9 @@ proc Player.Constructor uses edi,\
 
     ; Chasing light
     ; Constants
-    mov     [edi + Player.offsetChasingLight], 0
-    mov     [edi + Player.maxLights], 0
+    mov     esi, [edi + Player.pLevel]
+    mov     esi, [esi + Level.sizeLightsMap]
+    mov     [edi + Player.offsetChasingLight], esi
     mov     [edi + Player.lightVelocity + Vector3.x], 0.0
     mov     [edi + Player.lightVelocity + Vector3.y], 0.0
     mov     [edi + Player.lightVelocity + Vector3.z], 0.0
@@ -268,15 +284,31 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.chasingLight + Easing.orinVec + Vector3.y], 0.0
     mov     [edi + Player.chasingLight + Easing.orinVec + Vector3.z], 0.0
 
+
     invoke SetCursorPos, cursorPosX, cursorPosY
     invoke GetCursorPos, lastCursorPos
     
     ret
 endp
 
+proc Player.Respawn uses edi esi,\
+    pPlayer
+
+    mov     edi, [pPlayer]
+
+    mov     [edi + Player.fallAni + Easing.start], false
+
+    mov     esi, [edi + Player.pLevel]
+
+    lea     edi, [edi + Player.Position]
+    lea     esi, [esi + Level.spawnPosition]
+    stdcall Vector3.Copy, edi, esi
+
+    ret
+endp
 
 proc Player.Update uses edi esi ebx,\
-    pPlayer, dt, sizeMap, pMap, sizeLightMap, pLightMap
+    pPlayer, dt
 
     locals 
         deltaTime           dd          ?
@@ -285,8 +317,7 @@ proc Player.Update uses edi esi ebx,\
     endl
 
     mov     edi, [pPlayer]
-    mov     eax, [sizeLightMap]
-    mov     [edi + Player.maxLights], eax
+    mov     esi, [edi + Player.pLevel]
 
     fild    [dt]
     fstp    [deltaTime]
@@ -313,9 +344,9 @@ proc Player.Update uses edi esi ebx,\
     .UpdatePlayer:
 
         push    ecx
-        stdcall Player.UpdateVelocity, edi, [sizeMap], [pMap]
-        stdcall Player.UpdatePosition, edi, [deltaTime], [sizeMap], [pMap]
-        stdcall Player.UpdateChasingLight, edi, [deltaTime], [sizeLightMap], [pLightMap]
+        stdcall Player.UpdateVelocity, edi, [esi + Level.sizeBlocksMap], [esi + Level.pBlocksMap]
+        stdcall Player.UpdatePosition, edi, [deltaTime], [esi + Level.sizeBlocksMap], [esi + Level.pBlocksMap]
+        stdcall Player.UpdateChasingLight, edi, [deltaTime], [esi + Level.sizeLightsMap], [esi + Level.pLightsMap]
         pop     ecx
 
     loop    .UpdatePlayer
@@ -335,8 +366,9 @@ proc Player.UpdateChasingLight uses edi esi ebx,\
     endl
 
     mov     edi, [pPlayer]
+    mov     esi, [edi + Player.pLevel]
 
-    mov     eax, [edi + Player.maxLights]
+    mov     eax, [esi + Level.sizeLightsMap]
     cmp     [edi + Player.offsetChasingLight], eax
     je      .SkipLightChasing
 
@@ -464,8 +496,9 @@ proc Player.ChangeLight uses edi esi ebx,\
     pPlayer
 
     mov     edi, [pPlayer]
+    mov     esi, [edi + Player.pLevel]
 
-    mov     eax, [edi + Player.maxLights]
+    mov     eax, [esi + Level.sizeLightsMap]
     cmp     [edi + Player.offsetChasingLight], eax
     jb     @F
 
@@ -569,8 +602,12 @@ proc Player.Draw uses edi esi ebx,\
         tmp             Vector3     ?
     endl
 
-    stdcall Shader.Activate, [shaderId]
+    mov     esi, [pPlayer]
+    mov     esi, [esi + Player.pLevel]
 
+    ; block drawing
+    stdcall Shader.Activate, [shaderId]
+    stdcall Draw.BindLightsForShader, [shaderId], [esi + Level.pLightsMap], [esi + Level.sizeLightsMap]
     stdcall Camera.UniformBind, [pPlayer], [shaderId], uniProjName, uniViewName
 
     mov     edi, [pDrawData]
@@ -616,8 +653,6 @@ proc Player.Draw uses edi esi ebx,\
     invoke  glPopMatrix
     invoke  glGetUniformLocation, [shaderId], uniModelName
     invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
-
-    stdcall Draw.BindLightsForShader, [shaderId], lightsMapTry, [sizeLightsMapTry]
 
     lea     ebx, [tmp]
     mov     edi, [pPlayer]
@@ -2236,6 +2271,14 @@ proc Player.KeyUp\
     jne     @F
 
     stdcall Player.ChangeLight, [pPlayer]
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_RESPAWN 
+    jne     @F
+
+    stdcall Player.Respawn, [pPlayer]
     jmp     .SkipUp
 
     @@:

@@ -40,7 +40,7 @@ proc Init.GameData
 
     stdcall malloc, sizeof.Player
     mov  	[mainPlayer], eax
-    stdcall Player.Constructor, eax, [clientRect.right], [clientRect.bottom], cameraPosition
+    stdcall Player.Constructor, eax, [clientRect.right], [clientRect.bottom], TestLevel
 
     ret
 endp
@@ -107,9 +107,8 @@ proc Init.OpenGL
 
     ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
     stdcall VAO.LinkAttribVBO, [blockVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
-    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 1, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetColor
-    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 2, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
-    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 3, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetNormal
+    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 1, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
+    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 2, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetNormal
 
     ; Unbind VAO, VBO and EBO so that accidentlly to change it
     stdcall VBO.Unbind
@@ -133,6 +132,34 @@ proc Init.OpenGL
     stdcall VBO.Unbind
     stdcall VAO.Unbind
     stdcall EBO.Unbind
+
+    ; ========= SHADOWS =========
+    ; Generate shadow map fbo
+    ; invoke  glGenFramebuffers, 1, shadowMapFBO
+
+    ; ; Generate shadow texture
+    ; invoke  glGenTextures, 1, shadowMap
+    ; invoke  glBindTexture, GL_TEXTURE_2D, [shadowMap]
+    ; invoke  glTexImage2D, GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,\
+    ;         SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL
+
+    ; ; Texture's settings
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, clampColor
+
+    ; ; Bind and setting up framebuffer
+    ; invoke  glBindFramebuffer, GL_FRAMEBUFFER, [shadowMapFBO]
+    ; invoke  glFramebufferTexture2D, GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, [shadowMap], NULL
+    ; invoke  glDrawBuffer, GL_NONE
+    ; invoke  glReadBuffer, GL_NONE
+    ; invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
+
+    ; ; Shadow shader
+    ; stdcall Shader.Constructor, shadowShader.ID, shadowVertexFile, shadowFragmentFile
+
 
     ret
 endp

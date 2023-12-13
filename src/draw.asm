@@ -1,26 +1,25 @@
 proc Draw.Scene uses esi edi,\
-        pPlayer, pBlocksMap, sizeBlocksMap, pLightsMap, sizeLightsMap
+        pPlayer, ShaderId
 
         stdcall Camera.Matrix, [pPlayer]
 
         mov     edi, [pPlayer]
 
-        stdcall Draw.BlocksMap, [blockShader.ID], [pPlayer], [pBlocksMap], [sizeBlocksMap]
-        stdcall Draw.LightsMap, [ligthShader.ID], [pPlayer], [pLightsMap], [sizeLightsMap]
+        stdcall Draw.BlocksMap, [blockShader.ID], edi, Draw.Block
+        stdcall Draw.LightsMap, [ligthShader.ID], edi, Draw.Light
 
-        mov     edi, [pPlayer]
         mov     esi, edi 
         add     esi, Player.DrawPlayer
         stdcall Player.Draw, [blockShader.ID], edi, esi
 
         ; Draw other players
-        stdcall Draw.ConPlayers, [pPlayer], [blockShader.ID], [Client.BufferDraw]
+        stdcall Draw.ConPlayers, [pPlayer], [blockShader.ID], [Client.BufferDraw], Draw.ConPlayer
 
         ret
 endp
 
 proc Draw.ConPlayers uses edi esi ebx,\
-        pPlayer, shaderId, buf
+        pPlayer, shaderId, buf, pFunDraw
 
         locals
                 bufToDraw               db              MESSAGE_SIZE dup(0)
@@ -42,7 +41,7 @@ proc Draw.ConPlayers uses edi esi ebx,\
         .drawCycle:
                 push    ecx
 
-                stdcall Draw.ConPlayer, [pPlayer], [shaderId], edi
+                stdcall [pFunDraw], [pPlayer], [shaderId], edi
 
                 add     edi, Client.SizeofPlayer
                 pop     ecx
@@ -60,7 +59,12 @@ proc Draw.ConPlayer uses edi esi ebx,\
                 tmp                     Vector3         ? 
         endl
 
+        mov     esi, [pPlayer]
+        mov     esi, [esi + Player.pLevel]
+
+        ; block drawing
         stdcall Shader.Activate, [shaderId]
+        stdcall Draw.BindLightsForShader, [shaderId], [esi + Level.pLightsMap], [esi + Level.sizeLightsMap]
         stdcall Camera.UniformBind, [pPlayer], [shaderId], uniProjName, uniViewName
 
         mov     edi, [offset]
@@ -107,8 +111,6 @@ proc Draw.ConPlayer uses edi esi ebx,\
         invoke  glGetUniformLocation, [shaderId], uniModelName
         invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
 
-        stdcall Draw.BindLightsForShader, [shaderId], lightsMapTry, [sizeLightsMapTry]
-
         lea     ebx, [tmp]
         mov     edi, [pPlayer]
         add     edi, Player.camera + Camera.camPosition
@@ -128,16 +130,19 @@ endp
 
 ;       offsets         scale = 12, rotate = 12, traslate = 12, texture = 4, material = 4, collision = 4
 proc Draw.BlocksMap uses esi edi ebx,\
-        shaderId, pPlayer, blocksMap, sizeBlocksMap
+        shaderId, pPlayer, pFunDraw
 
-        mov     edi, [blocksMap]
-        mov     ecx, [sizeBlocksMap]
+        mov     edi, [pPlayer]
+        mov     esi, [edi + Player.pLevel]
+
+        mov     edi, [esi + Level.pBlocksMap]
+        mov     ecx, [esi + Level.sizeBlocksMap]
         jcxz    .Ret
         
         .DrawBlock:
         push    ecx
 
-        stdcall Draw.Block, [shaderId], [pPlayer], edi
+        stdcall [pFunDraw], [shaderId], [pPlayer], edi
 
         add     edi, sizeBlock
         pop     ecx 
@@ -155,9 +160,12 @@ proc Draw.Block uses edi esi ebx,\
         endl
 
         mov     edi, [offsetBlock]
+        mov     esi, [pPlayer]
+        mov     esi, [esi + Player.pLevel]
 
         ; block drawing
         stdcall Shader.Activate, [shaderId]
+        stdcall Draw.BindLightsForShader, [shaderId], [esi + Level.pLightsMap], [esi + Level.sizeLightsMap]
 
         stdcall Camera.UniformBind, [pPlayer], [shaderId], uniProjName, uniViewName
 
@@ -195,7 +203,6 @@ proc Draw.Block uses edi esi ebx,\
         invoke  glGetUniformLocation, [shaderId], uniModelName
         invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
 
-        stdcall Draw.BindLightsForShader, [shaderId], lightsMapTry, [sizeLightsMapTry]
 
         lea     ebx, [tmp]
         mov     edi, [pPlayer]
@@ -302,16 +309,19 @@ proc Draw.BindLightForShader uses edi esi ebx,\
 endp
 
 proc Draw.LightsMap uses edi esi ebx,\
-        shaderId, pPlayer, pLightsMap, sizeLigthsMap 
+        shaderId, pPlayer, pFunDraw
 
-        mov     edi, [pLightsMap]       
-        mov     ecx, [sizeLigthsMap]
+        mov     edi, [pPlayer]
+        mov     esi, [edi + Player.pLevel]
+
+        mov     edi, [esi + Level.pLightsMap]       
+        mov     ecx, [esi + Level.sizeLightsMap]
         jcxz    .Ret
 
         .DrawLight:
         push    ecx
 
-        stdcall Draw.Light, [shaderId], [pPlayer], edi
+        stdcall [pFunDraw], [shaderId], [pPlayer], edi
 
         add     edi, sizeLight
         pop     ecx
@@ -345,6 +355,64 @@ proc Draw.Light uses edi esi ebx,\
         stdcall VAO.Bind, [lightVAO.ID]
         invoke  glDrawElements, GL_TRIANGLES, countLightIndices, GL_UNSIGNED_INT, 0
         stdcall VAO.Unbind
+
+        ret
+endp
+
+proc Draw.Shadow uses edi esi ebx,\ 
+        pPlayer, ShaderId
+
+        mov     edi, [pPlayer]
+        mov     esi, [edi + Player.pLevel]
+
+        mov     edi, [esi + Level.pLightsMap]       
+        mov     ecx, [esi + Level.sizeLightsMap]
+        jcxz    .Ret
+
+        .Draw:
+        push    ecx
+
+        stdcall Shadow.Matrix, edi, ShadowViewMatrix, ShadowProjMatrix
+        stdcall Draw.BlocksMap, [ShaderId], [pPlayer], Draw.ShadowBlock
+
+        add     edi, sizeLight
+        pop     ecx
+        loop    .Draw
+
+.Ret:
+        ret
+endp
+
+proc Draw.ShadowBlock uses edi esi ebx,\
+        shaderId, pPlayer, offsetBlock
+
+        locals
+                tmp             Vector3         ?
+        endl
+
+        mov     edi, [offsetBlock]
+
+        ; block drawing
+        stdcall Shader.Activate, [shaderId]
+        stdcall Shadow.UniformBind, [shaderId], uniViewName, uniProjName, ShadowViewMatrix, ShadowProjMatrix
+
+        invoke  glPushMatrix
+                invoke  glLoadIdentity
+                invoke  glTranslatef, [edi + translateOffset + Vector3.x], [edi + translateOffset + Vector3.y], [edi + translateOffset + Vector3.z]
+                invoke  glRotatef, [edi + rotateOffset + Vector3.x], 1.0, 0.0, 0.0
+                invoke  glRotatef, [edi + rotateOffset + Vector3.y], 0.0, 1.0, 0.0
+                invoke  glRotatef, [edi + rotateOffset + Vector3.z], 0.0, 0.0, 1.0
+                invoke  glScalef, [edi + scaleOffset + Vector3.x], [edi + scaleOffset + Vector3.y], [edi + scaleOffset + Vector3.z] 
+                invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
+        invoke  glPopMatrix
+        invoke  glGetUniformLocation, [shaderId], uniModelName
+        invoke  glUniformMatrix4fv, eax, 1, GL_FALSE, ModelMatrix
+
+        stdcall VAO.Bind, [blockVAO.ID]       
+        invoke  glDrawElements, GL_TRIANGLES, countIndices, GL_UNSIGNED_INT, 0
+        stdcall VAO.Unbind
+
+.Ret:
 
         ret
 endp
