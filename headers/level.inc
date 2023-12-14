@@ -1,4 +1,5 @@
 struct Level 
+    FileName            dd          ?
     sizeBlocksMap       dd          ?
     pBlocksMap          dd          ?
     sizeLightsMap       dd          ?
@@ -6,8 +7,19 @@ struct Level
     spawnPosition       Vector3     ?
 ends
 
-    TestLevel       Level    23, blocksMapTry, 10, lightsMapTry, <4.0, 200.0, 4.0>
+struct Levels
+    curLevel            dd          ?
+    sizeLevels          dd          ?
+    arrLevels           dd          ?
+ends
 
+    TestLevel       Level    level1File, 23, blocksMapTry, 10, lightsMapTry, <4.0, 200.0, 4.0> 
+
+    LEVEL_SAVE_KEY          =           VK_F5
+
+    level1File              db              "resources/levels/level1.bin", 0
+    level2File              db              "resources/levels/level2.bin", 0
+    level3File              db              "resources/levels/level3.bin", 0
 
         sizeLight                       =       72
         posLightOffset                  =       0   

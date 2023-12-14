@@ -11,6 +11,7 @@
         include         "collision.asm"
         include         "player.asm"
         include         "game.asm"
+        include         "levels.asm"
 
         ; Include client
         include         "client/client.asm"
