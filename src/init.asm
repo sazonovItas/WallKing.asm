@@ -38,6 +38,8 @@ endp
 
 proc Init.GameData
 
+    stdcall Level.Load, TestLevel, level1File
+
     stdcall malloc, sizeof.Player
     mov  	[mainPlayer], eax
     stdcall Player.Constructor, eax, [clientRect.right], [clientRect.bottom], TestLevel

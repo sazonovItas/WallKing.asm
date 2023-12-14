@@ -15,7 +15,6 @@ ends
 
     TestLevel       Level    level1File, 23, blocksMapTry, 10, lightsMapTry, <4.0, 200.0, 4.0> 
 
-    LEVEL_SAVE_KEY          =           VK_F5
 
     level1File              db              "resources/levels/level1.bin", 0
     level2File              db              "resources/levels/level2.bin", 0
@@ -31,7 +30,17 @@ ends
         diffuseLightOffset              =       48
         specularLightOffset             =       60
 
-        sizeLightsMapTry                dd      10
+        sizeBlock               =       56
+        scaleOffset             =       0     
+        rotateOffset            =       12
+        translateOffset         =       24
+        texOffset               =       36
+        ambientOffset           =       40
+        diffuseOffset           =       44
+        specularOffset          =       48
+        shininessOffset         =       52
+
+sizeLightsMapTry                dd      10
 
 ;                               // position             // Color                // constant, linear, quadric    // ambient              // diffuse              // specular
 lightsMapTry:
@@ -47,18 +56,8 @@ lightsMapTry:
                GLfloat          19.0, 13.0, -12.0,      1.0, 1.1, 0.1,          1.0, 0.09, 0.032,               0.4, 0.2, 0.5,       0.5, 0.5, 0.5,         0.6, 0.6, 0.6  
 
 
-        sizeBlock               =       56
-        scaleOffset             =       0     
-        rotateOffset            =       12
-        translateOffset         =       24
-        texOffset               =       36
-        ambientOffset           =       40
-        diffuseOffset           =       44
-        specularOffset          =       48
-        shininessOffset         =       52
 
-
-        sizeBlocksMapTry        dd      23
+sizeBlocksMapTry        dd      23
 
 ;                               // Scale                // Rotate               // Translate            // Texture offset       // ambient offset      // diffuse offset  // specular offset    // shinennes
 blocksMapTry:

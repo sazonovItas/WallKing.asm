@@ -2361,6 +2361,15 @@ proc Player.KeyUp\
 
     @@:
 
+    cmp     [wParam], PL_LEVEL_SAVE_KEY
+    jne     @F
+
+    mov     edi, [pPlayer]
+    stdcall Level.Save, [edi + Player.pLevel]
+    jmp     .SkipUp
+
+    @@:
+
     .SkipUp:
 
     ret

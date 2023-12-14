@@ -107,6 +107,7 @@ ends
     PL_LIGHT_R          =       '1'
     PL_LIGHT_G          =       '2'
     PL_LIGHT_B          =       '3'
+    PL_LEVEL_SAVE_KEY   =       'Z'
 
     pl_jump             db      false
     pl_run              db      false
