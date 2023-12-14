@@ -13,7 +13,12 @@ ends
         blockVertexFile         db              "resources/shaders/default.vert", 0
         blockShader             Shader          ?
 
-        ; shadow shader
-        shadowFragmentFile      db              "resources/shaders/shadow.frag", 0
-        shadowVertexFile        db              "resources/shaders/shadow.vert", 0
-        shadowShader            Shader          ?
+        ; ; shadow shader
+        ; shadowFragmentFile      db              "resources/shaders/shadow.frag", 0
+        ; shadowVertexFile        db              "resources/shaders/shadow.vert", 0
+        ; shadowShader            Shader          ?
+
+        ; interface shader  
+        interfaceFragmentFile   db              "resources/shaders/interface.frag", 0
+        interfaceVertexFile     db              "resources/shaders/interface.vert", 0
+        interfaceShader         Shader          ?

@@ -266,8 +266,7 @@ proc Player.Constructor uses edi,\
     ; Chasing light
     ; Constants
     mov     esi, [edi + Player.pLevel]
-    mov     esi, [esi + Level.sizeLightsMap]
-    mov     [edi + Player.offsetChasingLight], esi
+    mov     [edi + Player.offsetChasingLight], 0
     mov     [edi + Player.lightVelocity + Vector3.x], 0.0
     mov     [edi + Player.lightVelocity + Vector3.y], 0.0
     mov     [edi + Player.lightVelocity + Vector3.z], 0.0
@@ -367,9 +366,9 @@ proc Player.UpdateChasingLight uses edi esi ebx,\
     mov     edi, [pPlayer]
     mov     esi, [edi + Player.pLevel]
 
-    mov     eax, [esi + Level.sizeLightsMap]
-    cmp     [edi + Player.offsetChasingLight], eax
-    je      .SkipLightChasing
+    movzx   eax, [pl_stop_light]
+    cmp     eax, false
+    je      .Ret
 
     ; Get pointer to position light
     xor     edx, edx
@@ -497,16 +496,15 @@ proc Player.ChangeNextLight uses edi esi ebx,\
     mov     edi, [pPlayer]
     mov     esi, [edi + Player.pLevel]
 
+    inc     [edi + Player.offsetChasingLight]
     mov     eax, [esi + Level.sizeLightsMap]
     cmp     [edi + Player.offsetChasingLight], eax
-    jb     @F
+    jbe     @F
 
     mov     [edi + Player.offsetChasingLight], 0
-    jmp     .Ret
 
     @@:
 
-    inc     [edi + Player.offsetChasingLight]
 
 .Ret:
     ret
@@ -517,16 +515,17 @@ proc Player.ChangePrevLight uses edi esi ebx,\
     mov     edi, [pPlayer]
     mov     esi, [edi + Player.pLevel]
 
+    dec     [edi + Player.offsetChasingLight]
     cmp     [edi + Player.offsetChasingLight], 0
-    ja      @F
+    jge     @F
 
     mov     eax, [esi + Level.sizeLightsMap]
     mov     [edi + Player.offsetChasingLight], eax
+    dec     [edi + Player.offsetChasingLight]
     jmp     .Ret
 
     @@:
 
-    dec     [edi + Player.offsetChasingLight]
 
 .Ret:
     ret
@@ -2366,6 +2365,14 @@ proc Player.KeyUp\
 
     mov     edi, [pPlayer]
     stdcall Level.Save, [edi + Player.pLevel]
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_STOP_LIGHT
+    jne     @F
+
+    xor     [pl_stop_light], true
     jmp     .SkipUp
 
     @@:

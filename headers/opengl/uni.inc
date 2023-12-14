@@ -9,6 +9,9 @@
         ; BLOCK SHADER
         ; Texture
         uniTex0Name             db              "tex0", 0
+        uniTex1Name             db              "tex1", 0
+        uniTex2Name             db              "tex2", 0
+        uniTex3Name             db              "tex3", 0
 
         ; CamPos
         uniCamPosName           db              "camPos", 0
@@ -36,3 +39,8 @@
         uniLightColorName       db              "lightColor", 0
 
         ; SHADOW SHADER
+
+
+        ; INTERFACE SHADER
+        uniTimeName             db              "time", 0
+        uniStateName            db              "state", 0

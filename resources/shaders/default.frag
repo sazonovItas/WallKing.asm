@@ -18,13 +18,10 @@ uniform PointLight pointLights[NR_POINT_LIGHTS];
 
 out vec4 FragColor;
 
-in vec3 color;
 in vec2 TexCoords;
-
 in vec3 Normal;
 in vec3 FragPos;
 
-uniform sampler2D tex0;
 struct Material {
     sampler2D ambient;
     sampler2D diffuse;
@@ -60,21 +57,6 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 
 void main() 
 {
-    // float ambient = 0.35f;
-
-    // vec3 normal = normalize(Normal);
-    // vec3 lightDirection = normalize(lightPos - FragPos);
-    // float diffuse = max(dot(normal, lightDirection), 0.0f);
-
-    // float specularLight = 0.5f;
-    // vec3 viewDir = normalize(camPos - FragPos);
-    // vec3 reflectionDirection = reflect(-lightDirection, normal);
-    // float specAmount = pow(max(dot(viewDir, reflectionDirection), 0.0f), 8);
-    // float specular = specAmount * specularLight;
-
-    // FragColor = texture(material.ambient, TexCoords) * lightColor * (diffuse + ambient + specular);
-
-    // ===== Don't work
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(camPos - FragPos);
 

@@ -8,6 +8,10 @@
         lightVBO                VBO 
         lightEBO                EBO
 
-        shadowVAO               VAO             
-        shadowVBO               VBO 
-        shadowEBO               EBO
+        ; shadowVAO               VAO             
+        ; shadowVBO               VBO 
+        ; shadowEBO               EBO
+
+        interfaceVAO            VAO
+        interfaceVBO            VBO
+        interfaceEBO            EBO

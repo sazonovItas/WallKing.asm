@@ -99,6 +99,11 @@ proc Level.Load uses edi esi ebx,\
     stdcall memcpy, eax, esi, [sizeLightsMap]
     add     esi, [sizeLightsMap]
 
+    push    edi
+    add     edi, Level.spawnPosition
+    stdcall memcpy, edi, esi, 12
+    pop     edi 
+
     stdcall free, [pBuffer]
 
 .Ret:

@@ -101,14 +101,16 @@ ends
     PL_WEAK_COLOR       =       VK_DOWN
     PL_STOP_CAM_TEX     =       'X'
     PL_STOP_CAM_CHASING =       'C'
+    PL_STOP_LIGHT       =       'L'
     PL_NEXT_LIGHT       =       'N'
     PL_PREV_LIGHT       =       'P'
     PL_RESPAWN          =       'R'
     PL_LIGHT_R          =       '1'
     PL_LIGHT_G          =       '2'
     PL_LIGHT_B          =       '3'
-    PL_LEVEL_SAVE_KEY   =       'Z'
+    PL_LEVEL_SAVE_KEY   =       VK_F5
 
+    pl_stop_light       db      false
     pl_jump             db      false
     pl_run              db      false
     pl_forward          db      false
@@ -119,4 +121,4 @@ ends
     pl_stop_cam_chasing db      false
 
     maxPlayerPitch      dd      1.50
-    colorStep           dd      0.1
+    colorStep           dd      0.2
