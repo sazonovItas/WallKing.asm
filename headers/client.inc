@@ -2,6 +2,11 @@
 
     ; Constants
     IPPROTO_UDP                 =                   0x11
+    MSG_NONE                    =                   0x0
+    MSG_OOB                     =                   0x1             ; /* process out-of-band data */
+    MSG_PEEK                    =                   0x2             ; /* peek at incoming message */
+    MSG_DONTROUTE               =                   0x4             ; /* send without using routing tables */ 
+    MSG_WAITALL                 =                   0x8             ; /* do not complete until packet is */ 
     SERVER_PORT                 =                   8829
 
     SO_BROADCAST                =                   0x0020
@@ -21,6 +26,7 @@
 
     ; Keys for client
     CLIENT_CONNECT_KEY          =                   'Q'
+    CLIENT_ONLINE_KEY           =                   'E'
 
     CLIENT_ADAPTERS_BUF_MAX     =                   1024
 
@@ -73,7 +79,7 @@
     Client.RequestError         =                   0  
 
     ; Accept state
-    Client.AcceptSendTimeout    =                   15
+    Client.AcceptSendTimeout    =                   10
 
     ; Checking message
     Client.CheckMsgTitle        db                  "WallKing", 0

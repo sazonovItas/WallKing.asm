@@ -2,14 +2,16 @@ proc Init uses esi edi ebx
 
     locals
             hMainWindow     dd      ?
-            text            db      "Hi", 0
+            hContext        dd      ?
+            nPixelFormat    dd      ?
+            nNumFormats     dd      ?
     endl 
  
     stdcall memInit
 
     invoke  RegisterClass, wndClass
-    invoke  CreateWindowEx, ebx, className, className, WINDOW_STYLE,\
-                    ebx, ebx, ebx, ebx, ebx, ebx, ebx, ebx 
+    invoke  CreateWindowEx, NULL, className, className, WINDOW_STYLE,\
+                    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL 
     mov     [hMainWindow], eax   
 
     invoke  GetClientRect, eax, clientRect
@@ -22,8 +24,26 @@ proc Init uses esi edi ebx
     invoke  SetPixelFormat, [hdc], eax, pfd 
 
     invoke  wglCreateContext, [hdc]
+    mov     [hContext], eax
     invoke  wglMakeCurrent, [hdc], eax 
- 
+
+    stdcall Glext.LoadFunctions
+    lea     edi, [nPixelFormat]
+    lea     esi, [nNumFormats]
+    invoke  wglChoosePixelFormatARB, [hdc], piAttribIList, pfAttribFList, 1, edi, esi
+
+    cmp     eax, false
+    je      @F
+
+    invoke  SetPixelFormat, [hdc], [nPixelFormat], pfd  
+    invoke  wglMakeCurrent, [hdc], NULL
+    invoke  wglDeleteContext, [hContext]
+    invoke  wglCreateContext, [hdc]
+    mov     [hglrc], eax
+    invoke  wglMakeCurrent, [hdc], eax
+
+    @@:
+
     ; Init opengl
     stdcall Init.OpenGL
     
@@ -38,7 +58,18 @@ endp
 
 proc Init.GameData
 
-    stdcall Level.Load, TestLevel, level1File
+    ; Font
+    invoke  glGenLists, MAX_CHARS
+    mov     [fontListId], eax
+
+    invoke  CreateFont, fontHeight, 0, 0, 0, FW_BOLD,\
+                    false, false, false, ANSI_CHARSET, OUT_TT_PRECIS,\
+                    CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,\
+                    FF_DONTCARE or DEFAULT_PITCH, strFont
+
+    invoke  wglUseFontBitmapsA, [hdc], 0, MAX_CHARS - 1, [fontListId]
+
+    ; stdcall Level.Load, TestLevel, level1File
 
     stdcall malloc, sizeof.Player
     mov  	[mainPlayer], eax
@@ -50,12 +81,9 @@ endp
 proc Init.OpenGL 
 
     invoke  glEnable, GL_DEPTH_TEST
-    invoke  glEnable, GL_LIGHTING
-    invoke  glEnable, GL_TEXTURE_2D
+    invoke  glEnable, GL_MULTISAMPLE
     invoke  glShadeModel, GL_SMOOTH
     invoke  glHint, GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST
-
-    stdcall Glext.LoadFunctions
 
     ; Ambient
     lea     edi, [ambientTexs]
@@ -101,18 +129,9 @@ proc Init.OpenGL
     stdcall Texture.Constructor, edi, fileOfflineTex,\
                             GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB8, 0, GL_BGR, GL_UNSIGNED_BYTE
 
-    ; lea     edi, [hOnlineTex]
-    ; stdcall Texture.Constructor, edi, fileOnlineTex,\
-    ;                         GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
-
     lea     edi, [hOnlineTex]
-    stdcall Texture.Constructor, edi, fileRequestTex,\
+    stdcall Texture.Constructor, edi, fileOnlineTex,\
                             GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGR, GL_UNSIGNED_BYTE
-
-    ; lea     edi, [hAcceptTex]
-    ; stdcall Texture.Constructor, edi, fileAcceptTex,\
-    ;                         GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
-
 
     ; ----------- BLOCK SHADER -----------------
     ; Block shader
@@ -200,4 +219,3 @@ proc Init.OpenGL
 
     ret
 endp
-

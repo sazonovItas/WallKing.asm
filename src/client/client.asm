@@ -302,7 +302,7 @@ proc Client.ThRecv uses edi,\
     .RequestState:
 
         lea     edi, [len]
-        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, 0x0,\ 
+        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, MSG_NONE,\ 
                 Client.Recv_addr, edi
 
         cmp     eax, SOCKET_ERROR
@@ -326,7 +326,7 @@ proc Client.ThRecv uses edi,\
         lea     edi, [len]
 
         lea     edi, [len]
-        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, 0x0,\ 
+        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, MSG_NONE,\ 
                 Client.Recv_addr, edi
 
         cmp     eax, SOCKET_ERROR
@@ -486,6 +486,14 @@ proc Client.KeyUp\
     jne     @F
 
     mov     [Client.State], CLIENT_STATE_REQUEST
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam] , CLIENT_ONLINE_KEY
+    jne     @F
+
+    mov     [Client.State], CLIENT_STATE_ONLINE
     jmp     .SkipUp
 
     @@:

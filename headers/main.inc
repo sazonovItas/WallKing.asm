@@ -52,6 +52,12 @@ macro JumpIf value, label
         className       db      "WallKing", 0
         clientRect      RECT
         hdc             dd      ?
+        hglrc           dd      ?
+        hFont           dd      ?
+        fontListId      dd      ?
+        fontHeight      =       52
+        MAX_CHARS       =       256
+        strFont         db      "Arial", 0
 
         true            =       1
         false           =       0
@@ -69,6 +75,22 @@ macro JumpIf value, label
         pfd             PIXELFORMATDESCRIPTOR   sizeof.PIXELFORMATDESCRIPTOR, 1, PFD_FLAGS, PFD_TYPE_RGBA, COLOR_DEPTH,\
                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
                                                 COLOR_DEPTH, 0, 0, PFD_MAIN_PLANE, 0, PFD_MAIN_PLANE
+        piAttribIList   dd     WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,\
+                                WGL_SUPPORT_OPENGL_ARB, GL_TRUE,\
+                                WGL_DOUBLE_BUFFER_ARB, GL_TRUE,\
+                                WGL_COLOR_BITS_ARB, 32,\
+                                WGL_RED_BITS_ARB, 8,\
+                                WGL_GREEN_BITS_ARB, 8,\
+                                WGL_BLUE_BITS_ARB, 8,\
+                                WGL_ALPHA_BITS_ARB, 8,\
+                                WGL_DEPTH_BITS_ARB, 16,\
+                                WGL_STENCIL_BITS_ARB, 8,\
+                                WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,\
+                                WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,\
+                                WGL_SAMPLES_ARB, 16,\
+                                0
+        pfAttribFList   dd      0
+
 
 data import
 
@@ -79,11 +101,13 @@ data import
                 opengl32,       "OPENGL32.DLL",\
                 ws2_32,         "ws2_32.DLL",\
                 AdvApi32,       "AdvApi32.DLL",\
-                iphlpapi,       "iphlpapi.DLL"
+                iphlpapi,       "iphlpapi.DLL",\
+                glu32,          "glu32",\
+                glut32,         "glut.DLL"
 
         import iphlpapi,\
                 GetIpAddrTable , 'GetIpAddrTable'
-
+        
         struct MIB_IPADDRROW
                dwAddr           dd              ?
                dwIndex          dd              ?

@@ -133,8 +133,6 @@ lightIndices    GLuint          0, 1, 2,\
 
         fileOfflineTex                  db              "resources/textures/client/offline.bmp", 0
         fileOnlineTex                   db              "resources/textures/client/online.bmp", 0
-        fileRequestTex                  db              "resources/textures/client/request.bmp", 0
-        fileAcceptTex                   db              "resources/textures/client/accept.bmp", 0
 
         hOfflineTex                     dd              ?
         hOnlineTex                      dd              ?

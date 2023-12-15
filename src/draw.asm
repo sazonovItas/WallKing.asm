@@ -60,6 +60,8 @@ proc Draw.Interface uses edi esi ebx,\
                 interfaceCameraPos      Vector3         0.0, 0.0, 5.0
                 tmp                     Vector3         0.0, 0.0, 0.0
                 interfaceCameraUp       Vector3         0.0, 1.0, 0.0
+                angle                   dd              ?
+                normDiv                 dd              0.0005
         endl
 
         stdcall Shader.Activate, [shaderId]
@@ -72,6 +74,11 @@ proc Draw.Interface uses edi esi ebx,\
 
         invoke  glGetUniformLocation, [shaderId], uniTimeName
         invoke  glUniform1i, eax, [time]
+
+        fild    [time]
+        fmul    [normDiv]
+        fmul    [radian]
+        fstp    [angle]
 
         invoke  glGetUniformLocation, [shaderId], uniStateName
         invoke  glUniform1i, eax, [Client.State]
@@ -91,8 +98,18 @@ proc Draw.Interface uses edi esi ebx,\
         invoke  glMatrixMode, GL_MODELVIEW
         invoke  glPushMatrix
                 invoke  glLoadIdentity
-                invoke  glTranslatef, -12.5, 6.6, -3.5
-                invoke  glRotatef, 30.0, 0.5, 1.0, 0.0
+                invoke  glTranslatef, 13.2, 7.0, -3.5
+
+                test    [Client.State], 2
+                jnz     @F
+
+                invoke  glRotatef, [angle], 1.0, 0.0, 0.0
+                invoke  glRotatef, [angle], 0.0, 1.0, 0.0
+                invoke  glRotatef, [angle], 0.0, 0.0, 1.0
+
+                @@:
+
+                invoke  glRotatef, -30.0, 0.0, 1.0, 0.0
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
         invoke  glGetUniformLocation, [shaderId], uniModelName
@@ -496,6 +513,39 @@ proc Draw.ShadowBlock uses edi esi ebx,\
         stdcall VAO.Unbind
 
 .Ret:
+
+        ret
+endp
+
+; x : -35.0 to 35.0
+; y : -35.0 to 35.0
+; z = 3.0, const
+proc Draw.Text uses edi esi ebx,\
+        x, y, red, green, blue, pStr, strLen 
+
+        invoke  glUseProgram, 0
+        invoke  glClear, GL_DEPTH_BUFFER_BIT
+        invoke  glMatrixMode, GL_PROJECTION
+        invoke  glPushMatrix
+                invoke  glLoadIdentity
+                invoke  glOrtho, double -35.0, double 35.0,\
+                        double -35.0, double 35.0,\ 
+                        double 0.5, double 75.0 
+
+                invoke  glMatrixMode, GL_MODELVIEW
+                invoke  glPushMatrix
+                        invoke  glLoadIdentity
+                        invoke  gluLookAt, double 0.0, double 0.0, double 5.0,\
+                                double 0.0, double 0.0, double 0.0,\
+                                double 0.0, double 1.0, double 0.0
+                        invoke  glColor3f, [red], [blue], [green]
+                        invoke  glRasterPos3f, [x], [y], 3.0
+                        invoke  glListBase, [fontListId]
+                        invoke  glCallLists, 8, GL_UNSIGNED_BYTE, Client.CheckMsgTitle
+                invoke  glPopMatrix
+
+                invoke  glMatrixMode, GL_PROJECTION
+        invoke  glPopMatrix
 
         ret
 endp

@@ -44,3 +44,4 @@
         ; INTERFACE SHADER
         uniTimeName             db              "time", 0
         uniStateName            db              "state", 0
+        uniAngleName            db              "angle", 0

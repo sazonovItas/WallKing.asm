@@ -1,4 +1,4 @@
-proc Game.Game uses edi,\ 
+proc Game.Game uses edi ebx,\ 
     pPlayer
 
     stdcall Game.MoveObject, [pPlayer]
@@ -9,6 +9,7 @@ proc Game.Game uses edi,\
     invoke  glClear, GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT
     stdcall Draw.Scene, [pPlayer]
 
+    stdcall Draw.Text, -35.0, 34.0, 1.0, 1.0, 1.0, Client.CheckMsgTitle, 8
 
 .Ret:
     ret

@@ -1,4 +1,4 @@
-proc Glext.LoadFunctions uses esi edi
+proc Glext.LoadFunctions uses esi edi ebx
 
         mov     esi, extensionAddresses
         mov     edi, extensionNames
