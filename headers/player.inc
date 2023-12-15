@@ -105,11 +105,13 @@ ends
     PL_NEXT_LIGHT       =       'N'
     PL_PREV_LIGHT       =       'P'
     PL_RESPAWN          =       'R'
+    PL_HELP             =       'H'
     PL_LIGHT_R          =       '1'
     PL_LIGHT_G          =       '2'
     PL_LIGHT_B          =       '3'
     PL_LEVEL_SAVE_KEY   =       VK_F5
 
+    pl_help             db      true
     pl_stop_light       db      false
     pl_jump             db      false
     pl_run              db      false

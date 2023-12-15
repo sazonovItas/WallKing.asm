@@ -53,11 +53,12 @@ macro JumpIf value, label
         clientRect      RECT
         hdc             dd      ?
         hglrc           dd      ?
-        hFont           dd      ?
         fontListId      dd      ?
-        fontHeight      =       52
         MAX_CHARS       =       256
         strFont         db      "Arial", 0
+
+        fpsTimer        dd      ?
+        fpsCnt          dd      0
 
         true            =       1
         false           =       0
@@ -91,6 +92,10 @@ macro JumpIf value, label
                                 0
         pfAttribFList   dd      0
 
+
+        ; Text for output help
+        Help.FPS                db              "FPS:", 0
+        Help.FPSCnt             db              12 dup (0)
 
 data import
 

@@ -88,10 +88,10 @@ proc WindowProc uses ebx,\
 
 .Paint:
 
-        stdcall Game.Game, [mainPlayer]
+        inc     [fpsCnt]
 
+        stdcall Game.Game, [mainPlayer]
         invoke  SwapBuffers, [hdc]
-        
         jmp     .ReturnZero
 
 .KeysManipulateDown:

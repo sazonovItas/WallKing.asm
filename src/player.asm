@@ -2377,6 +2377,14 @@ proc Player.KeyUp\
 
     @@:
 
+    cmp     [wParam], PL_HELP
+    jne     @F
+
+    xor     [pl_help], true
+    jmp     .SkipUp
+
+    @@:
+
     .SkipUp:
 
     ret

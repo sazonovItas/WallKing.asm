@@ -541,7 +541,7 @@ proc Draw.Text uses edi esi ebx,\
                         invoke  glColor3f, [red], [blue], [green]
                         invoke  glRasterPos3f, [x], [y], 3.0
                         invoke  glListBase, [fontListId]
-                        invoke  glCallLists, 8, GL_UNSIGNED_BYTE, Client.CheckMsgTitle
+                        invoke  glCallLists, [strLen], GL_UNSIGNED_BYTE, [pStr]
                 invoke  glPopMatrix
 
                 invoke  glMatrixMode, GL_PROJECTION

@@ -58,19 +58,21 @@ endp
 
 proc Init.GameData
 
+    ; Init fps counter
+    invoke  GetTickCount
+    mov     [fpsTimer], eax
+    stdcall Debug.IntToDecString, Help.FPSCnt, 60
+
     ; Font
     invoke  glGenLists, MAX_CHARS
     mov     [fontListId], eax
 
-    invoke  CreateFont, fontHeight, 0, 0, 0, FW_BOLD,\
-                    false, false, false, ANSI_CHARSET, OUT_TT_PRECIS,\
-                    CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,\
-                    FF_DONTCARE or DEFAULT_PITCH, strFont
-
     invoke  wglUseFontBitmapsA, [hdc], 0, MAX_CHARS - 1, [fontListId]
 
-    ; stdcall Level.Load, TestLevel, level1File
+    ; Level Loading
+    stdcall Level.Load, TestLevel, level1File
 
+    ; Init player
     stdcall malloc, sizeof.Player
     mov  	[mainPlayer], eax
     stdcall Player.Constructor, eax, [clientRect.right], [clientRect.bottom], TestLevel
