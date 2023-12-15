@@ -1,3 +1,3 @@
 struct Texture 
-    ID          GLuint      ?
+    ID          dd      ?
 ends

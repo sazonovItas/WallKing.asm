@@ -76,6 +76,7 @@ extensionNames:
                         GL_FRAGMENT_SHADER              = 0x8B30
                         GL_COMPILE_STATUS               = 0x8B81
                         GL_LINK_STATUS                  = 0x8B82
+                        GL_CLAMP_TO_BORDER              = 0x812D
 
                         GL_ARRAY_BUFFER                 = 0x8892
                         GL_ELEMENT_ARRAY_BUFFER         = 0x8893

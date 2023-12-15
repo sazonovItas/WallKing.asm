@@ -38,6 +38,18 @@ proc memcpy uses edi esi,\
     ret
 endp
 
+proc memset uses edi,\
+    pDest, elem, countInByte
+
+    mov     ecx, [countInByte]
+    mov     edi, [pDest]
+    mov     eax, [elem]
+    rep     stosb
+
+    ret
+endp
+
+
 proc memzero uses edi,\
     pDest, countInByte
 

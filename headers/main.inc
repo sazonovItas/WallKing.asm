@@ -1,9 +1,13 @@
 format  PE GUI 5.0
+
+stack   0x100000
+
 entry   WinMain
 
         include         "include/win32ax.inc"
 
         include         "include/api/kernel32.inc"
+        include         "include/api/wsock32.inc"
         include         "include/api/user32.inc"
         include         "include/api/gdi32.inc"
         include         "include/api/opengl.inc"
@@ -12,10 +16,12 @@ entry   WinMain
         ; Internal functions
         include         "memory.inc"
         include         "string.inc"
-        include         "easing.inc"
-
-        include         "mesh.inc"
         include         "vector.inc"
+        include         "easing.inc"
+        include         "list.inc"
+
+        include         "client.inc"
+        include         "mesh.inc"
         include         "matrix.inc"
         include         "color.inc"
         include         "glext.inc"
@@ -29,7 +35,13 @@ entry   WinMain
         include         "player.inc"
         include         "collision.inc"
 
-        include         "objects.inc"
+        include         "level.inc"
+
+        ; Opengl data and useful variables
+        include         "opengl/uni.inc"
+        include         "opengl/buffers.inc"
+        include         "opengl/data.inc"
+
 
 macro JumpIf value, label
 {
@@ -37,8 +49,14 @@ macro JumpIf value, label
         je      label
 }
 
+        className       db      "WallKing", 0
+        clientRect      RECT
+        hdc             dd      ?
+
         true            =       1
         false           =       0
+
+        INFINITY        =       -1
 
         COLOR_DEPTH     =       24
         PFD_FLAGS       =       PFD_SUPPORT_OPENGL or PFD_DOUBLEBUFFER or PFD_DRAW_TO_WINDOW
@@ -55,10 +73,30 @@ macro JumpIf value, label
 data import
 
         library kernel32,       "KERNEL32.DLL",\
+                wsock32,        "WSOCK32.DLL",\
                 user32,         "USER32.DLL",\
                 gdi32,          "GDI32.DLL",\
                 opengl32,       "OPENGL32.DLL",\
-                glu32,          "GLU32.DLL",\
-                glext32,        "GLEXT32.DLL"
+                ws2_32,         "ws2_32.DLL",\
+                AdvApi32,       "AdvApi32.DLL",\
+                iphlpapi,       "iphlpapi.DLL"
+
+        import iphlpapi,\
+                GetIpAddrTable , 'GetIpAddrTable'
+
+        struct MIB_IPADDRROW
+               dwAddr           dd              ?
+               dwIndex          dd              ?
+               dwMask           dd              ?
+               dwBCastAddr      dd              ?
+               dwReasmSize      dd              ?
+               unused1          dw              ?
+               wType            dw              ?
+        ends
+
+        struct MIB_IPADDRTABLE
+               dwNumEntries     dd              ?
+               table            MIB_IPADDRROW   ?
+        ends
 
 end data

@@ -1,9 +1,10 @@
-proc Init uses esi edi
+proc Init uses esi edi ebx
 
     locals
             hMainWindow     dd      ?
+            text            db      "Hi", 0
     endl 
-
+ 
     stdcall memInit
 
     invoke  RegisterClass, wndClass
@@ -22,6 +23,31 @@ proc Init uses esi edi
 
     invoke  wglCreateContext, [hdc]
     invoke  wglMakeCurrent, [hdc], eax 
+ 
+    ; Init opengl
+    stdcall Init.OpenGL
+    
+    ; Init game data
+    stdcall Init.GameData
+
+	; Init client for multiplaying
+    stdcall Client.Init
+
+    ret
+endp
+
+proc Init.GameData
+
+    stdcall Level.Load, TestLevel, level1File
+
+    stdcall malloc, sizeof.Player
+    mov  	[mainPlayer], eax
+    stdcall Player.Constructor, eax, [clientRect.right], [clientRect.bottom], TestLevel
+
+    ret
+endp
+
+proc Init.OpenGL 
 
     invoke  glEnable, GL_DEPTH_TEST
     invoke  glEnable, GL_LIGHTING
@@ -31,69 +57,86 @@ proc Init uses esi edi
 
     stdcall Glext.LoadFunctions
 
-    lea     edi, [arrTextures]
-    stdcall Texture.Constructor, edi, fileBoxTexture,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
+    ; Ambient
+    lea     edi, [ambientTexs]
+    stdcall Texture.Constructor, edi, fileContainerAmbientTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    lea     edi, [arrTextures + 4]
-    stdcall Texture.Constructor, edi, fileLightTexture,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
+    lea     edi, [ambientTexs + 4]
+    stdcall Texture.Constructor, edi, fileGemBlueAmbientTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    lea     edi, [arrTextures + 8]
-    stdcall Texture.Constructor, edi, filePlayerTex,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_BGRA, GL_UNSIGNED_BYTE
+    lea     edi, [ambientTexs + 8]
+    stdcall Texture.Constructor, edi, fileGemRainbowAmbientTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    ; Shadow texture settings
-    ; Create the FBO
-    invoke  glGenFramebuffers, 1, m_fbo
+    ; Diffuse
+    lea     edi, [diffuseTexs]
+    stdcall Texture.Constructor, edi, fileContainerDiffuseTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    ; Create the depth buffer
-    invoke  glGenTextures, 1, m_shadowMap
-    invoke  glBindTexture, GL_TEXTURE_2D, [m_shadowMap]
-    invoke  glTexImage2D, GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0,\ 
-                    GL_DEPTH_COMPONENT, GL_FLOAT, NULL
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
-    invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
+    lea     edi, [diffuseTexs + 4]
+    stdcall Texture.Constructor, edi, fileGemBlueDiffuseTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    invoke  glBindFramebuffer, GL_FRAMEBUFFER, [m_fbo]
-    invoke  glFramebufferTexture2D, GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, [m_shadowMap], 0
-    
-    ; Disable writes to the color buffer
-    invoke  glDrawBuffer, GL_NONE
-    invoke  glReadBuffer, GL_NONE
+    lea     edi, [diffuseTexs + 8]
+    stdcall Texture.Constructor, edi, fileGemRainbowDiffuseTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
+    ; Specular
+    lea     edi, [specularTexs]
+    stdcall Texture.Constructor, edi, fileContainerSpecularTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    invoke  glEnable, GL_LIGHT0
-    ;invoke  glEnable, GL_LIGHT1
-    invoke  glLightfv, GL_LIGHT0, GL_AMBIENT, light0Ambient
-    ;invoke  glLightfv, GL_LIGHT1, GL_DIFFUSE, light1Diffuse
+    lea     edi, [specularTexs + 4]
+    stdcall Texture.Constructor, edi, fileGemBlueSpecularTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    ; TEST Shaders block
-    stdcall Shader.Constructor, exampleShader.ID, vertexShaderFile, fragmentShaderFile
+    lea     edi, [specularTexs + 8]
+    stdcall Texture.Constructor, edi, fileGemRainbowSpecularTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    ;TEST EBO, VBO, VAO
+    ; interface textures
+    lea     edi, [hOfflineTex]
+    stdcall Texture.Constructor, edi, fileOfflineTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB8, 0, GL_BGR, GL_UNSIGNED_BYTE
+
+    ; lea     edi, [hOnlineTex]
+    ; stdcall Texture.Constructor, edi, fileOnlineTex,\
+    ;                         GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+    lea     edi, [hOnlineTex]
+    stdcall Texture.Constructor, edi, fileRequestTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGR, GL_UNSIGNED_BYTE
+
+    ; lea     edi, [hAcceptTex]
+    ; stdcall Texture.Constructor, edi, fileAcceptTex,\
+    ;                         GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+
+    ; ----------- BLOCK SHADER -----------------
+    ; Block shader
+    stdcall Shader.Constructor, blockShader.ID, blockVertexFile, blockFragmentFile
+
     ;Generate the VAO, EBO and VBO with only 1 object each
-    stdcall VAO.Constructor, VAO1.ID
-    stdcall VAO.Bind, [VAO1.ID]
-    stdcall VBO.Constructor, VBO1.ID, sizeVertice * countVertices, vertices 
-    stdcall EBO.Constructor, EBO1.ID, sizeIndex * countIndices, indices
+    stdcall VAO.Constructor, blockVAO.ID
+    stdcall VAO.Bind, [blockVAO.ID]
+    stdcall VBO.Constructor, blockVBO.ID, sizeVertice * countVertices, vertices 
+    stdcall EBO.Constructor, blockEBO.ID, sizeIndex * countIndices, indices
 
     ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
-    stdcall VAO.LinkAttribVBO, [VBO1.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
-    stdcall VAO.LinkAttribVBO, [VBO1.ID], 1, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetColor
-    stdcall VAO.LinkAttribVBO, [VBO1.ID], 2, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
-    stdcall VAO.LinkAttribVBO, [VBO1.ID], 3, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetNormal
+    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
+    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 1, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
+    stdcall VAO.LinkAttribVBO, [blockVBO.ID], 2, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetNormal
 
     ; Unbind VAO, VBO and EBO so that accidentlly to change it
     stdcall VBO.Unbind
     stdcall VAO.Unbind
     stdcall EBO.Unbind
-    
+
+    ; ---------- LIGHT SHADER ----------------------------- 
     ; Light shader
-    stdcall Shader.Constructor, lightShader.ID, lightVertexFile, lightFragmentFile
+    stdcall Shader.Constructor, ligthShader.ID, lightVertexFile, lightFragmentFile
 
     ; Generate light VAO, VBO and EBO 
     stdcall VAO.Constructor, lightVAO.ID
@@ -109,15 +152,52 @@ proc Init uses esi edi
     stdcall VAO.Unbind
     stdcall EBO.Unbind
 
-    stdcall Camera.Constructor, freeCamera, [clientRect.right], [clientRect.bottom], cameraPosition
-    stdcall Player.Constructor, mainPlayer, [clientRect.right], [clientRect.bottom], cameraPosition
+    ; ========= SHADOWS =========
+    ; Generate shadow map fbo
+    ; invoke  glGenFramebuffers, 1, shadowMapFBO
+
+    ; ; Generate shadow texture
+    ; invoke  glGenTextures, 1, shadowMap
+    ; invoke  glBindTexture, GL_TEXTURE_2D, [shadowMap]
+    ; invoke  glTexImage2D, GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,\
+    ;         SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL
+
+    ; ; Texture's settings
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER
+    ; invoke  glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, clampColor
+
+    ; ; Bind and setting up framebuffer
+    ; invoke  glBindFramebuffer, GL_FRAMEBUFFER, [shadowMapFBO]
+    ; invoke  glFramebufferTexture2D, GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, [shadowMap], NULL
+    ; invoke  glDrawBuffer, GL_NONE
+    ; invoke  glReadBuffer, GL_NONE
+    ; invoke  glBindFramebuffer, GL_FRAMEBUFFER, 0
+
+    ; ; Shadow shader
+    ; stdcall Shader.Constructor, shadowShader.ID, shadowVertexFile, shadowFragmentFile
+
+    ; ----------- INTERFACE --------------
+    ; Interface shader
+    stdcall Shader.Constructor, interfaceShader.ID, interfaceVertexFile, interfaceFragmentFile
+
+    ;Generate the VAO, EBO and VBO with only 1 object each
+    stdcall VAO.Constructor, interfaceVAO.ID
+    stdcall VAO.Bind, [interfaceVAO.ID]
+    stdcall VBO.Constructor, interfaceVBO.ID, sizeVertice * countVertices, vertices 
+    stdcall EBO.Constructor, interfaceEBO.ID, sizeIndex * countIndices, indices
+
+    ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
+    stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
+    stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 1, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
+
+    ; Unbind VAO, VBO and EBO so that accidentlly to change it
+    stdcall VBO.Unbind
+    stdcall VAO.Unbind
+    stdcall EBO.Unbind
 
     ret
 endp
 
-
-        lightFragmentFile       db              "resources/shaders/light.frag", 0
-        lightVertexFile         db              "resources/shaders/light.vert", 0
-        lightVAO                VAO             
-        lightVBO                VBO 
-        lightEBO                EBO
