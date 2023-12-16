@@ -118,7 +118,7 @@ macro JumpIf value, label
         Help.ClientConnectKeyLen =              $ - Help.ClientConnectKey
         Help.ClientDisconnectKey db             CLIENT_DISCONNECT_KEY, " - disconnect from the server", 0
         Help.ClientDisconnectKeyLen =           $ - Help.ClientDisconnectKey
-
+        Help.ClientConPlayers   db              "Connected players:", 0
 
 data import
 

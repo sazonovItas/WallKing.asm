@@ -52,6 +52,8 @@
     Client.BufferDraw           dd                  NULL
 
     ; Structure of reciving message
+    Client.CntPlayersOffset     =                   14
+
     Client.SizeofPlayer         =                   52
     Client.plPositioin          =                   0
     Client.plAngles             =                   12
@@ -62,7 +64,9 @@
     Client.plShininess          =                   48
 
     Client.Uptime               dd                  0
-    Client.CntPlayers           dd                  0
+    Client.CntPlayers           dd                  1
+    Client.CntPlayersStr        db                  8 dup(0)
+    Client.CntPlayersStrLen     =                   $ - Client.CntPlayersStr
 
     Client.dIPAddrTableSz       dd                  CLIENT_ADAPTERS_BUF_MAX
     Client.IPAddrTableBuf       db                  (CLIENT_ADAPTERS_BUF_MAX) dup ?
@@ -93,7 +97,7 @@
     Client.RequestError         =                   0  
 
     ; Accept state
-    Client.AcceptSendTimeout    =                   10
+    Client.AcceptSendTimeout    =                   15
 
     ; Checking message
     Client.CheckMsgTitle        db                  "WallKing", 0

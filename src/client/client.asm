@@ -317,9 +317,9 @@ proc Client.ThRecv uses edi,\
         jne     .ErrorMsg
 
         stdcall memcpy, Client.Server_addr, Client.Recv_addr, sizeof.sockaddr_in
-        mov     [Client.State], CLIENT_STATE_ACCEPT
         invoke  inet_ntoa, [Client.Server_addr.sin_addr]
         mov     [Client.ServerIpStr], eax
+        mov     [Client.State], CLIENT_STATE_ACCEPT
 
         jmp     .HandleState
 
@@ -350,6 +350,12 @@ proc Client.ThRecv uses edi,\
 
         cmp     eax, true
         jne     .ErrorMsg
+
+        ; Cnt Players
+        mov     edi, [Client.BufferRecv]
+        mov     eax, [edi + Client.CntPlayersOffset]
+        mov     [Client.CntPlayers], eax
+        inc     [Client.CntPlayers]
 
         invoke  WaitForSingleObject, [Client.MutexDrawBuf], INFINITY
         stdcall memcpy, [Client.BufferDraw], [Client.BufferRecv], MESSAGE_SIZE

@@ -90,10 +90,18 @@ proc Game.Help
     stdcall Draw.Text, -34.0, 29.0, 1.0, 1.0, 1.0, Help.ServerPort, Help.ServerPortLen
     stdcall Draw.Text, -32.8, 29.0, 1.0, 1.0, 0.0, Client.ServerPortStr, Client.ServerPortStrLen
 
+    ; Connected players
+    stdcall strlen, Help.ClientConPlayers
+    stdcall Draw.Text, -34.0, 28.0, 1.0, 1.0, 1.0, Help.ClientConPlayers, eax
+
+    stdcall memzero, Client.CntPlayersStr, Client.CntPlayersStrLen
+    stdcall Debug.IntToDecString, Client.CntPlayersStr, [Client.CntPlayers]
+    stdcall Draw.Text, -29.2, 28.0, 1.0, 1.0, 0.0, Client.CntPlayersStr, Client.CntPlayersStrLen
+
     ; Keymap
-    stdcall Draw.Text, -34.0, 28.0, 1.0, 1.0, 1.0, Help.Keymap, Help.KeymapLen
-    stdcall Draw.Text, -33.5, 27.0, 1.0, 1.0, 1.0, Help.ClientConnectKey, Help.ClientConnectKeyLen
-    stdcall Draw.Text, -33.5, 26.0, 1.0, 1.0, 1.0, Help.ClientDisconnectKey, Help.ClientDisconnectKeyLen
+    stdcall Draw.Text, -34.0, 27.0, 1.0, 1.0, 1.0, Help.Keymap, Help.KeymapLen
+    stdcall Draw.Text, -33.5, 26.0, 1.0, 1.0, 1.0, Help.ClientConnectKey, Help.ClientConnectKeyLen
+    stdcall Draw.Text, -33.5, 25.0, 1.0, 1.0, 1.0, Help.ClientDisconnectKey, Help.ClientDisconnectKeyLen
 
     ; ============ Client =============
 

@@ -12,8 +12,13 @@ proc Draw.Scene uses esi edi,\
         add     esi, Player.DrawPlayer
         stdcall Player.Draw, [blockShader.ID], edi, esi
 
+        cmp     [Client.State], CLIENT_STATE_ACCEPT
+        jne     @F
+
         ; Draw other players
         stdcall Draw.ConPlayers, [pPlayer], [blockShader.ID], [Client.BufferDraw], Draw.ConPlayer
+
+        @@:
 
         ret
 endp
