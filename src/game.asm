@@ -47,7 +47,7 @@ proc Game.Help
 
     ; ============ Client =============
     ; Client Info
-    stdcall Draw.Text, -34.5, 32.0, 1.0, 1.0, 1.0, Help.ClientInfo, Help.ClientInfoLen
+    stdcall Draw.Text, -34.5, 32.0, 0.6, 0.6, 0.6, Help.ClientInfo, Help.ClientInfoLen
 
     ; Client state
     stdcall Draw.Text, -34.0, 31.0, 1.0, 1.0, 1.0, Help.ClientState, Help.ClientStateLen
@@ -92,7 +92,7 @@ proc Game.Help
 
     ; Connected players
     stdcall strlen, Help.ClientConPlayers
-    stdcall Draw.Text, -34.0, 28.0, 1.0, 1.0, 1.0, Help.ClientConPlayers, eax
+    stdcall Draw.Text, -34.0, 28.0, 1.0, 1.0, 1.0, Help.ClientConPlayers, 19
 
     stdcall memzero, Client.CntPlayersStr, Client.CntPlayersStrLen
     stdcall Debug.IntToDecString, Client.CntPlayersStr, [Client.CntPlayers]
