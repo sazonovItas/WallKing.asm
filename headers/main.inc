@@ -76,7 +76,7 @@ macro JumpIf value, label
         pfd             PIXELFORMATDESCRIPTOR   sizeof.PIXELFORMATDESCRIPTOR, 1, PFD_FLAGS, PFD_TYPE_RGBA, COLOR_DEPTH,\
                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
                                                 COLOR_DEPTH, 0, 0, PFD_MAIN_PLANE, 0, PFD_MAIN_PLANE
-        piAttribIList   dd     WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,\
+        piAttribIList   dd      WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,\
                                 WGL_SUPPORT_OPENGL_ARB, GL_TRUE,\
                                 WGL_DOUBLE_BUFFER_ARB, GL_TRUE,\
                                 WGL_COLOR_BITS_ARB, 32,\
@@ -94,8 +94,31 @@ macro JumpIf value, label
 
 
         ; Text for output help
-        Help.FPS                db              "FPS:", 0
-        Help.FPSCnt             db              12 dup (0)
+        Help.DebugInfo          db              "WallKing Debug Info:", 0
+        Help.DebugInfoLen       =               $ - Help.DebugInfo
+        Help.FPS                db              "fps:", 0
+        Help.FPSLen             =               $ - Help.FPS
+        Help.FPSCnt             db              8 dup (0)
+        Help.FPSCntLen          =               $ - Help.FPSCnt            
+        Help.Keymap             db              "Keymap:", 0
+        Help.KeymapLen          =               $ - Help.Keymap
+
+        ; Client help
+        Help.Ping               db              "ping:", 0
+        Help.PingLen            =               $ - Help.Ping
+        Help.ClientInfo         db              "Client Info:", 0
+        Help.ClientInfoLen      =               $ - Help.ClientInfo
+        Help.ClientState        db              "State:", 0
+        Help.ClientStateLen     =               $ - Help.ClientState
+        Help.ServerIp           db              "Server IP:", 0
+        Help.ServerIpLen        =               $ - Help.ServerIp
+        Help.ServerPort         db              "Port:", 0
+        Help.ServerPortLen      =               $ - Help.ServerPort
+        Help.ClientConnectKey   db              CLIENT_CONNECT_KEY, " - connect to the server", 0
+        Help.ClientConnectKeyLen =              $ - Help.ClientConnectKey
+        Help.ClientDisconnectKey db             CLIENT_DISCONNECT_KEY, " - disconnect from the server", 0
+        Help.ClientDisconnectKeyLen =           $ - Help.ClientDisconnectKey
+
 
 data import
 
@@ -107,8 +130,7 @@ data import
                 ws2_32,         "ws2_32.DLL",\
                 AdvApi32,       "AdvApi32.DLL",\
                 iphlpapi,       "iphlpapi.DLL",\
-                glu32,          "glu32",\
-                glut32,         "glut.DLL"
+                glu32,          "glu32.DLL"
 
         import iphlpapi,\
                 GetIpAddrTable , 'GetIpAddrTable'

@@ -318,6 +318,8 @@ proc Client.ThRecv uses edi,\
 
         stdcall memcpy, Client.Server_addr, Client.Recv_addr, sizeof.sockaddr_in
         mov     [Client.State], CLIENT_STATE_ACCEPT
+        invoke  inet_ntoa, [Client.Server_addr.sin_addr]
+        mov     [Client.ServerIpStr], eax
 
         jmp     .HandleState
 
@@ -482,6 +484,9 @@ endp
 proc Client.KeyUp\
     wParam, lParam
 
+    cmp     [Client.State], CLIENT_STATE_OFFLINE
+    je      .SkipUp
+
     cmp     [wParam] , CLIENT_CONNECT_KEY
     jne     @F
 
@@ -490,7 +495,7 @@ proc Client.KeyUp\
 
     @@:
 
-    cmp     [wParam] , CLIENT_ONLINE_KEY
+    cmp     [wParam] , CLIENT_DISCONNECT_KEY
     jne     @F
 
     mov     [Client.State], CLIENT_STATE_ONLINE

@@ -15,8 +15,6 @@ proc Draw.Scene uses esi edi,\
         ; Draw other players
         stdcall Draw.ConPlayers, [pPlayer], [blockShader.ID], [Client.BufferDraw], Draw.ConPlayer
 
-        stdcall Draw.Interface, [pPlayer], [interfaceShader.ID]
-
         ret
 endp
 
@@ -538,7 +536,7 @@ proc Draw.Text uses edi esi ebx,\
                         invoke  gluLookAt, double 0.0, double 0.0, double 5.0,\
                                 double 0.0, double 0.0, double 0.0,\
                                 double 0.0, double 1.0, double 0.0
-                        invoke  glColor3f, [red], [blue], [green]
+                        invoke  glColor3f, [red], [green], [blue]
                         invoke  glRasterPos3f, [x], [y], 3.0
                         invoke  glListBase, [fontListId]
                         invoke  glCallLists, [strLen], GL_UNSIGNED_BYTE, [pStr]

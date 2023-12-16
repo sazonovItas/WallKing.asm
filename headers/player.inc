@@ -105,6 +105,7 @@ ends
     PL_NEXT_LIGHT       =       'N'
     PL_PREV_LIGHT       =       'P'
     PL_RESPAWN          =       'R'
+    PL_TELEPORT         =       'T'
     PL_HELP             =       'H'
     PL_LIGHT_R          =       '1'
     PL_LIGHT_G          =       '2'

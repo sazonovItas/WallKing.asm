@@ -8,6 +8,9 @@
     MSG_DONTROUTE               =                   0x4             ; /* send without using routing tables */ 
     MSG_WAITALL                 =                   0x8             ; /* do not complete until packet is */ 
     SERVER_PORT                 =                   8829
+    Client.ServerPortStr        db                  "8829", 0
+    Client.ServerPortStrLen     =                   $ - Client.ServerPortStr
+    Client.ServerIpStr          dd                  NULL
 
     SO_BROADCAST                =                   0x0020
     SO_REUSEADDR                =                   0x0004
@@ -24,14 +27,25 @@
     CLIENT_STATE_REQUEST        =                   0000_0100b
     CLIENT_STATE_ACCEPT         =                   0000_1000b
 
+    Client.StateOffline         db                  "Offline", 0
+    Client.StateOfflineLen      =                   $ - Client.StateOffline
+    Client.StateOnline          db                  "Online", 0
+    Client.StateOnlineLen       =                    $ - Client.StateOnline
+    Client.StateRequest         db                  "Request", 0
+    Client.StateRequestLen      =                   $ - Client.StateRequest
+    Client.StateAccept          db                  "Accept", 0
+    Client.StateAcceptLen       =                   $ - Client.StateAccept
+    Client.ServerIp             dd                  ?
+
     ; Keys for client
     CLIENT_CONNECT_KEY          =                   'Q'
-    CLIENT_ONLINE_KEY           =                   'E'
+    CLIENT_DISCONNECT_KEY       =                   'E'
 
     CLIENT_ADAPTERS_BUF_MAX     =                   1024
 
     ; client data
     Client.State                dd                  CLIENT_STATE_OFFLINE
+    Client.DrawTimer            dd                  0
 
     Client.BufferSend           dd                  NULL
     Client.BufferRecv           dd                  NULL

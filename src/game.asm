@@ -9,12 +9,23 @@ proc Game.Game uses edi ebx,\
     invoke  glClear, GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT
     stdcall Draw.Scene, [pPlayer]
 
+    stdcall Draw.Interface, [pPlayer], [interfaceShader.ID]
+
     ; Print help and some info
     cmp     [pl_help], true
     jne     @F
 
-    stdcall Draw.Text, -35.0, 32.0, 1.0, 1.0, 1.0, className, 8
-    stdcall Draw.Text, -35.0, 34.0, 1.0, 1.0, 1.0, Help.FPS, 4
+    stdcall Game.Help
+
+    @@:
+
+.Ret:
+    ret
+endp
+
+proc Game.Help
+
+    stdcall Draw.Text, -35.0, 34.0, 1.0, 1.0, 1.0, Help.FPS, Help.FPSLen
 
     invoke  GetTickCount
     mov     edx, eax
@@ -23,19 +34,73 @@ proc Game.Game uses edi ebx,\
     jl      .SkipTimerUpdate
 
     mov     [fpsTimer], edx
-    stdcall memzero, Help.FPSCnt, 12
+    stdcall memzero, Help.FPSCnt, 8
     stdcall Debug.IntToDecString, Help.FPSCnt, [fpsCnt]
     mov     [fpsCnt], 0
 
     .SkipTimerUpdate:
 
-    stdcall Draw.Text, -33.8, 34.0, 1.0, 1.0, 1.0, Help.FPSCnt, 4
+    stdcall Draw.Text, -33.8, 34.0, 0.0, 1.0, 0.0, Help.FPSCnt, Help.FPSCntLen
 
-    @@:
+    ; Wallking debug info
+    stdcall Draw.Text, -35.0, 33.0, 1.0, 1.0, 1.0, Help.DebugInfo, Help.DebugInfoLen
 
-.Ret:
+    ; ============ Client =============
+    ; Client Info
+    stdcall Draw.Text, -34.5, 32.0, 1.0, 1.0, 1.0, Help.ClientInfo, Help.ClientInfoLen
+
+    ; Client state
+    stdcall Draw.Text, -34.0, 31.0, 1.0, 1.0, 1.0, Help.ClientState, Help.ClientStateLen
+
+    mov     eax, [Client.State]
+    JumpIf  CLIENT_STATE_OFFLINE,   .Offline
+    JumpIf  CLIENT_STATE_ONLINE,    .Online
+    JumpIf  CLIENT_STATE_REQUEST,   .Request
+    JumpIf  CLIENT_STATE_ACCEPT,    .Accept
+
+    .Offline:
+
+        stdcall Draw.Text, -32.5, 31.0, 1.0, 0.0, 0.0, Client.StateOffline, Client.StateOfflineLen
+
+        jmp     .SkipClientState
+
+    .Online:
+
+        stdcall Draw.Text, -32.5, 31.0, 1.0, 1.0, 0.0, Client.StateOnline, Client.StateOnlineLen
+
+        jmp     .SkipClientState
+
+    .Request:
+
+        stdcall Draw.Text, -32.5, 31.0, 0.2, 0.0, 1.0, Client.StateRequest, Client.StateRequestLen
+
+        jmp     .SkipClientState
+
+    .Accept:
+
+        stdcall Draw.Text, -32.5, 31.0, 0.0, 1.0, 0.0, Client.StateAccept, Client.StateAcceptLen
+        stdcall strlen, [Client.ServerIpStr]
+        stdcall Draw.Text, -31.5, 30.0, 1.0, 1.0, 0.0, [Client.ServerIpStr], eax
+
+
+    .SkipClientState:
+
+    ; Server Ip and port
+    stdcall Draw.Text, -34.0, 30.0, 1.0, 1.0, 1.0, Help.ServerIp, Help.ServerIpLen
+    stdcall Draw.Text, -34.0, 29.0, 1.0, 1.0, 1.0, Help.ServerPort, Help.ServerPortLen
+    stdcall Draw.Text, -32.8, 29.0, 1.0, 1.0, 0.0, Client.ServerPortStr, Client.ServerPortStrLen
+
+    ; Keymap
+    stdcall Draw.Text, -34.0, 28.0, 1.0, 1.0, 1.0, Help.Keymap, Help.KeymapLen
+    stdcall Draw.Text, -33.5, 27.0, 1.0, 1.0, 1.0, Help.ClientConnectKey, Help.ClientConnectKeyLen
+    stdcall Draw.Text, -33.5, 26.0, 1.0, 1.0, 1.0, Help.ClientDisconnectKey, Help.ClientDisconnectKeyLen
+
+    ; ============ Client =============
+
     ret
 endp
+
+
 proc Game.MoveObject\
     pPlayer
 
@@ -47,15 +112,11 @@ proc Game.MoveObject\
     mov     [currentFrame], eax
 
     sub     eax, [time]
-    cmp     eax, 1
-    jb      .Skip
 
     stdcall Player.Update, [pPlayer], eax
 
     mov     eax, [currentFrame]
     mov     [time], eax
-
-.Skip:
 
 .Ret:
     ret

@@ -25,6 +25,7 @@
         include         "internal/math/vector.asm"
         include         "internal/math/matrix.asm"
         include         "internal/math/easing_funcs.asm"
+        include         "internal/string/string_funcs.asm"
         include         "internal/debug.asm"
         
         cameraPosition  Vector3         2.0, 10.0, 0.0
