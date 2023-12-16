@@ -43,11 +43,11 @@ proc Game.Help
     stdcall Draw.Text, -33.8, 34.0, 0.0, 1.0, 0.0, Help.FPSCnt, Help.FPSCntLen
 
     ; Wallking debug info
-    stdcall Draw.Text, -35.0, 33.0, 1.0, 1.0, 1.0, Help.DebugInfo, Help.DebugInfoLen
+    stdcall Draw.Text, -35.0, 33.0, 0.2, 0.4, 1.0, Help.DebugInfo, Help.DebugInfoLen
 
     ; ============ Client =============
     ; Client Info
-    stdcall Draw.Text, -34.5, 32.0, 0.6, 0.6, 0.6, Help.ClientInfo, Help.ClientInfoLen
+    stdcall Draw.Text, -34.5, 32.0, 0.2, 1.0, 0.4, Help.ClientInfo, Help.ClientInfoLen
 
     ; Client state
     stdcall Draw.Text, -34.0, 31.0, 1.0, 1.0, 1.0, Help.ClientState, Help.ClientStateLen

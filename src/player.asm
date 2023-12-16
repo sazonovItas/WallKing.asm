@@ -295,7 +295,15 @@ proc Player.Respawn uses edi esi,\
     mov     edi, [pPlayer]
 
     mov     [edi + Player.fallAni + Easing.start], false
-    ; mov     [edi + Player.jumpAni + Easing.start], false
+    mov     [edi + Player.fallAni + Easing.done], false
+
+    mov     [edi + Player.jumpAni + Easing.startTime], eax
+
+    mov     [edi + Player.jumpAni + Easing.start], true
+    mov     [edi + Player.jumpAni + Easing.done], false
+
+    mov     [edi + Player.slideAni + Easing.start], false
+    mov     [edi + Player.slideAni + Easing.done], false
 
     mov     esi, [pPosition]
     lea     edi, [edi + Player.Position]
