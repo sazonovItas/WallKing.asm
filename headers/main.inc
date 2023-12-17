@@ -94,7 +94,7 @@ macro JumpIf value, label
 
 
         ; Text for output help
-        Help.DebugInfo          db              "WallKing Debug Info:", 0
+        Help.DebugInfo          db              "WallKing Info:", 0
         Help.DebugInfoLen       =               $ - Help.DebugInfo
         Help.FPS                db              "fps:", 0
         Help.FPSLen             =               $ - Help.FPS
@@ -135,7 +135,7 @@ macro JumpIf value, label
         Help.PlayerStopCameraChasingLen =       $ - Help.PlayerStopCameraChasing
         Help.PlayerStopCameraTex        db      PL_STOP_CAM_TEX, " - on/off camera avoids collisions on the way", 0
         Help.PlayerStopCameraTexLen     =       $ - Help.PlayerStopCameraTex
-        Help.PlayerHelp                 db      PL_HELP, " - open help", 0
+        Help.PlayerHelp                 db      PL_HELP, " - open/close help", 0
         Help.PlayerHelpLen              =       $ - Help.PlayerHelp
         Help.PlayerRespawn              db      PL_RESPAWN, " - player respawn on the level", 0
         Help.PlayerRespawnLen           =       $ - Help.PlayerRespawn
@@ -157,11 +157,11 @@ macro JumpIf value, label
 
         Help.ChasingLight               db      "Chasing Light:", 0
         Help.ChasingLightLen            =       $ - Help.ChasingLight
-        Help.ChasingLightRGB            db      "RGB:", 0
+        Help.ChasingLightRGB            db      "Color:", 0
         Help.ChasingLightRGBLen         =       $ - Help.ChasingLightRGB
         Help.RGBColor                   db      "######", 0
         Help.RGBColorLen                =       $ - Help.RGBColor
-        Help.CurChangeColor             db      "Changing color:", 0
+        Help.CurChangeColor             db      "Changing color spectrum:", 0
         Help.CurChangeColorLen          =       $ - Help.CurChangeColor
         Help.CurChageColorRGB           db      "R", 0
 

@@ -32,8 +32,8 @@ proc Game.Game uses edi ebx,\
 
     .SkipTimerUpdate:
 
-    stdcall Draw.Text, -35.0, 34.0, 1.0, 1.0, 1.0, Help.FPS, Help.FPSLen
-    stdcall Draw.Text, -33.8, 34.0, 0.0, 1.0, 0.0, Help.FPSCnt, Help.FPSCntLen
+    stdcall Draw.Text, -34.9, 34.0, 1.0, 1.0, 1.0, Help.FPS, Help.FPSLen
+    stdcall Draw.Text, -33.7, 34.0, 0.0, 1.0, 0.0, Help.FPSCnt, Help.FPSCntLen
 
 .Ret:
     ret
