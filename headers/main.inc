@@ -155,6 +155,16 @@ macro JumpIf value, label
         Help.SaveLevel                  db      "F5 - save level", 0
         Help.SaveLevelLen               =       $ - Help.SaveLevel
 
+        Help.ChasingLight               db      "Chasing Light:", 0
+        Help.ChasingLightLen            =       $ - Help.ChasingLight
+        Help.ChasingLightRGB            db      "RGB:", 0
+        Help.ChasingLightRGBLen         =       $ - Help.ChasingLightRGB
+        Help.RGBColor                   db      "######", 0
+        Help.RGBColorLen                =       $ - Help.RGBColor
+        Help.CurChangeColor             db      "Changing color:", 0
+        Help.CurChangeColorLen          =       $ - Help.CurChangeColor
+        Help.CurChageColorRGB           db      "R", 0
+
 data import
 
         library kernel32,       "KERNEL32.DLL",\
