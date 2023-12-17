@@ -97,20 +97,20 @@ ends
     PL_BACKWARD         =       'S'
     PL_LEFT             =       'A'
     PL_RIGHT            =       'D'
-    PL_ENHANCE_COLOR    =       VK_UP
-    PL_WEAK_COLOR       =       VK_DOWN
     PL_STOP_CAM_TEX     =       'X'
     PL_STOP_CAM_CHASING =       'C'
+    PL_HELP             =       'H'
+    PL_RESPAWN          =       'R'
     PL_STOP_LIGHT       =       'L'
     PL_NEXT_LIGHT       =       'N'
     PL_PREV_LIGHT       =       'P'
-    PL_RESPAWN          =       'R'
     PL_TELEPORT         =       'T'
-    PL_HELP             =       'H'
+    PL_LEVEL_SAVE_KEY   =       VK_F5
+    PL_ENHANCE_COLOR    =       VK_UP
+    PL_WEAK_COLOR       =       VK_DOWN
     PL_LIGHT_R          =       '1'
     PL_LIGHT_G          =       '2'
     PL_LIGHT_B          =       '3'
-    PL_LEVEL_SAVE_KEY   =       VK_F5
 
     pl_help             db      true
     pl_stop_light       db      false

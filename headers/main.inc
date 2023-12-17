@@ -119,6 +119,41 @@ macro JumpIf value, label
         Help.ClientDisconnectKey db             CLIENT_DISCONNECT_KEY, " - disconnect from the server", 0
         Help.ClientDisconnectKeyLen =           $ - Help.ClientDisconnectKey
         Help.ClientConPlayers   db              "Connected players:", 0
+        Help.ClientConPlayersLen =              $ - Help.ClientConPlayers
+
+        ; Player help
+        Help.PlayerInfo         db              "Player Info:", 0
+        Help.PlayerInfoLen      =               $ - Help.PlayerInfo
+
+        ; Player keymap
+        Help.PlayerBasicMove    db              PL_FORWARD, " ", PL_LEFT, " ", PL_BACKWARD, " ", PL_RIGHT,\
+                                                " - basic movements", 0
+        Help.PlayerBasicMoveLen =               $ - Help.PlayerBasicMove
+        Help.PlayerJump         db              "Space - simple and slide jump", 0
+        Help.PlayerJumpLen      =               $ - Help.PlayerJump
+        Help.PlayerStopCameraChasing    db      PL_STOP_CAM_CHASING, " - on/off camera chasing", 0
+        Help.PlayerStopCameraChasingLen =       $ - Help.PlayerStopCameraChasing
+        Help.PlayerStopCameraTex        db      PL_STOP_CAM_TEX, " - on/off camera avoids collisions on the way", 0
+        Help.PlayerStopCameraTexLen     =       $ - Help.PlayerStopCameraTex
+        Help.PlayerHelp                 db      PL_HELP, " - open help", 0
+        Help.PlayerHelpLen              =       $ - Help.PlayerHelp
+        Help.PlayerRespawn              db      PL_RESPAWN, " - player respawn on the level", 0
+        Help.PlayerRespawnLen           =       $ - Help.PlayerRespawn
+        Help.PlayerChasingLight         db      PL_STOP_LIGHT, " - on/off light chasing", 0
+        Help.PlayerChasingLightLen      =       $ - Help.PlayerChasingLight
+        Help.PlayerNextLight            db      PL_NEXT_LIGHT, " - choose next light", 0
+        Help.PlayerNextLightLen         =       $ - Help.PlayerNextLight
+        Help.PlayerPrevLight            db      PL_PREV_LIGHT, " - choose previous light", 0
+        Help.PlayerPrevLightLen         =       $ - Help.PlayerPrevLight
+        Help.PlayerTeleportToLight      db      PL_TELEPORT, " - teleport to chosen light", 0
+        Help.PlayerTeleportToLightLen   =       $ - Help.PlayerTeleportToLight
+        Help.ChooseLightColor           db      PL_LIGHT_R, ", ", PL_LIGHT_G, ", ", PL_LIGHT_B, ' ',\
+                                                " - R, G, B choose color to change intensity"
+        Help.ChooseLightColorLen        =       $ - Help.ChooseLightColor
+        Help.ChangeLightIntensity       db      "UP, DOWN - change color intensity", 0
+        Help.ChangeLightIntensityLen    =       $ - Help.ChangeLightIntensity
+        Help.SaveLevel                  db      "F5 - save level", 0
+        Help.SaveLevelLen               =       $ - Help.SaveLevel
 
 data import
 

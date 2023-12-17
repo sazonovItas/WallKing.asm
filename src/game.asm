@@ -19,14 +19,6 @@ proc Game.Game uses edi ebx,\
 
     @@:
 
-.Ret:
-    ret
-endp
-
-proc Game.Help
-
-    stdcall Draw.Text, -35.0, 34.0, 1.0, 1.0, 1.0, Help.FPS, Help.FPSLen
-
     invoke  GetTickCount
     mov     edx, eax
     sub     eax, [fpsTimer]
@@ -39,6 +31,15 @@ proc Game.Help
     mov     [fpsCnt], 0
 
     .SkipTimerUpdate:
+
+.Ret:
+    ret
+endp
+
+proc Game.Help
+
+    stdcall Draw.Text, -35.0, 34.0, 1.0, 1.0, 1.0, Help.FPS, Help.FPSLen
+
 
     stdcall Draw.Text, -33.8, 34.0, 0.0, 1.0, 0.0, Help.FPSCnt, Help.FPSCntLen
 
@@ -91,8 +92,7 @@ proc Game.Help
     stdcall Draw.Text, -32.8, 29.0, 1.0, 1.0, 0.0, Client.ServerPortStr, Client.ServerPortStrLen
 
     ; Connected players
-    stdcall strlen, Help.ClientConPlayers
-    stdcall Draw.Text, -34.0, 28.0, 1.0, 1.0, 1.0, Help.ClientConPlayers, 19
+    stdcall Draw.Text, -34.0, 28.0, 1.0, 1.0, 1.0, Help.ClientConPlayers, Help.ClientConPlayersLen
 
     stdcall memzero, Client.CntPlayersStr, Client.CntPlayersStrLen
     stdcall Debug.IntToDecString, Client.CntPlayersStr, [Client.CntPlayers]
@@ -105,6 +105,29 @@ proc Game.Help
 
     ; ============ Client =============
 
+    ; ============ Player =============
+    
+    ; Player Info
+    stdcall Draw.Text, -34.5, 24.0, 0.2, 1.0, 0.4, Help.PlayerInfo, Help.PlayerInfoLen
+
+    ; Keymap
+    stdcall Draw.Text, -34.0, 23.0, 1.0, 1.0, 1.0, Help.Keymap, Help.KeymapLen
+
+    stdcall Draw.Text, -33.5, 22.0, 1.0, 1.0, 1.0, Help.PlayerBasicMove, Help.PlayerBasicMoveLen
+    stdcall Draw.Text, -33.5, 21.0, 1.0, 1.0, 1.0, Help.PlayerJump, Help.PlayerJumpLen
+    stdcall Draw.Text, -33.5, 20.0, 1.0, 1.0, 1.0, Help.PlayerStopCameraChasing, Help.PlayerStopCameraChasingLen
+    stdcall Draw.Text, -33.5, 19.0, 1.0, 1.0, 1.0, Help.PlayerStopCameraTex, Help.PlayerStopCameraTexLen
+    stdcall Draw.Text, -33.5, 18.0, 1.0, 1.0, 1.0, Help.PlayerHelp, Help.PlayerHelpLen
+    stdcall Draw.Text, -33.5, 17.0, 1.0, 1.0, 1.0, Help.PlayerRespawn, Help.PlayerRespawnLen
+    stdcall Draw.Text, -33.5, 16.0, 1.0, 1.0, 1.0, Help.PlayerChasingLight, Help.PlayerChasingLightLen
+    stdcall Draw.Text, -33.5, 15.0, 1.0, 1.0, 1.0, Help.PlayerNextLight, Help.PlayerNextLightLen
+    stdcall Draw.Text, -33.5, 14.0, 1.0, 1.0, 1.0, Help.PlayerPrevLight, Help.PlayerPrevLightLen
+    stdcall Draw.Text, -33.5, 13.0, 1.0, 1.0, 1.0, Help.PlayerTeleportToLight, Help.PlayerTeleportToLightLen
+    stdcall Draw.Text, -33.5, 12.0, 1.0, 1.0, 1.0, Help.ChooseLightColor, Help.ChooseLightColorLen
+    stdcall Draw.Text, -33.5, 11.0, 1.0, 1.0, 1.0, Help.ChangeLightIntensity, Help.ChangeLightIntensityLen
+    stdcall Draw.Text, -33.5, 10.0, 1.0, 1.0, 1.0, Help.SaveLevel, Help.SaveLevelLen
+
+    ; ============ Player =============
     ret
 endp
 
