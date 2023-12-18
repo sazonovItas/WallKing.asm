@@ -9,8 +9,8 @@ ends
 
 struct Levels
     curLevel            dd          ?
-    sizeLevels          dd          ?
-    arrLevels           dd          ?
+    cntLevels           dd          ?
+    pLevels             dd          ?
 ends
 
     ; TestLevel       Level    level1File, sizeBlocksMapTryConst, blocksMapTry, sizeLightsMapTryConst, lightsMapTry, <2.0, 100.0, 2.0>

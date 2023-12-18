@@ -102,6 +102,10 @@ macro JumpIf value, label
         Help.FPSCntLen          =               $ - Help.FPSCnt            
         Help.Keymap             db              "Keymap:", 0
         Help.KeymapLen          =               $ - Help.Keymap
+        Help.On                 db              "On", 0
+        Help.OnLen              =               $ - Help.On
+        Help.Off                db              "Off", 0 
+        Help.OffLen             =               $ - Help.Off
 
         ; Client help
         Help.Ping               db              "ping:", 0
@@ -148,22 +152,24 @@ macro JumpIf value, label
         Help.PlayerTeleportToLight      db      PL_TELEPORT, " - teleport to chosen light", 0
         Help.PlayerTeleportToLightLen   =       $ - Help.PlayerTeleportToLight
         Help.ChooseLightColor           db      PL_LIGHT_R, ", ", PL_LIGHT_G, ", ", PL_LIGHT_B, ' ',\
-                                                " - R, G, B choose color to change intensity"
+                                                " - R, G, B choose spectrum to change intensity"
         Help.ChooseLightColorLen        =       $ - Help.ChooseLightColor
-        Help.ChangeLightIntensity       db      "UP, DOWN - change color intensity", 0
+        Help.ChangeLightIntensity       db      "UP, DOWN - change spectrum intensity", 0
         Help.ChangeLightIntensityLen    =       $ - Help.ChangeLightIntensity
         Help.SaveLevel                  db      "F5 - save level", 0
         Help.SaveLevelLen               =       $ - Help.SaveLevel
 
         Help.ChasingLight               db      "Chasing Light:", 0
         Help.ChasingLightLen            =       $ - Help.ChasingLight
+        Help.ChasingLightChasing        db      "Chasing:", 0
+        Help.ChasingLightChasingLen     =       $ - Help.ChasingLightChasing
         Help.ChasingLightRGB            db      "Color:", 0
         Help.ChasingLightRGBLen         =       $ - Help.ChasingLightRGB
         Help.RGBColor                   db      "######", 0
         Help.RGBColorLen                =       $ - Help.RGBColor
-        Help.CurChangeColor             db      "Changing color spectrum:", 0
+        Help.CurChangeColor             db      "Changing spectrum:", 0
         Help.CurChangeColorLen          =       $ - Help.CurChangeColor
-        Help.CurChageColorRGB           db      "R", 0
+        Help.CurChangeColorRGB           db      "R", 0
 
 data import
 

@@ -32,8 +32,8 @@ proc Game.Game uses edi ebx,\
 
     .SkipTimerUpdate:
 
-    stdcall Draw.Text, -34.9, 34.0, 1.0, 1.0, 1.0, Help.FPS, Help.FPSLen
-    stdcall Draw.Text, -33.7, 34.0, 0.0, 1.0, 0.0, Help.FPSCnt, Help.FPSCntLen
+    stdcall Draw.Text, -34.7, 34.0, 1.0, 1.0, 1.0, Help.FPS, Help.FPSLen
+    stdcall Draw.Text, -33.5, 34.0, 0.0, 1.0, 0.0, Help.FPSCnt, Help.FPSCntLen
 
 .Ret:
     ret
@@ -114,7 +114,7 @@ proc Game.Help uses edi esi ebx,\
     stdcall Draw.Text, -34.5, 24.0, 0.2, 1.0, 0.4, Help.PlayerInfo, Help.PlayerInfoLen
 
     ; Keymap
-    stdcall Draw.Text, -34.0, 23.0, 1.0, 1.0, 1.0, Help.Keymap, Help.KeymapLen
+    stdcall Draw.Text, -34.0, 23.0, 1.0, 0.6, 0.6, Help.Keymap, Help.KeymapLen
 
     stdcall Draw.Text, -33.5, 22.0, 1.0, 1.0, 1.0, Help.PlayerBasicMove, Help.PlayerBasicMoveLen
     stdcall Draw.Text, -33.5, 21.0, 1.0, 1.0, 1.0, Help.PlayerJump, Help.PlayerJumpLen
@@ -131,9 +131,25 @@ proc Game.Help uses edi esi ebx,\
     stdcall Draw.Text, -33.5, 10.0, 1.0, 1.0, 1.0, Help.SaveLevel, Help.SaveLevelLen
 
     ; Chasing Light
-    stdcall Draw.Text, -34.0, 9.0, 1.0, 1.0, 1.0, Help.ChasingLight, Help.ChasingLightLen
-    stdcall Draw.Text, -33.5, 8.0, 1.0, 1.0, 1.0, Help.ChasingLightRGB, Help.ChasingLightRGBLen
+    stdcall Draw.Text, -34.0, 9.0, 1.0, 0.6, 0.6, Help.ChasingLight, Help.ChasingLightLen
+    stdcall Draw.Text, -33.5, 8.0, 1.0, 1.0, 1.0, Help.ChasingLightChasing, Help.ChasingLightChasingLen
 
+    cmp     [pl_stop_light], false
+    je      .OffChasing
+
+    .OnChasing:
+
+        stdcall Draw.Text, -31.0, 8.0, 0.0, 1.0, 0.0, Help.On, Help.OnLen
+        jmp     @F
+
+    .OffChasing:    
+
+        stdcall Draw.Text, -31.0, 8.0, 1.0, 0.0, 0.0, Help.Off, Help.OffLen
+
+    @@:
+
+    ; Color chasing light
+    stdcall Draw.Text, -33.5, 7.0, 1.0, 1.0, 1.0, Help.ChasingLightRGB, Help.ChasingLightRGBLen
     lea     ebx, [tmp]
     mov     edi, [pPlayer]
     mov     esi, [edi + Player.pLevel]
@@ -144,8 +160,38 @@ proc Game.Help uses edi esi ebx,\
     add     eax, colorLightOffset
     stdcall Vector3.Copy, ebx, eax
     stdcall Vector3.Normalize, ebx
-    stdcall Draw.Text, -32.0, 8.0, dword [ebx], dword [ebx + 4],\
+    stdcall Draw.Text, -32.0, 7.0, dword [ebx], dword [ebx + 4],\
                                 dword [ebx + 8], Help.RGBColor, Help.RGBColorLen
+
+    ; changing spectrum
+    stdcall Draw.Text, -33.5, 6.0, 1.0, 1.0, 1.0, Help.CurChangeColor, Help.CurChangeColorLen
+
+    cmp     [edi + Player.offsetColorLight], 4
+    je      .Gspec
+
+    cmp     [edi + Player.offsetColorLight], 8
+    je      .Bspec
+
+    .Rspec:
+
+        mov    byte [Help.CurChangeColorRGB], 'R'
+        stdcall Draw.Text, -28.5, 6.0, 1.0, 0.0, 0.0, Help.CurChangeColorRGB, 1
+
+        jmp     @F
+
+    .Gspec:
+
+        mov    byte [Help.CurChangeColorRGB], 'G'
+        stdcall Draw.Text, -28.5, 6.0, 0.0, 1.0, 0.0, Help.CurChangeColorRGB, 1
+
+        jmp     @F
+
+    .Bspec:
+
+        mov    byte [Help.CurChangeColorRGB], 'B'
+        stdcall Draw.Text, -28.5, 6.0, 0.0, 0.0, 1.0, Help.CurChangeColorRGB, 1
+
+    @@:
 
     ; ============ Player =============
     ret
