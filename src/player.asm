@@ -2395,6 +2395,14 @@ proc Player.KeyUp uses edi esi,\
 
     @@:
 
+    cmp     [wParam], PL_MAP
+    jne     @F
+
+    xor     [pl_map], true
+    jmp     .SkipUp
+
+    @@:
+
     cmp     [wParam], PL_TELEPORT
     jne     @F
 

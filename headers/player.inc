@@ -113,8 +113,8 @@ ends
     PL_LIGHT_G          =       '2'
     PL_LIGHT_B          =       '3'
 
-    pl_map              db      true
-    pl_help             db      true
+    pl_map              db      false
+    pl_help             db      false
     pl_stop_light       db      false
     pl_jump             db      false
     pl_run              db      false

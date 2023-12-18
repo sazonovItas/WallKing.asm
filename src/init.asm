@@ -124,15 +124,6 @@ proc Init.OpenGL
     stdcall Texture.Constructor, edi, fileGemRainbowSpecularTex,\
                             GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    ; interface textures
-    lea     edi, [hOfflineTex]
-    stdcall Texture.Constructor, edi, fileOfflineTex,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB8, 0, GL_BGR, GL_UNSIGNED_BYTE
-
-    lea     edi, [hOnlineTex]
-    stdcall Texture.Constructor, edi, fileOnlineTex,\
-                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGR, GL_UNSIGNED_BYTE
-
     ; ----------- BLOCK SHADER -----------------
     ; Block shader
     stdcall Shader.Constructor, blockShader.ID, blockVertexFile, blockFragmentFile
@@ -200,22 +191,22 @@ proc Init.OpenGL
 
     ; ----------- INTERFACE --------------
     ; Interface shader
-    stdcall Shader.Constructor, interfaceShader.ID, interfaceVertexFile, interfaceFragmentFile
+    ; stdcall Shader.Constructor, interfaceShader.ID, interfaceVertexFile, interfaceFragmentFile
 
     ;Generate the VAO, EBO and VBO with only 1 object each
-    stdcall VAO.Constructor, interfaceVAO.ID
-    stdcall VAO.Bind, [interfaceVAO.ID]
-    stdcall VBO.Constructor, interfaceVBO.ID, sizeVertice * countVertices, vertices 
-    stdcall EBO.Constructor, interfaceEBO.ID, sizeIndex * countIndices, indices
+    ; stdcall VAO.Constructor, interfaceVAO.ID
+    ; stdcall VAO.Bind, [interfaceVAO.ID]
+    ; stdcall VBO.Constructor, interfaceVBO.ID, sizeVertice * countVertices, vertices 
+    ; stdcall EBO.Constructor, interfaceEBO.ID, sizeIndex * countIndices, indices
 
-    ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
-    stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
-    stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 1, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
+    ; ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
+    ; stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
+    ; stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 1, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
 
-    ; Unbind VAO, VBO and EBO so that accidentlly to change it
-    stdcall VBO.Unbind
-    stdcall VAO.Unbind
-    stdcall EBO.Unbind
+    ; ; Unbind VAO, VBO and EBO so that accidentlly to change it
+    ; stdcall VBO.Unbind
+    ; stdcall VAO.Unbind
+    ; stdcall EBO.Unbind
 
     ret
 endp

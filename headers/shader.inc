@@ -19,6 +19,6 @@ ends
         ; shadowShader            Shader          ?
 
         ; interface shader  
-        interfaceFragmentFile   db              "resources/shaders/interface.frag", 0
-        interfaceVertexFile     db              "resources/shaders/interface.vert", 0
-        interfaceShader         Shader          ?
+        ; interfaceFragmentFile   db              "resources/shaders/interface.frag", 0
+        ; interfaceVertexFile     db              "resources/shaders/interface.vert", 0
+        ; interfaceShader         Shader          ?

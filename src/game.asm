@@ -21,9 +21,6 @@ proc Game.Game uses edi ebx esi,\
     invoke  glClear, GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT
     stdcall Draw.Scene, [pPlayer]
 
-    ; Interface drawing
-    stdcall Draw.Interface, [pPlayer], [interfaceShader.ID]
-
     ; Print help and some info
     cmp     [pl_help], true
     jne     @F
@@ -176,35 +173,36 @@ proc Game.Help uses edi esi ebx,\
     stdcall Draw.Text, -33.5, 20.0, 1.0, 1.0, 1.0, Help.PlayerStopCameraChasing, Help.PlayerStopCameraChasingLen
     stdcall Draw.Text, -33.5, 19.0, 1.0, 1.0, 1.0, Help.PlayerStopCameraTex, Help.PlayerStopCameraTexLen
     stdcall Draw.Text, -33.5, 18.0, 1.0, 1.0, 1.0, Help.PlayerHelp, Help.PlayerHelpLen
-    stdcall Draw.Text, -33.5, 17.0, 1.0, 1.0, 1.0, Help.PlayerRespawn, Help.PlayerRespawnLen
-    stdcall Draw.Text, -33.5, 16.0, 1.0, 1.0, 1.0, Help.PlayerChasingLight, Help.PlayerChasingLightLen
-    stdcall Draw.Text, -33.5, 15.0, 1.0, 1.0, 1.0, Help.PlayerNextLight, Help.PlayerNextLightLen
-    stdcall Draw.Text, -33.5, 14.0, 1.0, 1.0, 1.0, Help.PlayerPrevLight, Help.PlayerPrevLightLen
-    stdcall Draw.Text, -33.5, 13.0, 1.0, 1.0, 1.0, Help.PlayerTeleportToLight, Help.PlayerTeleportToLightLen
-    stdcall Draw.Text, -33.5, 12.0, 1.0, 1.0, 1.0, Help.ChooseLightColor, Help.ChooseLightColorLen
-    stdcall Draw.Text, -33.5, 11.0, 1.0, 1.0, 1.0, Help.ChangeLightIntensity, Help.ChangeLightIntensityLen
-    stdcall Draw.Text, -33.5, 10.0, 1.0, 1.0, 1.0, Help.SaveLevel, Help.SaveLevelLen
+    stdcall Draw.Text, -33.5, 17.0, 1.0, 1.0, 1.0, Help.PlayerMap, Help.PlayerMapLen
+    stdcall Draw.Text, -33.5, 16.0, 1.0, 1.0, 1.0, Help.PlayerRespawn, Help.PlayerRespawnLen
+    stdcall Draw.Text, -33.5, 15.0, 1.0, 1.0, 1.0, Help.PlayerChasingLight, Help.PlayerChasingLightLen
+    stdcall Draw.Text, -33.5, 14.0, 1.0, 1.0, 1.0, Help.PlayerNextLight, Help.PlayerNextLightLen
+    stdcall Draw.Text, -33.5, 13.0, 1.0, 1.0, 1.0, Help.PlayerPrevLight, Help.PlayerPrevLightLen
+    stdcall Draw.Text, -33.5, 12.0, 1.0, 1.0, 1.0, Help.PlayerTeleportToLight, Help.PlayerTeleportToLightLen
+    stdcall Draw.Text, -33.5, 11.0, 1.0, 1.0, 1.0, Help.ChooseLightColor, Help.ChooseLightColorLen
+    stdcall Draw.Text, -33.5, 10.0, 1.0, 1.0, 1.0, Help.ChangeLightIntensity, Help.ChangeLightIntensityLen
+    stdcall Draw.Text, -33.5, 9.0, 1.0, 1.0, 1.0, Help.SaveLevel, Help.SaveLevelLen
 
     ; Chasing Light
-    stdcall Draw.Text, -34.0, 9.0, 1.0, 0.6, 0.6, Help.ChasingLight, Help.ChasingLightLen
-    stdcall Draw.Text, -33.5, 8.0, 1.0, 1.0, 1.0, Help.ChasingLightChasing, Help.ChasingLightChasingLen
+    stdcall Draw.Text, -34.0, 8.0, 1.0, 0.6, 0.6, Help.ChasingLight, Help.ChasingLightLen
+    stdcall Draw.Text, -33.5, 7.0, 1.0, 1.0, 1.0, Help.ChasingLightChasing, Help.ChasingLightChasingLen
 
     cmp     [pl_stop_light], false
     je      .OffChasing
 
     .OnChasing:
 
-        stdcall Draw.Text, -31.0, 8.0, 0.0, 1.0, 0.0, Help.On, Help.OnLen
+        stdcall Draw.Text, -31.0, 7.0, 0.0, 1.0, 0.0, Help.On, Help.OnLen
         jmp     @F
 
     .OffChasing:    
 
-        stdcall Draw.Text, -31.0, 8.0, 1.0, 0.0, 0.0, Help.Off, Help.OffLen
+        stdcall Draw.Text, -31.0, 7.0, 1.0, 0.0, 0.0, Help.Off, Help.OffLen
 
     @@:
 
     ; Color chasing light
-    stdcall Draw.Text, -33.5, 7.0, 1.0, 1.0, 1.0, Help.ChasingLightRGB, Help.ChasingLightRGBLen
+    stdcall Draw.Text, -33.5, 6.0, 1.0, 1.0, 1.0, Help.ChasingLightRGB, Help.ChasingLightRGBLen
     lea     ebx, [tmp]
     mov     edi, [pPlayer]
     mov     esi, [edi + Player.pLevel]
@@ -215,11 +213,11 @@ proc Game.Help uses edi esi ebx,\
     add     eax, colorLightOffset
     stdcall Vector3.Copy, ebx, eax
     stdcall Vector3.Normalize, ebx
-    stdcall Draw.Text, -32.0, 7.0, dword [ebx], dword [ebx + 4],\
+    stdcall Draw.Text, -32.0, 6.0, dword [ebx], dword [ebx + 4],\
                                 dword [ebx + 8], Help.RGBColor, Help.RGBColorLen
 
     ; changing spectrum
-    stdcall Draw.Text, -33.5, 6.0, 1.0, 1.0, 1.0, Help.CurChangeColor, Help.CurChangeColorLen
+    stdcall Draw.Text, -33.5, 5.0, 1.0, 1.0, 1.0, Help.CurChangeColor, Help.CurChangeColorLen
 
     cmp     [edi + Player.offsetColorLight], 4
     je      .Gspec
@@ -230,21 +228,21 @@ proc Game.Help uses edi esi ebx,\
     .Rspec:
 
         mov    byte [Help.CurChangeColorRGB], 'R'
-        stdcall Draw.Text, -28.5, 6.0, 1.0, 0.0, 0.0, Help.CurChangeColorRGB, 1
+        stdcall Draw.Text, -28.5, 5.0, 1.0, 0.0, 0.0, Help.CurChangeColorRGB, 1
 
         jmp     @F
 
     .Gspec:
 
         mov    byte [Help.CurChangeColorRGB], 'G'
-        stdcall Draw.Text, -28.5, 6.0, 0.0, 1.0, 0.0, Help.CurChangeColorRGB, 1
+        stdcall Draw.Text, -28.5, 5.0, 0.0, 1.0, 0.0, Help.CurChangeColorRGB, 1
 
         jmp     @F
 
     .Bspec:
 
         mov    byte [Help.CurChangeColorRGB], 'B'
-        stdcall Draw.Text, -28.5, 6.0, 0.0, 0.0, 1.0, Help.CurChangeColorRGB, 1
+        stdcall Draw.Text, -28.5, 5.0, 0.0, 0.0, 1.0, Help.CurChangeColorRGB, 1
 
     @@:
 

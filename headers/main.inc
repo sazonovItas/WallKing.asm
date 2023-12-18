@@ -72,9 +72,6 @@ macro JumpIf value, label
         Z_NEAR          =       0.0001
         Z_FAR           =       10000.0
 
-        MapViewMatrix   Matrix4x4       ?
-        MapProjMatrix   Matrix4x4       ?
-
         wndClass        WNDCLASS                0, WindowProc, 0, 0, 0, 0, 0, 0, 0, className
         pfd             PIXELFORMATDESCRIPTOR   sizeof.PIXELFORMATDESCRIPTOR, 1, PFD_FLAGS, PFD_TYPE_RGBA, COLOR_DEPTH,\
                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\
@@ -142,8 +139,10 @@ macro JumpIf value, label
         Help.PlayerStopCameraChasingLen =       $ - Help.PlayerStopCameraChasing
         Help.PlayerStopCameraTex        db      PL_STOP_CAM_TEX, " - on/off camera avoids collisions on the way", 0
         Help.PlayerStopCameraTexLen     =       $ - Help.PlayerStopCameraTex
-        Help.PlayerHelp                 db      PL_HELP, " - open/close help", 0
+        Help.PlayerHelp                 db      PL_HELP, " - show/hide help", 0
         Help.PlayerHelpLen              =       $ - Help.PlayerHelp
+        Help.PlayerMap                  db      PL_MAP, " - show/hide top spectator map", 0
+        Help.PlayerMapLen               =       $ - Help.PlayerMap
         Help.PlayerRespawn              db      PL_RESPAWN, " - player respawn on the level", 0
         Help.PlayerRespawnLen           =       $ - Help.PlayerRespawn
         Help.PlayerChasingLight         db      PL_STOP_LIGHT, " - on/off light chasing", 0
