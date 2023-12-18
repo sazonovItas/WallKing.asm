@@ -1,14 +1,27 @@
-proc Game.Game uses edi ebx,\ 
+proc Game.Game uses edi ebx esi,\ 
     pPlayer
+
+    locals
+        MapCornerX          dd          ?
+        MapCornerY          dd          ?
+        divScreen           dd          4
+        aspect              dd          1.0
+        tmp                 Vector3     0.0, 30.0, 0.0
+        normVec             Vector3     0.1, 0.0, 0.1
+        upVec               Vector3     0.0, 1.0, 0.0
+    endl
 
     stdcall Game.MoveObject, [pPlayer]
 
     mov     edi, [pPlayer]
 
+    stdcall Camera.Matrix, [pPlayer]
+
     invoke  glViewport, 0, 0, [edi + Player.camera + Camera.width], [edi + Player.camera + Camera.height]
     invoke  glClear, GL_DEPTH_BUFFER_BIT or GL_COLOR_BUFFER_BIT
     stdcall Draw.Scene, [pPlayer]
 
+    ; Interface drawing
     stdcall Draw.Interface, [pPlayer], [interfaceShader.ID]
 
     ; Print help and some info
@@ -32,8 +45,50 @@ proc Game.Game uses edi ebx,\
 
     .SkipTimerUpdate:
 
-    stdcall Draw.Text, -34.7, 34.0, 1.0, 1.0, 1.0, Help.FPS, Help.FPSLen
-    stdcall Draw.Text, -33.5, 34.0, 0.0, 1.0, 0.0, Help.FPSCnt, Help.FPSCntLen
+    stdcall Draw.Text, -34.8, 34.0, 1.0, 1.0, 1.0, Help.FPS, Help.FPSLen
+    stdcall Draw.Text, -33.6, 34.0, 0.0, 1.0, 0.0, Help.FPSCnt, Help.FPSCntLen
+
+    ; Map drawing
+    cmp     [pl_map], false
+    je      .SkipMapDrawing
+
+    push    edi
+    mov     esi, edi
+    add     edi, Camera.proj
+    stdcall Matrix.Projection, [esi + Camera.fovDeg], [aspect], [esi + Camera.nearPlane], [esi + Camera.farPlane], edi
+    pop     edi
+
+    push    edi
+    mov     esi, edi
+    add     edi, (Player.camera + Camera.camPosition)
+    lea     ebx, [tmp]
+    lea     edx, [normVec]
+    stdcall Vector3.Add, ebx, edi
+    stdcall Vector3.Add, ebx, edx
+    add     esi, Camera.view
+    lea     eax, [upVec]
+    stdcall Matrix.LookAt, ebx, edi, eax, esi
+    pop     edi
+
+    xor     edx, edx
+    mov     eax, [edi + Player.camera + Camera.width]
+    div     [divScreen]    
+    mov     edx, [edi + Player.camera + Camera.width]
+    sub     edx, eax
+
+    mov     esi, edx
+    mov     ebx, eax
+
+    invoke  glEnable, GL_SCISSOR_TEST
+    invoke  glScissor, esi, 0, ebx, ebx
+    invoke  glClear, GL_COLOR_BUFFER_BIT
+    invoke  glDisable, GL_SCISSOR_TEST
+    invoke  glClear, GL_DEPTH_BUFFER_BIT
+    invoke  glViewport, esi, 0, ebx, ebx
+    stdcall Draw.Scene, [pPlayer]
+
+    .SkipMapDrawing:
+
 
 .Ret:
     ret

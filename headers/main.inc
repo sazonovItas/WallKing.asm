@@ -72,6 +72,9 @@ macro JumpIf value, label
         Z_NEAR          =       0.0001
         Z_FAR           =       10000.0
 
+        MapViewMatrix   Matrix4x4       ?
+        MapProjMatrix   Matrix4x4       ?
+
         wndClass        WNDCLASS                0, WindowProc, 0, 0, 0, 0, 0, 0, 0, className
         pfd             PIXELFORMATDESCRIPTOR   sizeof.PIXELFORMATDESCRIPTOR, 1, PFD_FLAGS, PFD_TYPE_RGBA, COLOR_DEPTH,\
                                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,\

@@ -84,8 +84,6 @@ proc Init.OpenGL
 
     invoke  glEnable, GL_DEPTH_TEST
     invoke  glEnable, GL_MULTISAMPLE
-    invoke  glShadeModel, GL_SMOOTH
-    invoke  glHint, GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST
 
     ; Ambient
     lea     edi, [ambientTexs]

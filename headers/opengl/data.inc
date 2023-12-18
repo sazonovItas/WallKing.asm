@@ -2,7 +2,7 @@
         ; parametrs for the camera
         fovY                    dd              90.0 
         zNear                   dd              0.001
-        zFar                    dd              10000.0
+        zFar                    dd              1000.0
 
         ProjMatrix              Matrix4x4       ?
         ViewMatrix              Matrix4x4       ?

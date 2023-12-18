@@ -13,8 +13,10 @@ struct Levels
     pLevels             dd          ?
 ends
 
+    TestLevels      Levels      ?
+
     ; TestLevel       Level    level1File, sizeBlocksMapTryConst, blocksMapTry, sizeLightsMapTryConst, lightsMapTry, <2.0, 100.0, 2.0>
-    TestLevel       Level    ?
+    TestLevel       Level       ?
 
 
     level1File              db              "resources/levels/level1.bin", 0

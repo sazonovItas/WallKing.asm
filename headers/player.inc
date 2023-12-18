@@ -100,6 +100,7 @@ ends
     PL_STOP_CAM_TEX     =       'X'
     PL_STOP_CAM_CHASING =       'C'
     PL_HELP             =       'H'
+    PL_MAP              =       'M'
     PL_RESPAWN          =       'R'
     PL_STOP_LIGHT       =       'L'
     PL_NEXT_LIGHT       =       'N'
@@ -112,6 +113,7 @@ ends
     PL_LIGHT_G          =       '2'
     PL_LIGHT_B          =       '3'
 
+    pl_map              db      true
     pl_help             db      true
     pl_stop_light       db      false
     pl_jump             db      false

@@ -1,8 +1,6 @@
 proc Draw.Scene uses esi edi,\
         pPlayer
 
-        stdcall Camera.Matrix, [pPlayer]
-
         mov     edi, [pPlayer]
 
         stdcall Draw.BlocksMap, [blockShader.ID], edi, Draw.Block
@@ -549,6 +547,7 @@ proc Draw.Text uses edi esi ebx,\
 
                 invoke  glMatrixMode, GL_PROJECTION
         invoke  glPopMatrix
+        invoke  glMatrixMode, GL_MODELVIEW
 
         ret
 endp
