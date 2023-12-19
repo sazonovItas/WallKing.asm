@@ -93,9 +93,9 @@ proc Init.OpenGL
     mov     [edi + 4], eax
     mov     [edi + 8], eax
 
-    ; lea     edi, [ambientTexs + 4]
-    ; stdcall Texture.Constructor, edi, fileGemBlueAmbientTex,\
-    ;                         GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+    lea     edi, [ambientTexs + 4]
+    stdcall Texture.Constructor, edi, fileGemBlueAmbientTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
     ; lea     edi, [ambientTexs + 8]
     ; stdcall Texture.Constructor, edi, fileGemRainbowAmbientTex,\
@@ -113,9 +113,9 @@ proc Init.OpenGL
     mov     [edi + 4], eax
     mov     [edi + 8], eax
 
-    ; lea     edi, [diffuseTexs + 4]
-    ; stdcall Texture.Constructor, edi, fileGemBlueDiffuseTex,\
-    ;                         GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+    lea     edi, [diffuseTexs + 4]
+    stdcall Texture.Constructor, edi, fileGemBlueDiffuseTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
     ; lea     edi, [diffuseTexs + 8]
     ; stdcall Texture.Constructor, edi, fileGemRainbowDiffuseTex,\
@@ -133,9 +133,9 @@ proc Init.OpenGL
     mov     [edi + 4], eax
     mov     [edi + 8], eax
 
-    ; lea     edi, [specularTexs + 4]
-    ; stdcall Texture.Constructor, edi, fileGemBlueSpecularTex,\
-    ;                         GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+    lea     edi, [specularTexs + 4]
+    stdcall Texture.Constructor, edi, fileGemBlueSpecularTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
     ; lea     edi, [specularTexs + 8]
     ; stdcall Texture.Constructor, edi, fileGemRainbowSpecularTex,\
