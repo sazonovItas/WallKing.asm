@@ -1,8 +1,6 @@
 proc Draw.Scene uses esi edi,\
         pPlayer
 
-        stdcall Camera.Matrix, [pPlayer]
-
         mov     edi, [pPlayer]
 
         stdcall Draw.BlocksMap, [blockShader.ID], edi, Draw.Block
@@ -12,10 +10,13 @@ proc Draw.Scene uses esi edi,\
         add     esi, Player.DrawPlayer
         stdcall Player.Draw, [blockShader.ID], edi, esi
 
+        cmp     [Client.State], CLIENT_STATE_ACCEPT
+        jne     @F
+
         ; Draw other players
         stdcall Draw.ConPlayers, [pPlayer], [blockShader.ID], [Client.BufferDraw], Draw.ConPlayer
 
-        stdcall Draw.Interface, [pPlayer], [interfaceShader.ID]
+        @@:
 
         ret
 endp
@@ -60,6 +61,8 @@ proc Draw.Interface uses edi esi ebx,\
                 interfaceCameraPos      Vector3         0.0, 0.0, 5.0
                 tmp                     Vector3         0.0, 0.0, 0.0
                 interfaceCameraUp       Vector3         0.0, 1.0, 0.0
+                angle                   dd              ?
+                normDiv                 dd              0.0005
         endl
 
         stdcall Shader.Activate, [shaderId]
@@ -72,6 +75,11 @@ proc Draw.Interface uses edi esi ebx,\
 
         invoke  glGetUniformLocation, [shaderId], uniTimeName
         invoke  glUniform1i, eax, [time]
+
+        fild    [time]
+        fmul    [normDiv]
+        fmul    [radian]
+        fstp    [angle]
 
         invoke  glGetUniformLocation, [shaderId], uniStateName
         invoke  glUniform1i, eax, [Client.State]
@@ -91,8 +99,18 @@ proc Draw.Interface uses edi esi ebx,\
         invoke  glMatrixMode, GL_MODELVIEW
         invoke  glPushMatrix
                 invoke  glLoadIdentity
-                invoke  glTranslatef, -12.5, 6.6, -3.5
-                invoke  glRotatef, 30.0, 0.5, 1.0, 0.0
+                invoke  glTranslatef, 13.2, 7.0, -3.5
+
+                test    [Client.State], 2
+                jnz     @F
+
+                invoke  glRotatef, [angle], 1.0, 0.0, 0.0
+                invoke  glRotatef, [angle], 0.0, 1.0, 0.0
+                invoke  glRotatef, [angle], 0.0, 0.0, 1.0
+
+                @@:
+
+                invoke  glRotatef, -30.0, 0.0, 1.0, 0.0
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
         invoke  glGetUniformLocation, [shaderId], uniModelName
@@ -496,6 +514,40 @@ proc Draw.ShadowBlock uses edi esi ebx,\
         stdcall VAO.Unbind
 
 .Ret:
+
+        ret
+endp
+
+; x : -35.0 to 35.0
+; y : -35.0 to 35.0
+; z = 3.0, const
+proc Draw.Text uses edi esi ebx,\
+        x, y, red, green, blue, pStr, strLen 
+
+        invoke  glUseProgram, 0
+        invoke  glClear, GL_DEPTH_BUFFER_BIT
+        invoke  glMatrixMode, GL_PROJECTION
+        invoke  glPushMatrix
+                invoke  glLoadIdentity
+                invoke  glOrtho, double -35.0, double 35.0,\
+                        double -35.0, double 35.0,\ 
+                        double 0.5, double 75.0 
+
+                invoke  glMatrixMode, GL_MODELVIEW
+                invoke  glPushMatrix
+                        invoke  glLoadIdentity
+                        invoke  gluLookAt, double 0.0, double 0.0, double 5.0,\
+                                double 0.0, double 0.0, double 0.0,\
+                                double 0.0, double 1.0, double 0.0
+                        invoke  glColor3f, [red], [green], [blue]
+                        invoke  glRasterPos3f, [x], [y], 3.0
+                        invoke  glListBase, [fontListId]
+                        invoke  glCallLists, [strLen], GL_UNSIGNED_BYTE, [pStr]
+                invoke  glPopMatrix
+
+                invoke  glMatrixMode, GL_PROJECTION
+        invoke  glPopMatrix
+        invoke  glMatrixMode, GL_MODELVIEW
 
         ret
 endp

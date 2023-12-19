@@ -7,7 +7,8 @@ proc strlen uses edi,\
     repne   scasb
 
     pop     eax
-    sub     edi
+    sub     edi, eax
+    mov     eax, edi
 
     ret
 endp

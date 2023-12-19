@@ -2,7 +2,15 @@
 
     ; Constants
     IPPROTO_UDP                 =                   0x11
+    MSG_NONE                    =                   0x0
+    MSG_OOB                     =                   0x1             ; /* process out-of-band data */
+    MSG_PEEK                    =                   0x2             ; /* peek at incoming message */
+    MSG_DONTROUTE               =                   0x4             ; /* send without using routing tables */ 
+    MSG_WAITALL                 =                   0x8             ; /* do not complete until packet is */ 
     SERVER_PORT                 =                   8829
+    Client.ServerPortStr        db                  "8829", 0
+    Client.ServerPortStrLen     =                   $ - Client.ServerPortStr
+    Client.ServerIpStr          dd                  NULL
 
     SO_BROADCAST                =                   0x0020
     SO_REUSEADDR                =                   0x0004
@@ -19,19 +27,33 @@
     CLIENT_STATE_REQUEST        =                   0000_0100b
     CLIENT_STATE_ACCEPT         =                   0000_1000b
 
+    Client.StateOffline         db                  "Offline", 0
+    Client.StateOfflineLen      =                   $ - Client.StateOffline
+    Client.StateOnline          db                  "Online", 0
+    Client.StateOnlineLen       =                    $ - Client.StateOnline
+    Client.StateRequest         db                  "Request", 0
+    Client.StateRequestLen      =                   $ - Client.StateRequest
+    Client.StateAccept          db                  "Accept", 0
+    Client.StateAcceptLen       =                   $ - Client.StateAccept
+    Client.ServerIp             dd                  ?
+
     ; Keys for client
     CLIENT_CONNECT_KEY          =                   'Q'
+    CLIENT_DISCONNECT_KEY       =                   'E'
 
     CLIENT_ADAPTERS_BUF_MAX     =                   1024
 
     ; client data
     Client.State                dd                  CLIENT_STATE_OFFLINE
+    Client.DrawTimer            dd                  0
 
     Client.BufferSend           dd                  NULL
     Client.BufferRecv           dd                  NULL
     Client.BufferDraw           dd                  NULL
 
     ; Structure of reciving message
+    Client.CntPlayersOffset     =                   14
+
     Client.SizeofPlayer         =                   52
     Client.plPositioin          =                   0
     Client.plAngles             =                   12
@@ -42,7 +64,9 @@
     Client.plShininess          =                   48
 
     Client.Uptime               dd                  0
-    Client.CntPlayers           dd                  0
+    Client.CntPlayers           dd                  1
+    Client.CntPlayersStr        db                  8 dup(0)
+    Client.CntPlayersStrLen     =                   $ - Client.CntPlayersStr
 
     Client.dIPAddrTableSz       dd                  CLIENT_ADAPTERS_BUF_MAX
     Client.IPAddrTableBuf       db                  (CLIENT_ADAPTERS_BUF_MAX) dup ?

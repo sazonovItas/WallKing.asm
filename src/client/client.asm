@@ -302,7 +302,7 @@ proc Client.ThRecv uses edi,\
     .RequestState:
 
         lea     edi, [len]
-        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, 0x0,\ 
+        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, MSG_NONE,\ 
                 Client.Recv_addr, edi
 
         cmp     eax, SOCKET_ERROR
@@ -317,6 +317,8 @@ proc Client.ThRecv uses edi,\
         jne     .ErrorMsg
 
         stdcall memcpy, Client.Server_addr, Client.Recv_addr, sizeof.sockaddr_in
+        invoke  inet_ntoa, [Client.Server_addr.sin_addr]
+        mov     [Client.ServerIpStr], eax
         mov     [Client.State], CLIENT_STATE_ACCEPT
 
         jmp     .HandleState
@@ -326,7 +328,7 @@ proc Client.ThRecv uses edi,\
         lea     edi, [len]
 
         lea     edi, [len]
-        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, 0x0,\ 
+        invoke  recvfrom, [Client.Socket], [Client.BufferRecv], MESSAGE_SIZE, MSG_NONE,\ 
                 Client.Recv_addr, edi
 
         cmp     eax, SOCKET_ERROR
@@ -348,6 +350,12 @@ proc Client.ThRecv uses edi,\
 
         cmp     eax, true
         jne     .ErrorMsg
+
+        ; Cnt Players
+        mov     edi, [Client.BufferRecv]
+        mov     eax, [edi + Client.CntPlayersOffset]
+        mov     [Client.CntPlayers], eax
+        inc     [Client.CntPlayers]
 
         invoke  WaitForSingleObject, [Client.MutexDrawBuf], INFINITY
         stdcall memcpy, [Client.BufferDraw], [Client.BufferRecv], MESSAGE_SIZE
@@ -482,10 +490,21 @@ endp
 proc Client.KeyUp\
     wParam, lParam
 
+    cmp     [Client.State], CLIENT_STATE_OFFLINE
+    je      .SkipUp
+
     cmp     [wParam] , CLIENT_CONNECT_KEY
     jne     @F
 
     mov     [Client.State], CLIENT_STATE_REQUEST
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam] , CLIENT_DISCONNECT_KEY
+    jne     @F
+
+    mov     [Client.State], CLIENT_STATE_ONLINE
     jmp     .SkipUp
 
     @@:

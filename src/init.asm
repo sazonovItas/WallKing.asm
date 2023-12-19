@@ -2,14 +2,16 @@ proc Init uses esi edi ebx
 
     locals
             hMainWindow     dd      ?
-            text            db      "Hi", 0
+            hContext        dd      ?
+            nPixelFormat    dd      ?
+            nNumFormats     dd      ?
     endl 
  
     stdcall memInit
 
     invoke  RegisterClass, wndClass
-    invoke  CreateWindowEx, ebx, className, className, WINDOW_STYLE,\
-                    ebx, ebx, ebx, ebx, ebx, ebx, ebx, ebx 
+    invoke  CreateWindowEx, NULL, className, className, WINDOW_STYLE,\
+                    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL 
     mov     [hMainWindow], eax   
 
     invoke  GetClientRect, eax, clientRect
@@ -22,8 +24,26 @@ proc Init uses esi edi ebx
     invoke  SetPixelFormat, [hdc], eax, pfd 
 
     invoke  wglCreateContext, [hdc]
+    mov     [hContext], eax
     invoke  wglMakeCurrent, [hdc], eax 
- 
+
+    stdcall Glext.LoadFunctions
+    lea     edi, [nPixelFormat]
+    lea     esi, [nNumFormats]
+    invoke  wglChoosePixelFormatARB, [hdc], piAttribIList, pfAttribFList, 1, edi, esi
+
+    cmp     eax, false
+    je      @F
+
+    invoke  SetPixelFormat, [hdc], [nPixelFormat], pfd  
+    invoke  wglMakeCurrent, [hdc], NULL
+    invoke  wglDeleteContext, [hContext]
+    invoke  wglCreateContext, [hdc]
+    mov     [hglrc], eax
+    invoke  wglMakeCurrent, [hdc], eax
+
+    @@:
+
     ; Init opengl
     stdcall Init.OpenGL
     
@@ -38,8 +58,21 @@ endp
 
 proc Init.GameData
 
+    ; Init fps counter
+    invoke  GetTickCount
+    mov     [fpsTimer], eax
+    stdcall Debug.IntToDecString, Help.FPSCnt, 60
+
+    ; Font
+    invoke  glGenLists, MAX_CHARS
+    mov     [fontListId], eax
+
+    invoke  wglUseFontBitmapsA, [hdc], 0, MAX_CHARS - 1, [fontListId]
+
+    ; Level Loading
     stdcall Level.Load, TestLevel, level1File
 
+    ; Init player
     stdcall malloc, sizeof.Player
     mov  	[mainPlayer], eax
     stdcall Player.Constructor, eax, [clientRect.right], [clientRect.bottom], TestLevel
@@ -50,12 +83,7 @@ endp
 proc Init.OpenGL 
 
     invoke  glEnable, GL_DEPTH_TEST
-    invoke  glEnable, GL_LIGHTING
-    invoke  glEnable, GL_TEXTURE_2D
-    invoke  glShadeModel, GL_SMOOTH
-    invoke  glHint, GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST
-
-    stdcall Glext.LoadFunctions
+    invoke  glEnable, GL_MULTISAMPLE
 
     ; Ambient
     lea     edi, [ambientTexs]
@@ -68,6 +96,10 @@ proc Init.OpenGL
 
     lea     edi, [ambientTexs + 8]
     stdcall Texture.Constructor, edi, fileGemRainbowAmbientTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+    lea     edi, [ambientTexs + 12]
+    stdcall Texture.Constructor, edi, fileGemBlackAmbientTex,\
                             GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
     ; Diffuse
@@ -83,6 +115,10 @@ proc Init.OpenGL
     stdcall Texture.Constructor, edi, fileGemRainbowDiffuseTex,\
                             GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
+    lea     edi, [diffuseTexs + 12]
+    stdcall Texture.Constructor, edi, fileGemBlackDiffuseTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
     ; Specular
     lea     edi, [specularTexs]
     stdcall Texture.Constructor, edi, fileContainerSpecularTex,\
@@ -96,23 +132,9 @@ proc Init.OpenGL
     stdcall Texture.Constructor, edi, fileGemRainbowSpecularTex,\
                             GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
-    ; interface textures
-    lea     edi, [hOfflineTex]
-    stdcall Texture.Constructor, edi, fileOfflineTex,\
-                            GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB8, 0, GL_BGR, GL_UNSIGNED_BYTE
-
-    ; lea     edi, [hOnlineTex]
-    ; stdcall Texture.Constructor, edi, fileOnlineTex,\
-    ;                         GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
-
-    lea     edi, [hOnlineTex]
-    stdcall Texture.Constructor, edi, fileRequestTex,\
-                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGR, GL_UNSIGNED_BYTE
-
-    ; lea     edi, [hAcceptTex]
-    ; stdcall Texture.Constructor, edi, fileAcceptTex,\
-    ;                         GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
-
+    lea     edi, [specularTexs + 12]
+    stdcall Texture.Constructor, edi, fileGemRainbowSpecularTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
     ; ----------- BLOCK SHADER -----------------
     ; Block shader
@@ -181,23 +203,22 @@ proc Init.OpenGL
 
     ; ----------- INTERFACE --------------
     ; Interface shader
-    stdcall Shader.Constructor, interfaceShader.ID, interfaceVertexFile, interfaceFragmentFile
+    ; stdcall Shader.Constructor, interfaceShader.ID, interfaceVertexFile, interfaceFragmentFile
 
     ;Generate the VAO, EBO and VBO with only 1 object each
-    stdcall VAO.Constructor, interfaceVAO.ID
-    stdcall VAO.Bind, [interfaceVAO.ID]
-    stdcall VBO.Constructor, interfaceVBO.ID, sizeVertice * countVertices, vertices 
-    stdcall EBO.Constructor, interfaceEBO.ID, sizeIndex * countIndices, indices
+    ; stdcall VAO.Constructor, interfaceVAO.ID
+    ; stdcall VAO.Bind, [interfaceVAO.ID]
+    ; stdcall VBO.Constructor, interfaceVBO.ID, sizeVertice * countVertices, vertices 
+    ; stdcall EBO.Constructor, interfaceEBO.ID, sizeIndex * countIndices, indices
 
-    ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
-    stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
-    stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 1, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
+    ; ; Configure the Vertex Attribute so that OpenGL knows how to read the VBO
+    ; stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 0, 3, GL_FLOAT, GL_FALSE, sizeVertice, offsetVertice
+    ; stdcall VAO.LinkAttribVBO, [interfaceVBO.ID], 1, 2, GL_FLOAT, GL_FALSE, sizeVertice, offsetTexture
 
-    ; Unbind VAO, VBO and EBO so that accidentlly to change it
-    stdcall VBO.Unbind
-    stdcall VAO.Unbind
-    stdcall EBO.Unbind
+    ; ; Unbind VAO, VBO and EBO so that accidentlly to change it
+    ; stdcall VBO.Unbind
+    ; stdcall VAO.Unbind
+    ; stdcall EBO.Unbind
 
     ret
 endp
-

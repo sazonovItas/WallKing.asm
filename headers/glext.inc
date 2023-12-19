@@ -31,7 +31,8 @@ extensionAddresses:
         glBindVertexArray       dd      ?
         glVertexAttribPointer   dd      ?
         glEnableVertexAttribArray dd    ?
-        glActiveTexture       dd      ?
+        glActiveTexture         dd      ?
+        wglChoosePixelFormatARB dd      ?
 
 extensionNames:
                         db      "glGenerateMipmap", 0
@@ -67,6 +68,7 @@ extensionNames:
                         db      "glVertexAttribPointer", 0
                         db      "glEnableVertexAttribArray", 0
                         db      "glActiveTexture", 0
+                        db      "wglChoosePixelFormatARB", 0
 
                         db      0 
 
@@ -77,10 +79,10 @@ extensionNames:
                         GL_COMPILE_STATUS               = 0x8B81
                         GL_LINK_STATUS                  = 0x8B82
                         GL_CLAMP_TO_BORDER              = 0x812D
+                        GL_MULTISAMPLE                  = 0x809D
 
                         GL_ARRAY_BUFFER                 = 0x8892
                         GL_ELEMENT_ARRAY_BUFFER         = 0x8893
-                        
                         
                         GL_STATIC_DRAW                  = 0x88E4
                         GL_STATIC_READ                  = 0x88E5
@@ -89,7 +91,6 @@ extensionNames:
                         GL_DYNAMIC_READ                 = 0x88E9
                         GL_DYNAMIC_COPY                 = 0x88EA
 
-                        
                         GL_TEXTURE0                     =  0x84C0
                         GL_TEXTURE0                     =  0x84C0
                         GL_TEXTURE1                     =  0x84C1
@@ -102,3 +103,20 @@ extensionNames:
                         GL_TEXTURE8                     =  0x84C8
                         GL_TEXTURE9                     =  0x84C9
                         GL_TEXTURE10                    =  0x84CA
+                        
+                        WGL_DRAW_TO_WINDOW_ARB          =  0x2001
+                        WGL_ACCELERATION_ARB            =  0x2003
+                        WGL_SUPPORT_OPENGL_ARB          =  0x2010
+                        WGL_DOUBLE_BUFFER_ARB           =  0x2011
+                        WGL_PIXEL_TYPE_ARB              =  0x2013
+                        WGL_COLOR_BITS_ARB              =  0x2014
+                        WGL_DEPTH_BITS_ARB              =  0x2022
+                        WGL_STENCIL_BITS_ARB            =  0x2023
+                        WGL_FULL_ACCELERATION_ARB       =  0x2027
+                        WGL_TYPE_RGBA_ARB               =  0x202B
+                        WGL_RED_BITS_ARB                =  0x2015
+                        WGL_GREEN_BITS_ARB              =  0x2017
+                        WGL_BLUE_BITS_ARB               =  0x2019
+                        WGL_ALPHA_BITS_ARB              =  0x201B
+                        WGL_SAMPLE_BUFFERS_ARB          =  0x2041
+                        WGL_SAMPLES_ARB                 =  0x2042

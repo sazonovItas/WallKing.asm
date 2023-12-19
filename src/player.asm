@@ -223,7 +223,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.sizeBlockCol], 0.70
 
     ; draw things
-    mov     [edi + Player.sizeBlockDraw], 0.4
+    mov     [edi + Player.sizeBlockDraw], 0.44
     mov     [edi + Player.XYZangles + Vector3.x], 0.0
     mov     [edi + Player.XYZangles + Vector3.y], 0.0
     mov     [edi + Player.XYZangles + Vector3.z], 0.0
@@ -258,9 +258,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.DrawPlayer + DrawData.Scale + Vector3.z], eax
 
     ; draw tex id
-    mov     [edi + Player.DrawPlayer + DrawData.AmbientTexId], 8
-    mov     [edi + Player.DrawPlayer + DrawData.DiffuseTexId], 8
-    mov     [edi + Player.DrawPlayer + DrawData.SpecularTexId], 8
+    mov     [edi + Player.DrawPlayer + DrawData.AmbientTexId], 12
+    mov     [edi + Player.DrawPlayer + DrawData.DiffuseTexId], 12
+    mov     [edi + Player.DrawPlayer + DrawData.SpecularTexId], 12
     mov     [edi + Player.DrawPlayer + DrawData.Shininess], 20.0
 
     ; Chasing light
@@ -290,16 +290,23 @@ proc Player.Constructor uses edi,\
 endp
 
 proc Player.Respawn uses edi esi,\
-    pPlayer
+    pPlayer, pPosition
 
     mov     edi, [pPlayer]
 
     mov     [edi + Player.fallAni + Easing.start], false
+    mov     [edi + Player.fallAni + Easing.done], false
 
-    mov     esi, [edi + Player.pLevel]
+    mov     [edi + Player.jumpAni + Easing.startTime], eax
 
+    mov     [edi + Player.jumpAni + Easing.start], true
+    mov     [edi + Player.jumpAni + Easing.done], false
+
+    mov     [edi + Player.slideAni + Easing.start], false
+    mov     [edi + Player.slideAni + Easing.done], false
+
+    mov     esi, [pPosition]
     lea     edi, [edi + Player.Position]
-    lea     esi, [esi + Level.spawnPosition]
     stdcall Vector3.Copy, edi, esi
 
     ret
@@ -499,7 +506,7 @@ proc Player.ChangeNextLight uses edi esi ebx,\
     inc     [edi + Player.offsetChasingLight]
     mov     eax, [esi + Level.sizeLightsMap]
     cmp     [edi + Player.offsetChasingLight], eax
-    jbe     @F
+    jb      @F
 
     mov     [edi + Player.offsetChasingLight], 0
 
@@ -2237,7 +2244,7 @@ proc Player.DecreaseLightIntensity uses edi esi ebx,\
     ret
 endp
 
-proc Player.KeyUp\
+proc Player.KeyUp uses edi esi,\
     pPlayer, wParam, lParam
 
     cmp     [wParam], PL_JUMP
@@ -2330,8 +2337,11 @@ proc Player.KeyUp\
 
     cmp     [wParam], PL_RESPAWN 
     jne     @F
-
-    stdcall Player.Respawn, [pPlayer]
+    
+    mov     edi, [pPlayer]
+    mov     edi, [edi + Player.pLevel]
+    add     edi, Level.spawnPosition
+    stdcall Player.Respawn, [pPlayer], edi
     jmp     .SkipUp
 
     @@:
@@ -2373,6 +2383,35 @@ proc Player.KeyUp\
     jne     @F
 
     xor     [pl_stop_light], true
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_HELP
+    jne     @F
+
+    xor     [pl_help], true
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_MAP
+    jne     @F
+
+    xor     [pl_map], true
+    jmp     .SkipUp
+
+    @@:
+
+    cmp     [wParam], PL_TELEPORT
+    jne     @F
+
+    mov     edi, [pPlayer]
+    mov     esi, [edi + Player.pLevel]
+    mov     eax, sizeLight
+    mul     [edi + Player.offsetChasingLight]
+    add     eax, [esi + Level.pLightsMap]
+    stdcall Player.Respawn, [pPlayer], eax
     jmp     .SkipUp
 
     @@:

@@ -2,7 +2,7 @@
         ; parametrs for the camera
         fovY                    dd              90.0 
         zNear                   dd              0.001
-        zFar                    dd              10000.0
+        zFar                    dd              1000.0
 
         ProjMatrix              Matrix4x4       ?
         ViewMatrix              Matrix4x4       ?
@@ -110,11 +110,6 @@ lightIndices    GLuint          0, 1, 2,\
         specularTexs            dd              20 dup(?)
 
 
-        fileBoxTex                      db              "resources/textures/container2.bmp", 0
-        filePlayerTex                   db              "resources/textures/wall_player.bmp", 0
-        fileLightTex                    db              "resources/textures/test.bmp", 0
-        fileWhitePixelsTex              db              "resources/textures/WhitePixels.bmp", 0
-
         fileGemBlackAmbientTex          db              "resources/textures/blocks/gemBlackAmbient.bmp", 0
         fileGemBlackDiffuseTex          db              "resources/textures/blocks/gemBlackDiffuse.bmp", 0
         fileGemBlackSpecularTex         db              "resources/textures/blocks/gemBlackSpec.bmp", 0
@@ -131,13 +126,8 @@ lightIndices    GLuint          0, 1, 2,\
         fileContainerDiffuseTex         db              "resources/textures/blocks/containerDiffuse.bmp", 0
         fileContainerSpecularTex        db              "resources/textures/blocks/containerSpec.bmp", 0
 
-        fileOfflineTex                  db              "resources/textures/client/offline.bmp", 0
-        fileOnlineTex                   db              "resources/textures/client/online.bmp", 0
-        fileRequestTex                  db              "resources/textures/client/request.bmp", 0
-        fileAcceptTex                   db              "resources/textures/client/accept.bmp", 0
-
-        hOfflineTex                     dd              ?
-        hOnlineTex                      dd              ?
+        ; fileOfflineTex                  db              "resources/textures/client/offline.bmp", 0
+        ; fileOnlineTex                   db              "resources/textures/client/online.bmp", 0
 
         ; Shadow's data
         ; shadowMapFBO            dd              ?

@@ -9,6 +9,7 @@ proc Matrix.Projection uses edi,\
         endl
 
         invoke  glMatrixMode, GL_PROJECTION
+        invoke  glPushMatrix
         invoke  glLoadIdentity
 
         mov     edi, [matrix]
@@ -67,6 +68,7 @@ proc Matrix.Projection uses edi,\
 
         invoke  glMultMatrixf, edi
         invoke  glGetFloatv, GL_PROJECTION_MATRIX, [matrix]
+        invoke  glPopMatrix
 
         ret
 endp
@@ -82,6 +84,7 @@ proc Matrix.LookAt uses esi edi ebx,\
         endl
 
         invoke  glMatrixMode, GL_MODELVIEW
+        invoke  glPushMatrix
         invoke  glLoadIdentity
         
         mov     edi, [matrix]
@@ -167,6 +170,7 @@ proc Matrix.LookAt uses esi edi ebx,\
         push    [temp]
         invoke  glTranslatef
         invoke  glGetFloatv, GL_MODELVIEW_MATRIX, [matrix]
+        invoke  glPopMatrix
 
         ret
 endp
