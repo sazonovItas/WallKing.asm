@@ -70,7 +70,7 @@ proc Init.GameData
     invoke  wglUseFontBitmapsA, [hdc], 0, MAX_CHARS - 1, [fontListId]
 
     ; Level Loading
-    stdcall Level.Load, TestLevel, level1File
+    ; stdcall Level.Load, TestLevel, level1File
 
     ; Init player
     stdcall malloc, sizeof.Player

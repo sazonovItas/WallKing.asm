@@ -77,11 +77,15 @@ proc Game.Game uses edi ebx esi,\
     mov     ebx, eax
 
     invoke  glEnable, GL_SCISSOR_TEST
+    sub     esi, 14
+    add     ebx, 14
     invoke  glScissor, esi, 0, ebx, ebx
     invoke  glClear, GL_COLOR_BUFFER_BIT
     invoke  glDisable, GL_SCISSOR_TEST
+    add     esi, 7
+    sub     ebx, 14
+    invoke  glViewport, esi, 7, ebx, ebx
     invoke  glClear, GL_DEPTH_BUFFER_BIT
-    invoke  glViewport, esi, 0, ebx, ebx
     stdcall Draw.Scene, [pPlayer]
 
     .SkipMapDrawing:
