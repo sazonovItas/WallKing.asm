@@ -437,6 +437,7 @@ proc Draw.Light uses edi esi ebx,\
         invoke  glPushMatrix
                 invoke  glLoadIdentity
                 invoke  glTranslatef, dword [edi + posLightOffset], dword [edi + posLightOffset + 4], dword [edi + posLightOffset + 8]
+                invoke  glScalef, 2.0, 2.0, 2.0
                 invoke  glGetFloatv, GL_MODELVIEW_MATRIX, ModelMatrix
         invoke  glPopMatrix
         invoke  glGetUniformLocation, [shaderId], uniModelName
