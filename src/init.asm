@@ -70,7 +70,7 @@ proc Init.GameData
     invoke  wglUseFontBitmapsA, [hdc], 0, MAX_CHARS - 1, [fontListId]
 
     ; Level Loading
-    ; stdcall Level.Load, TestLevel, level1File
+    stdcall Level.Load, TestLevel, level1File
 
     ; Init player
     stdcall malloc, sizeof.Player
@@ -98,6 +98,10 @@ proc Init.OpenGL
     stdcall Texture.Constructor, edi, fileGemRainbowAmbientTex,\
                             GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
+    lea     edi, [ambientTexs + 12]
+    stdcall Texture.Constructor, edi, fileGemBlackAmbientTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE1, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
     ; Diffuse
     lea     edi, [diffuseTexs]
     stdcall Texture.Constructor, edi, fileContainerDiffuseTex,\
@@ -111,6 +115,10 @@ proc Init.OpenGL
     stdcall Texture.Constructor, edi, fileGemRainbowDiffuseTex,\
                             GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
+    lea     edi, [diffuseTexs + 12]
+    stdcall Texture.Constructor, edi, fileGemBlackDiffuseTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE2, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
     ; Specular
     lea     edi, [specularTexs]
     stdcall Texture.Constructor, edi, fileContainerSpecularTex,\
@@ -121,6 +129,10 @@ proc Init.OpenGL
                             GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 
     lea     edi, [specularTexs + 8]
+    stdcall Texture.Constructor, edi, fileGemRainbowSpecularTex,\
+                            GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
+
+    lea     edi, [specularTexs + 12]
     stdcall Texture.Constructor, edi, fileGemRainbowSpecularTex,\
                             GL_TEXTURE_2D, GL_TEXTURE3, GL_RGB8, 0, GL_BGRA, GL_UNSIGNED_BYTE
 

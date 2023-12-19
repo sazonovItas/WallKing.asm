@@ -110,11 +110,6 @@ lightIndices    GLuint          0, 1, 2,\
         specularTexs            dd              20 dup(?)
 
 
-        fileBoxTex                      db              "resources/textures/container2.bmp", 0
-        filePlayerTex                   db              "resources/textures/wall_player.bmp", 0
-        fileLightTex                    db              "resources/textures/test.bmp", 0
-        fileWhitePixelsTex              db              "resources/textures/WhitePixels.bmp", 0
-
         fileGemBlackAmbientTex          db              "resources/textures/blocks/gemBlackAmbient.bmp", 0
         fileGemBlackDiffuseTex          db              "resources/textures/blocks/gemBlackDiffuse.bmp", 0
         fileGemBlackSpecularTex         db              "resources/textures/blocks/gemBlackSpec.bmp", 0

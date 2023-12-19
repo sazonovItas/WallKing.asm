@@ -223,7 +223,7 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.sizeBlockCol], 0.70
 
     ; draw things
-    mov     [edi + Player.sizeBlockDraw], 0.4
+    mov     [edi + Player.sizeBlockDraw], 0.44
     mov     [edi + Player.XYZangles + Vector3.x], 0.0
     mov     [edi + Player.XYZangles + Vector3.y], 0.0
     mov     [edi + Player.XYZangles + Vector3.z], 0.0
@@ -258,9 +258,9 @@ proc Player.Constructor uses edi,\
     mov     [edi + Player.DrawPlayer + DrawData.Scale + Vector3.z], eax
 
     ; draw tex id
-    mov     [edi + Player.DrawPlayer + DrawData.AmbientTexId], 8
-    mov     [edi + Player.DrawPlayer + DrawData.DiffuseTexId], 8
-    mov     [edi + Player.DrawPlayer + DrawData.SpecularTexId], 8
+    mov     [edi + Player.DrawPlayer + DrawData.AmbientTexId], 12
+    mov     [edi + Player.DrawPlayer + DrawData.DiffuseTexId], 12
+    mov     [edi + Player.DrawPlayer + DrawData.SpecularTexId], 12
     mov     [edi + Player.DrawPlayer + DrawData.Shininess], 20.0
 
     ; Chasing light

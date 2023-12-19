@@ -4,9 +4,9 @@ proc Game.Game uses edi ebx esi,\
     locals
         MapCornerX          dd          ?
         MapCornerY          dd          ?
-        divScreen           dd          4
+        divScreen           dd          3
         aspect              dd          1.0
-        tmp                 Vector3     0.0, 30.0, 0.0
+        tmp                 Vector3     0.0, 80.0, 0.0
         normVec             Vector3     0.1, 0.0, 0.1
         upVec               Vector3     0.0, 1.0, 0.0
     endl
@@ -49,10 +49,19 @@ proc Game.Game uses edi ebx esi,\
     cmp     [pl_map], false
     je      .SkipMapDrawing
 
+
     push    edi
     mov     esi, edi
     add     edi, Camera.proj
-    stdcall Matrix.Projection, [esi + Camera.fovDeg], [aspect], [esi + Camera.nearPlane], [esi + Camera.farPlane], edi
+    invoke  glMatrixMode, GL_PROJECTION
+    invoke  glPushMatrix
+            invoke  glLoadIdentity
+            invoke  glOrtho, double -35.0, double 35.0,\
+                    double -35.0, double 35.0,\ 
+                    double 0.1, double 1000.0 
+            invoke  glGetFloatv, GL_PROJECTION_MATRIX, edi 
+    invoke  glPopMatrix
+    ; stdcall Matrix.Projection, [esi + Camera.fovDeg], [aspect], [esi + Camera.nearPlane], [esi + Camera.farPlane], edi
     pop     edi
 
     push    edi
@@ -73,6 +82,8 @@ proc Game.Game uses edi ebx esi,\
     mov     edx, [edi + Player.camera + Camera.width]
     sub     edx, eax
 
+    add     edx, 100    
+    sub     eax, 100
     mov     esi, edx
     mov     ebx, eax
 
@@ -80,7 +91,9 @@ proc Game.Game uses edi ebx esi,\
     sub     esi, 14
     add     ebx, 14
     invoke  glScissor, esi, 0, ebx, ebx
+    invoke  glClearColor, 0.6, 0.6, 0.6
     invoke  glClear, GL_COLOR_BUFFER_BIT
+    invoke  glClearColor, 0.0, 0.0, 0.0
     invoke  glDisable, GL_SCISSOR_TEST
     add     esi, 7
     sub     ebx, 14
