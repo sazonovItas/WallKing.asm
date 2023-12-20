@@ -175,6 +175,7 @@ macro JumpIf value, label
 
 data import
 
+
         library kernel32,       "KERNEL32.DLL",\
                 wsock32,        "WSOCK32.DLL",\
                 user32,         "USER32.DLL",\
@@ -187,7 +188,7 @@ data import
 
         import iphlpapi,\
                 GetIpAddrTable , 'GetIpAddrTable'
-        
+
         struct MIB_IPADDRROW
                dwAddr           dd              ?
                dwIndex          dd              ?

@@ -28,12 +28,12 @@
         include         "internal/string/string_funcs.asm"
         include         "internal/debug.asm"
         
-        cameraPosition  Vector3         2.0, 10.0, 0.0
-
         mainPlayer              dd              ? 
-
         lastFrame               dd              ?
-        deltaTime               dd              ?
+
+        user32Str               db              "user32.dll", 0
+        SetProcessDPIAware      dd              ?
+        SetProcessDPIAwareFunc  db              "SetProcessDPIAware", 0
 
 proc WinMain
 
@@ -42,6 +42,10 @@ proc WinMain
                 thread          dd              ? 
                 threadId        dd              ?
         endl
+
+        invoke  GetModuleHandleA, user32Str
+        invoke  GetProcAddress, eax, SetProcessDPIAwareFunc
+        stdcall eax
 
         finit
         xor     ebx, ebx
