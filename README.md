@@ -1,7 +1,7 @@
 # Introduction
 This repo hosts my asm code for Windows. I'm using Fasm assembly and OpenGL.
-# First version
+# V1.0.1
 
-https://github.com/sazonovItas/WallKing.asm/assets/125500423/e7a4d534-bb6d-4043-9693-c93e779aa3e3
+https://github.com/sazonovItas/WallKing.asm/assets/125500423/4e7143d0-8c32-4020-b11e-a7f9f2a81338
 
 # To be countinued...
