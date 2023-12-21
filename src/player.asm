@@ -317,7 +317,7 @@ proc Player.Update uses edi esi ebx,\
 
     locals 
         deltaTime           dd          ?
-        minTimeUpdatePlayer dd          15
+        minTimeUpdatePlayer dd          25
         tmp                 dd          ?
     endl
 
